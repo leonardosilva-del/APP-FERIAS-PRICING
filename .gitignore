@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# Data
+# We do NOT ignore database.db here on purpose so the initial data goes to GitHub
+BASE DE DADOS.xlsx
+
+# OS generated files
+.DS_Store
+Thumbs.db
