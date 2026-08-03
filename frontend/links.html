@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,9 +32,9 @@
             color: var(--text-main);
             min-height: 100vh;
             padding: 2rem;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, rgba(203, 213, 225, 0.2) 0, transparent 50%), 
+            background-image:
+                radial-gradient(at 0% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%),
+                radial-gradient(at 50% 0%, rgba(203, 213, 225, 0.2) 0, transparent 50%),
                 radial-gradient(at 100% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%);
         }
 
@@ -60,12 +61,12 @@
             font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         .back-button:hover {
             transform: translateX(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-color: var(--primary);
             color: var(--primary);
         }
@@ -96,7 +97,7 @@
             border-radius: 1rem;
             margin-bottom: 2rem;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
             animation: fadeInUp 0.6s ease-out 0.1s backwards;
             overflow: hidden;
         }
@@ -240,7 +241,7 @@
             color: var(--text-main);
             background: var(--card-bg);
             transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .search-bar input:focus {
@@ -275,7 +276,7 @@
             justify-content: space-between;
             border: 1px solid var(--border);
             transition: all 0.25s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .link-card:hover {
@@ -427,7 +428,7 @@
             padding: 2rem;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
             animation: slideUp 0.3s ease;
         }
 
@@ -461,7 +462,7 @@
             color: white;
             font-weight: 500;
             font-size: 0.95rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             z-index: 2000;
             transform: translateY(100px);
             opacity: 0;
@@ -507,7 +508,7 @@
             width: 90%;
             max-width: 400px;
             text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
             animation: slideUp 0.3s ease;
         }
 
@@ -591,26 +592,53 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <a href="index.html" class="back-button" id="btn-back">
@@ -625,7 +653,7 @@
     <div class="container">
         <!-- Add Link Form -->
         <div class="add-section" id="add-section">
-            <button class="add-section-toggle" onclick="toggleAddSection()">
+            <button class="add-section-toggle" onclick="window.toggleAddSection()">
                 <span class="toggle-left">➕ Adicionar Novo Link</span>
                 <span class="chevron">▼</span>
             </button>
@@ -639,7 +667,7 @@
                         <label for="link-url">URL (Endereço)</label>
                         <input type="url" id="link-url" placeholder="https://exemplo.com/planilha">
                     </div>
-                    <button class="btn btn-primary" id="btn-add" onclick="addLink()">
+                    <button class="btn btn-primary" id="btn-add" onclick="window.addLink()">
                         ➕ Adicionar
                     </button>
                 </div>
@@ -649,7 +677,7 @@
         <!-- Search -->
         <div class="search-bar">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-input" placeholder="Buscar link por nome..." oninput="filterLinks()">
+            <input type="text" id="search-input" placeholder="Buscar link por nome..." oninput="window.filterLinks()">
         </div>
 
         <!-- Links Counter -->
@@ -678,8 +706,8 @@
                 <input type="url" id="edit-url" placeholder="https://...">
             </div>
             <div class="modal-actions">
-                <button class="btn btn-cancel" onclick="closeEditModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveEdit()">💾 Salvar</button>
+                <button class="btn btn-cancel" onclick="window.closeEditModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="window.saveEdit()">💾 Salvar</button>
             </div>
         </div>
     </div>
@@ -691,8 +719,9 @@
             <h3>Excluir link?</h3>
             <p>Essa ação não poderá ser desfeita.</p>
             <div class="confirm-actions">
-                <button class="btn btn-cancel" onclick="closeConfirmDialog()">Cancelar</button>
-                <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDelete()">🗑️ Excluir</button>
+                <button class="btn btn-cancel" onclick="window.closeConfirmDialog()">Cancelar</button>
+                <button class="btn btn-danger" id="btn-confirm-delete" onclick="window.confirmDelete()">🗑️
+                    Excluir</button>
             </div>
         </div>
     </div>
@@ -700,48 +729,61 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script>
-        const API_BASE = '/api/links';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7eH-pHtJ0zor5rDmQavV5CZZbY6fWFuE",
+            authDomain: "painel-pricing-96298.firebaseapp.com",
+            databaseURL: "https://painel-pricing-96298-default-rtdb.firebaseio.com",
+            projectId: "painel-pricing-96298",
+            storageBucket: "painel-pricing-96298.firebasestorage.app",
+            messagingSenderId: "1079180686361",
+            appId: "1:1079180686361:web:9dfd373651db673a41e688"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const linksRef = ref(db, 'links_essenciais');
+
         let allLinks = [];
         let editingId = null;
         let deletingId = null;
 
-        // Load links on page load
-        document.addEventListener('DOMContentLoaded', loadLinks);
+        // Listener do Firebase - Atualiza a tela em tempo real se alguém adicionar algo
+        onValue(linksRef, (snapshot) => {
+            allLinks = [];
+            snapshot.forEach((childSnapshot) => {
+                allLinks.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+            window.filterLinks(); // Atualiza a lista respeitando a barra de pesquisa
+        });
 
-        // Allow Enter key to submit
+        // Eventos de teclado
         document.getElementById('link-name').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') document.getElementById('link-url').focus();
         });
         document.getElementById('link-url').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') addLink();
+            if (e.key === 'Enter') window.addLink();
         });
 
-        function toggleAddSection(forceState) {
+        window.toggleAddSection = function (forceState) {
             const section = document.getElementById('add-section');
             if (typeof forceState === 'boolean') {
                 section.classList.toggle('expanded', forceState);
             } else {
                 section.classList.toggle('expanded');
             }
-            // Auto-focus name input when expanding
             if (section.classList.contains('expanded')) {
                 setTimeout(() => document.getElementById('link-name').focus(), 350);
             }
         }
 
-        async function loadLinks() {
-            try {
-                const res = await fetch(API_BASE);
-                const json = await res.json();
-                allLinks = json.data || [];
-                renderLinks(allLinks);
-            } catch (err) {
-                showToast('Erro ao carregar links.', 'error');
-            }
-        }
-
-        function renderLinks(links) {
+        window.renderLinks = function (links) {
             const container = document.getElementById('links-list');
             const countEl = document.getElementById('links-count');
             countEl.textContent = links.length;
@@ -750,7 +792,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">🔗</div>
-                        <h3>Nenhum link cadastrado</h3>
+                        <h3>Nenhum link encontrado</h3>
                         <p>Adicione links importantes usando o formulário acima.</p>
                     </div>
                 `;
@@ -762,18 +804,18 @@
                     <div class="link-info">
                         <div class="link-icon">🔗</div>
                         <div class="link-details">
-                            <div class="link-name">${escapeHtml(link.nome)}</div>
-                            <div class="link-url" title="${escapeHtml(link.url)}">${escapeHtml(link.url)}</div>
+                            <div class="link-name">${window.escapeHtml(link.nome)}</div>
+                            <div class="link-url" title="${window.escapeHtml(link.url)}">${window.escapeHtml(link.url)}</div>
                         </div>
                     </div>
                     <div class="link-actions">
-                        <button class="btn-icon btn-open" title="Abrir link" onclick="openLink('${escapeHtml(link.url)}')">
+                        <button class="btn-icon btn-open" title="Abrir link" onclick="window.openLink('${window.escapeJs(link.url)}')">
                             🔗
                         </button>
-                        <button class="btn-icon btn-edit" title="Editar" onclick="openEditModal(${link.id}, '${escapeJs(link.nome)}', '${escapeJs(link.url)}')">
+                        <button class="btn-icon btn-edit" title="Editar" onclick="window.openEditModal('${link.id}', '${window.escapeJs(link.nome)}', '${window.escapeJs(link.url)}')">
                             ✏️
                         </button>
-                        <button class="btn-icon btn-delete" title="Excluir" onclick="openConfirmDialog(${link.id})">
+                        <button class="btn-icon btn-delete" title="Excluir" onclick="window.openConfirmDialog('${link.id}')">
                             🗑️
                         </button>
                     </div>
@@ -781,113 +823,93 @@
             `).join('');
         }
 
-        async function addLink() {
+        window.addLink = function () {
             const nameInput = document.getElementById('link-name');
             const urlInput = document.getElementById('link-url');
             const nome = nameInput.value.trim();
             const url = urlInput.value.trim();
 
             if (!nome || !url) {
-                showToast('Preencha o nome e a URL do link.', 'error');
+                window.showToast('Preencha o nome e a URL do link.', 'error');
                 return;
             }
 
-            try {
-                const res = await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, url })
-                });
-
-                if (!res.ok) throw new Error('Erro ao salvar');
-
+            push(linksRef, { nome, url }).then(() => {
                 nameInput.value = '';
                 urlInput.value = '';
-                toggleAddSection(false);
-                showToast('Link adicionado com sucesso!', 'success');
-                await loadLinks();
-            } catch (err) {
-                showToast('Erro ao adicionar link.', 'error');
-            }
+                window.toggleAddSection(false);
+                window.showToast('Link adicionado com sucesso!', 'success');
+            }).catch((err) => {
+                window.showToast('Erro ao adicionar link.', 'error');
+                console.error(err);
+            });
         }
 
-        function openLink(url) {
+        window.openLink = function (url) {
+            // Garante que tenha http ou https para abrir corretamente
+            if (!url.match(/^https?:\/\//i)) url = 'http://' + url;
             window.open(url, '_blank');
         }
 
-        function openEditModal(id, nome, url) {
+        window.openEditModal = function (id, nome, url) {
             editingId = id;
             document.getElementById('edit-name').value = nome;
             document.getElementById('edit-url').value = url;
             document.getElementById('edit-modal').classList.add('active');
         }
 
-        function closeEditModal() {
+        window.closeEditModal = function () {
             editingId = null;
             document.getElementById('edit-modal').classList.remove('active');
         }
 
-        async function saveEdit() {
+        window.saveEdit = function () {
             const nome = document.getElementById('edit-name').value.trim();
             const url = document.getElementById('edit-url').value.trim();
 
             if (!nome || !url) {
-                showToast('Preencha todos os campos.', 'error');
+                window.showToast('Preencha todos os campos.', 'error');
                 return;
             }
 
-            try {
-                const res = await fetch(`${API_BASE}/${editingId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, url })
-                });
-
-                if (!res.ok) throw new Error('Erro ao atualizar');
-
-                closeEditModal();
-                showToast('Link atualizado com sucesso!', 'success');
-                await loadLinks();
-            } catch (err) {
-                showToast('Erro ao atualizar link.', 'error');
-            }
+            update(ref(db, 'links_essenciais/' + editingId), { nome, url }).then(() => {
+                window.closeEditModal();
+                window.showToast('Link atualizado com sucesso!', 'success');
+            }).catch((err) => {
+                window.showToast('Erro ao atualizar link.', 'error');
+                console.error(err);
+            });
         }
 
-        function openConfirmDialog(id) {
+        window.openConfirmDialog = function (id) {
             deletingId = id;
             document.getElementById('confirm-dialog').classList.add('active');
         }
 
-        function closeConfirmDialog() {
+        window.closeConfirmDialog = function () {
             deletingId = null;
             document.getElementById('confirm-dialog').classList.remove('active');
         }
 
-        async function confirmDelete() {
-            try {
-                const res = await fetch(`${API_BASE}/${deletingId}`, {
-                    method: 'DELETE'
-                });
-
-                if (!res.ok) throw new Error('Erro ao excluir');
-
-                closeConfirmDialog();
-                showToast('Link excluído com sucesso!', 'success');
-                await loadLinks();
-            } catch (err) {
-                showToast('Erro ao excluir link.', 'error');
-            }
+        window.confirmDelete = function () {
+            remove(ref(db, 'links_essenciais/' + deletingId)).then(() => {
+                window.closeConfirmDialog();
+                window.showToast('Link excluído com sucesso!', 'success');
+            }).catch((err) => {
+                window.showToast('Erro ao excluir link.', 'error');
+                console.error(err);
+            });
         }
 
-        function filterLinks() {
+        window.filterLinks = function () {
             const query = document.getElementById('search-input').value.toLowerCase();
             const filtered = allLinks.filter(link =>
                 link.nome.toLowerCase().includes(query)
             );
-            renderLinks(filtered);
+            window.renderLinks(filtered);
         }
 
-        function showToast(message, type) {
+        window.showToast = function (message, type) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.className = `toast ${type}`;
@@ -895,31 +917,30 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        function escapeHtml(str) {
+        window.escapeHtml = function (str) {
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
         }
 
-        function escapeJs(str) {
+        window.escapeJs = function (str) {
             return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
         }
 
-        // Close modals on overlay click
+        // Fechar modais ao clicar fora
         document.getElementById('edit-modal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeEditModal();
+            if (e.target === e.currentTarget) window.closeEditModal();
         });
         document.getElementById('confirm-dialog').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeConfirmDialog();
+            if (e.target === e.currentTarget) window.closeConfirmDialog();
         });
-
-        // Close modals with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closeEditModal();
-                closeConfirmDialog();
+                window.closeEditModal();
+                window.closeConfirmDialog();
             }
         });
     </script>
 </body>
+
 </html>
