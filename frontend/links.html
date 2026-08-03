@@ -94,20 +94,59 @@
         .add-section {
             background: var(--card-bg);
             border-radius: 1rem;
-            padding: 2rem;
             margin-bottom: 2rem;
             border: 1px solid var(--border);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
             animation: fadeInUp 0.6s ease-out 0.1s backwards;
+            overflow: hidden;
         }
 
-        .add-section h2 {
-            font-size: 1.25rem;
+        .add-section-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 1.5rem;
+            color: var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        .add-section-toggle:hover {
+            background: var(--primary-light);
+        }
+
+        .add-section-toggle .toggle-left {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .add-section-toggle .chevron {
+            font-size: 0.85rem;
+            transition: transform 0.3s ease;
+        }
+
+        .add-section.expanded .add-section-toggle .chevron {
+            transform: rotate(180deg);
+        }
+
+        .add-section-body {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.35s ease;
+            padding: 0 2rem;
+        }
+
+        .add-section.expanded .add-section-body {
+            max-height: 300px;
+            opacity: 1;
+            padding: 0 2rem 1.75rem 2rem;
         }
 
         .form-row {
@@ -585,20 +624,25 @@
 
     <div class="container">
         <!-- Add Link Form -->
-        <div class="add-section">
-            <h2>➕ Adicionar Novo Link</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="link-name">Nome do Link</label>
-                    <input type="text" id="link-name" placeholder="Ex: Planilha de Controle TI">
+        <div class="add-section" id="add-section">
+            <button class="add-section-toggle" onclick="toggleAddSection()">
+                <span class="toggle-left">➕ Adicionar Novo Link</span>
+                <span class="chevron">▼</span>
+            </button>
+            <div class="add-section-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="link-name">Nome do Link</label>
+                        <input type="text" id="link-name" placeholder="Ex: Planilha de Controle TI">
+                    </div>
+                    <div class="form-group">
+                        <label for="link-url">URL (Endereço)</label>
+                        <input type="url" id="link-url" placeholder="https://exemplo.com/planilha">
+                    </div>
+                    <button class="btn btn-primary" id="btn-add" onclick="addLink()">
+                        ➕ Adicionar
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="link-url">URL (Endereço)</label>
-                    <input type="url" id="link-url" placeholder="https://exemplo.com/planilha">
-                </div>
-                <button class="btn btn-primary" id="btn-add" onclick="addLink()">
-                    ➕ Adicionar
-                </button>
             </div>
         </div>
 
@@ -673,6 +717,19 @@
             if (e.key === 'Enter') addLink();
         });
 
+        function toggleAddSection(forceState) {
+            const section = document.getElementById('add-section');
+            if (typeof forceState === 'boolean') {
+                section.classList.toggle('expanded', forceState);
+            } else {
+                section.classList.toggle('expanded');
+            }
+            // Auto-focus name input when expanding
+            if (section.classList.contains('expanded')) {
+                setTimeout(() => document.getElementById('link-name').focus(), 350);
+            }
+        }
+
         async function loadLinks() {
             try {
                 const res = await fetch(API_BASE);
@@ -746,6 +803,7 @@
 
                 nameInput.value = '';
                 urlInput.value = '';
+                toggleAddSection(false);
                 showToast('Link adicionado com sucesso!', 'success');
                 await loadLinks();
             } catch (err) {
