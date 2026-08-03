@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from .database import get_all_vacations, add_vacation, update_vacation, delete_vacation
+from .database import get_all_links, add_link, update_link, delete_link
 from datetime import datetime, timedelta
 import os
 
@@ -23,6 +24,10 @@ class VacationCreate(BaseModel):
     data_fim: str = ""
     dias_ferias: int = 0
     status: str = ""
+
+class LinkCreate(BaseModel):
+    nome: str
+    url: str
 
 def get_return_day(data_fim_str):
     if not data_fim_str:
@@ -159,6 +164,36 @@ def calculate_dates(req: DateCalcRequest):
         return {"data_inicio": req.data_inicio, "data_fim": fim.strftime("%Y-%m-%d"), "dias_ferias": req.dias_ferias}
     else:
         return req.dict()
+
+# ===== Links Endpoints =====
+
+@app.get("/api/links")
+def read_links():
+    records = get_all_links()
+    return {"data": records}
+
+@app.post("/api/links")
+def create_link(link: LinkCreate):
+    data = {"nome": link.nome, "url": link.url}
+    success, msg = add_link(data)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to save link: {msg}")
+    return {"message": "Link added successfully"}
+
+@app.put("/api/links/{id}")
+def edit_link(id: int, link: LinkCreate):
+    data = {"nome": link.nome, "url": link.url}
+    success, msg = update_link(id, data)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to update link: {msg}")
+    return {"message": "Link updated successfully"}
+
+@app.delete("/api/links/{id}")
+def remove_link(id: int):
+    success, msg = delete_link(id)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to delete link: {msg}")
+    return {"message": "Link deleted successfully"}
 
 frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
 app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")

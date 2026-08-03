@@ -10,25 +10,33 @@ def get_connection():
     return conn
 
 def init_db():
-    if not os.path.exists(DB_FILE):
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS vacations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            data_inicio TEXT NOT NULL,
-            data_fim TEXT,
-            dia_retorno TEXT,
-            dias_ferias INTEGER,
-            status TEXT
-        )
-        ''')
-        conn.commit()
-        conn.close()
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS vacations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        data_inicio TEXT NOT NULL,
+        data_fim TEXT,
+        dia_retorno TEXT,
+        dias_ferias INTEGER,
+        status TEXT
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS links (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        url TEXT NOT NULL
+    )
+    ''')
+    conn.commit()
+    conn.close()
 
 # Ensure the DB is initialized when this module is imported
 init_db()
+
+# ===== Vacations CRUD =====
 
 def get_all_vacations():
     try:
@@ -115,6 +123,77 @@ def delete_vacation(id: int):
             conn.close()
             return False, "Record not found"
             
+        conn.close()
+        return True, "Success"
+    except Exception as e:
+        return False, str(e)
+
+# ===== Links CRUD =====
+
+def get_all_links():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM links ORDER BY id ASC")
+        rows = cursor.fetchall()
+        records = []
+        for row in rows:
+            records.append({
+                "id": row["id"],
+                "nome": row["nome"],
+                "url": row["url"]
+            })
+        conn.close()
+        return records
+    except Exception as e:
+        print(f"Error reading links from SQLite: {e}")
+        return []
+
+def add_link(link_data: dict):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO links (nome, url) VALUES (?, ?)
+        ''', (
+            link_data.get("nome", ""),
+            link_data.get("url", "")
+        ))
+        conn.commit()
+        conn.close()
+        return True, "Success"
+    except Exception as e:
+        return False, str(e)
+
+def update_link(id: int, link_data: dict):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+        UPDATE links SET nome = ?, url = ? WHERE id = ?
+        ''', (
+            link_data.get("nome", ""),
+            link_data.get("url", ""),
+            id
+        ))
+        conn.commit()
+        if cursor.rowcount == 0:
+            conn.close()
+            return False, "Record not found"
+        conn.close()
+        return True, "Success"
+    except Exception as e:
+        return False, str(e)
+
+def delete_link(id: int):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM links WHERE id = ?', (id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            conn.close()
+            return False, "Record not found"
         conn.close()
         return True, "Success"
     except Exception as e:
