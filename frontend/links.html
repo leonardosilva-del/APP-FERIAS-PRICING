@@ -42,11 +42,57 @@
                 radial-gradient(at 100% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%);
         }
 
-        /* Header */
+        /* Header e Botões de Login */
+        .login-actions {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .btn-login,
+        .btn-logout {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-login {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-login:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            display: none;
+        }
+
+        .btn-logout:hover {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
         .page-header {
             text-align: center;
             margin-bottom: 2.5rem;
             animation: fadeInDown 0.6s ease-out;
+            padding-top: 1rem;
         }
 
         .back-button {
@@ -66,6 +112,7 @@
             font-weight: 500;
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            z-index: 10;
         }
 
         .back-button:hover {
@@ -96,6 +143,11 @@
         }
 
         /* Add Link Section */
+        #add-section-wrapper {
+            display: none;
+            /* Escondido por padrão, só mostra logado */
+        }
+
         .add-section {
             background: var(--card-bg);
             border-radius: 1rem;
@@ -511,6 +563,10 @@
             background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
+        .toast.info {
+            background: #3b82f6;
+        }
+
         /* Confirm Dialog */
         .confirm-overlay {
             display: none;
@@ -593,8 +649,10 @@
                 grid-template-columns: 1fr;
             }
 
-            .page-header h1 {
-                font-size: 1.8rem;
+            .login-actions {
+                position: static;
+                justify-content: center;
+                margin-bottom: 1.5rem;
             }
 
             .back-button {
@@ -674,31 +732,40 @@
         ← Voltar
     </a>
 
+    <!-- Botões de Login no topo direito -->
+    <div class="login-actions">
+        <button id="btn-login-header" class="btn-login" onclick="window.abrirModalLogin()">Acesso Gestão</button>
+        <button id="btn-logout-header" class="btn-logout" onclick="window.fazerLogout()">Sair (Logado)</button>
+    </div>
+
     <div class="page-header">
         <h1>🔗 Links Essenciais</h1>
         <p>Gerencie e acesse rapidamente seus links mais importantes.</p>
     </div>
 
     <div class="container">
-        <!-- Add Link Form -->
-        <div class="add-section" id="add-section">
-            <button class="add-section-toggle" onclick="window.toggleAddSection()">
-                <span class="toggle-left">➕ Adicionar Novo Link</span>
-                <span class="chevron">▼</span>
-            </button>
-            <div class="add-section-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="link-name">Nome do Link</label>
-                        <input type="text" id="link-name" placeholder="Ex: Planilha de Controle TI">
+
+        <!-- Add Link Form (Envelopado para esconder de quem não tem login) -->
+        <div id="add-section-wrapper">
+            <div class="add-section" id="add-section">
+                <button class="add-section-toggle" onclick="window.toggleAddSection()">
+                    <span class="toggle-left">➕ Adicionar Novo Link</span>
+                    <span class="chevron">▼</span>
+                </button>
+                <div class="add-section-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="link-name">Nome do Link</label>
+                            <input type="text" id="link-name" placeholder="Ex: Planilha de Controle TI">
+                        </div>
+                        <div class="form-group">
+                            <label for="link-url">URL (Endereço)</label>
+                            <input type="url" id="link-url" placeholder="https://exemplo.com/planilha">
+                        </div>
+                        <button class="btn btn-primary" id="btn-add" onclick="window.addLink()">
+                            ➕ Adicionar
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label for="link-url">URL (Endereço)</label>
-                        <input type="url" id="link-url" placeholder="https://exemplo.com/planilha">
-                    </div>
-                    <button class="btn btn-primary" id="btn-add" onclick="window.addLink()">
-                        ➕ Adicionar
-                    </button>
                 </div>
             </div>
         </div>
@@ -719,6 +786,23 @@
         <!-- Links List -->
         <div class="links-list" id="links-list">
             <!-- Links will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Modal Login -->
+    <div id="modalLogin" class="modal-overlay">
+        <div class="modal">
+            <h2>Acesso da Gestão</h2>
+            <div class="form-group">
+                <input type="email" id="login-email" placeholder="Seu e-mail">
+            </div>
+            <div class="form-group">
+                <input type="password" id="login-senha" placeholder="Sua senha">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="window.fecharModalLogin()">Cancelar</button>
+                <button class="btn btn-primary" onclick="window.fazerLogin()">Entrar</button>
+            </div>
         </div>
     </div>
 
@@ -759,28 +843,59 @@
     <div class="toast" id="toast"></div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        // Importando a configuração centralizada (agora com banco e auth)
+        import { db, auth } from "./firebase-config.js";
+        import { ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD7eH-pHtJ0zor5rDmQavV5CZZbY6fWFuE",
-            authDomain: "painel-pricing-96298.firebaseapp.com",
-            databaseURL: "https://painel-pricing-96298-default-rtdb.firebaseio.com",
-            projectId: "painel-pricing-96298",
-            storageBucket: "painel-pricing-96298.firebasestorage.app",
-            messagingSenderId: "1079180686361",
-            appId: "1:1079180686361:web:9dfd373651db673a41e688"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
         const linksRef = ref(db, 'links_essenciais');
 
         let allLinks = [];
         let editingId = null;
         let deletingId = null;
+        window.usuarioLogado = false; // Controle global de login
 
-        // Listener do Firebase
+        // --- SISTEMA DE LOGIN ---
+        window.abrirModalLogin = function () { document.getElementById('modalLogin').classList.add('active'); }
+        window.fecharModalLogin = function () { document.getElementById('modalLogin').classList.remove('active'); }
+
+        window.fazerLogin = function () {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+            signInWithEmailAndPassword(auth, email, senha)
+                .then(() => {
+                    window.fecharModalLogin();
+                    window.showToast("Acesso liberado!", "success");
+                })
+                .catch((err) => {
+                    window.showToast("Erro ao entrar. Verifique o e-mail e senha.", "error");
+                });
+        };
+
+        window.fazerLogout = function () {
+            signOut(auth).then(() => {
+                window.showToast("Você saiu do modo gestão.", "info");
+            });
+        };
+
+        // Escuta as mudanças de login para esconder/mostrar os botões
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.usuarioLogado = true;
+                document.getElementById('btn-login-header').style.display = 'none';
+                document.getElementById('btn-logout-header').style.display = 'inline-block';
+                document.getElementById('add-section-wrapper').style.display = 'block';
+            } else {
+                window.usuarioLogado = false;
+                document.getElementById('btn-login-header').style.display = 'inline-block';
+                document.getElementById('btn-logout-header').style.display = 'none';
+                document.getElementById('add-section-wrapper').style.display = 'none';
+            }
+            window.filterLinks(); // Re-renderiza a lista para atualizar a visualização dos botões
+        });
+
+
+        // --- LISTENER DO BANCO DE DADOS ---
         onValue(linksRef, (snapshot) => {
             allLinks = [];
             snapshot.forEach((childSnapshot) => {
@@ -830,7 +945,7 @@
                     <div class="empty-state">
                         <div class="empty-icon">🔗</div>
                         <h3>Nenhum link encontrado</h3>
-                        <p>Adicione links importantes usando o formulário acima.</p>
+                        <p>${window.usuarioLogado ? 'Adicione links importantes usando o formulário acima.' : 'Aguarde a gestão publicar links.'}</p>
                     </div>
                 `;
                 return;
@@ -839,7 +954,7 @@
             container.innerHTML = links.map(link => `
                 <div class="link-card" data-id="${link.id}">
                     <div class="link-info">
-                        <div class="drag-handle" title="Segure e arraste para reordenar">⋮⋮</div>
+                        ${window.usuarioLogado ? '<div class="drag-handle" title="Segure e arraste para reordenar">⋮⋮</div>' : ''}
                         <div class="link-icon">🔗</div>
                         <div class="link-details">
                             <div class="link-name">${window.escapeHtml(link.nome)}</div>
@@ -850,24 +965,26 @@
                         <button class="btn-icon btn-open" title="Abrir link" onclick="window.openLink('${window.escapeJs(link.url)}')">
                             🔗
                         </button>
+                        ${window.usuarioLogado ? `
                         <button class="btn-icon btn-edit" title="Editar" onclick="window.openEditModal('${link.id}', '${window.escapeJs(link.nome)}', '${window.escapeJs(link.url)}')">
                             ✏️
                         </button>
                         <button class="btn-icon btn-delete" title="Excluir" onclick="window.openConfirmDialog('${link.id}')">
                             🗑️
                         </button>
+                        ` : ''}
                     </div>
                 </div>
             `).join('');
 
-            // Inicia o Drag and Drop apenas se a barra de pesquisa estiver vazia
+            // Inicia o Drag and Drop apenas se a barra de pesquisa estiver vazia E o usuário estiver logado
             const searchInput = document.getElementById('search-input').value.trim();
 
             if (window.sortableLinks) {
                 window.sortableLinks.destroy();
             }
 
-            if (searchInput === '') {
+            if (searchInput === '' && window.usuarioLogado) {
                 window.sortableLinks = new Sortable(container, {
                     animation: 150,
                     ghostClass: 'sortable-ghost',
@@ -912,6 +1029,8 @@
         }
 
         window.addLink = function () {
+            if (!window.usuarioLogado) return; // Trava de segurança extra
+
             const nameInput = document.getElementById('link-name');
             const urlInput = document.getElementById('link-url');
             const nome = nameInput.value.trim();
@@ -954,6 +1073,8 @@
         }
 
         window.saveEdit = function () {
+            if (!window.usuarioLogado) return; // Trava de segurança extra
+
             const nome = document.getElementById('edit-name').value.trim();
             const url = document.getElementById('edit-url').value.trim();
 
@@ -982,6 +1103,8 @@
         }
 
         window.confirmDelete = function () {
+            if (!window.usuarioLogado) return; // Trava de segurança extra
+
             remove(ref(db, 'links_essenciais/' + deletingId)).then(() => {
                 window.closeConfirmDialog();
                 window.showToast('Link excluído com sucesso!', 'success');
@@ -1024,10 +1147,15 @@
         document.getElementById('confirm-dialog').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) window.closeConfirmDialog();
         });
+        document.getElementById('modalLogin').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) window.fecharModalLogin();
+        });
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 window.closeEditModal();
                 window.closeConfirmDialog();
+                window.fecharModalLogin();
             }
         });
     </script>

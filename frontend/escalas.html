@@ -237,7 +237,7 @@
             <button id="btn-login-header" class="btn-login" onclick="abrirModalLogin()">Acesso Gestão</button>
             <button id="btn-logout-header" class="btn-logout" onclick="fazerLogout()">Sair (Logado)</button>
             
-            <!-- Importar Excel (Escondido por padrão, movido para dentro da div de gestão caso queira alinhar, ou deixado aqui e oculto por JS) -->
+            <!-- Importar Excel (Escondido por padrão) -->
             <input type="file" id="excel-file" accept=".xlsx, .xls" style="display: none;" onchange="processarExcel(event)">
             <button id="btn-import-header" class="btn-import" style="display: none;" onclick="document.getElementById('excel-file').click();">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -278,23 +278,11 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js"; // <--- ADICIONADO AUTH
+    // Importando a configuração centralizada
+    import { db, auth } from "./firebase-config.js";
+    import { ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+    import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyD7eH-pHtJ0zor5rDmQavV5CZZbY6fWFuE",
-        authDomain: "painel-pricing-96298.firebaseapp.com",
-        databaseURL: "https://painel-pricing-96298-default-rtdb.firebaseio.com",
-        projectId: "painel-pricing-96298",
-        storageBucket: "painel-pricing-96298.firebasestorage.app",
-        messagingSenderId: "1079180686361",
-        appId: "1:1079180686361:web:9dfd373651db673a41e688"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app); // <--- INICIALIZAÇÃO DO AUTH
     const escalasRef = ref(db, 'escalas_plantao');
     
     let usuarioLogado = false; // Controle de acesso

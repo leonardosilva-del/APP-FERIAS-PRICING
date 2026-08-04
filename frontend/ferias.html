@@ -375,18 +375,11 @@
       loadVacations();
     });
   </script>
+  
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyD7eH-pHtJ0zor5rDmQavV5CZZbY6fWFuE",
-      authDomain: "painel-pricing-96298.firebaseapp.com",
-      projectId: "painel-pricing-96298",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    // Importando a configuração centralizada
+    import { auth } from "./firebase-config.js";
+    import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
     window.showToast = function (message, type = 'success') {
       const container = document.getElementById('toast-container');
