@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace | Agenda Premium</title>
+    <title>Agenda Pricing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -159,12 +159,24 @@
             pointer-events: auto;
         }
 
-        .toast.success { background-color: var(--status-success); }
-        .toast.error { background-color: var(--status-danger); }
+        .toast.success {
+            background-color: var(--status-success);
+        }
+
+        .toast.error {
+            background-color: var(--status-danger);
+        }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         /* Modal Nova Demanda */
@@ -694,7 +706,7 @@
                 </svg> Voltar
             </a>
             <div class="logo" style="margin-left: 10px;">
-                <div class="logo-icon">DD</div> Workspace Pricing
+                <div class="logo-icon">DD</div> Agenda Pricing
             </div>
 
             <div class="week-selector">
@@ -773,7 +785,7 @@
         window.abrirModalDemanda = function (dataPadrao = "") {
             document.getElementById('modalDemanda').style.display = 'flex';
             document.getElementById('demanda-titulo').value = '';
-            document.getElementById('demanda-data').value = dataPadrao || new Date().toISOString().split('T')[0];
+            document.getElementById('demanda-data').value = dataPadrao || formataDataISO(new Date());
         }
 
         window.fecharModalDemanda = function () {
@@ -860,6 +872,33 @@
                 }
                 renderizarGrid();
             });
+        }
+
+        // ==========================================
+        // AUTOMAGIC ROLLOVER (TAREFAS ACUMULADAS)
+        // ==========================================
+        function verificarEAtualizarPendentes(tarefas) {
+            const hojeStr = formataDataISO(new Date());
+            let houveAtualizacao = false;
+
+            Object.keys(tarefas).forEach(taskId => {
+                const task = tarefas[taskId];
+
+                // Se a tarefa estiver "Pendente" e a data for estritamente anterior a hoje
+                if (task.status === "Pendente" && task.data < hojeStr) {
+                    const taskRef = ref(db, 'agenda_tarefas/' + taskId);
+                    update(taskRef, {
+                        data: hojeStr,
+                        transferidaDe: task.data,
+                        transferidaEm: new Date().toISOString()
+                    });
+                    houveAtualizacao = true;
+                }
+            });
+
+            if (houveAtualizacao) {
+                window.showToast("Tarefas pendentes foram transferidas para hoje!", "info");
+            }
         }
 
         // ==========================================
@@ -990,7 +1029,12 @@
         function carregarTarefas() {
             const tarefasRef = ref(db, 'agenda_tarefas');
             onValue(tarefasRef, (snapshot) => {
-                listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
+                if (snapshot.exists()) {
+                    listaTarefasGlobal = snapshot.val();
+                    verificarEAtualizarPendentes(listaTarefasGlobal);
+                } else {
+                    listaTarefasGlobal = {};
+                }
                 renderizarGrid();
             });
         }
