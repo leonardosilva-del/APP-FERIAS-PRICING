@@ -164,26 +164,28 @@
   </div>
 
   <script>
-    // --- FUNÇÃO EXPORTAR PDF ---
+    // --- FUNÇÃO EXPORTAR PDF (Corrigida para não cortar a tela) ---
     window.exportarPDF = function () {
-      // Adiciona classe para esconder os botões indesejados durante a captura
       document.body.classList.add('gerando-pdf');
 
       const element = document.getElementById('root');
 
       const opt = {
-        margin: [10, 10, 10, 10], // Margens do PDF
+        margin: 10,
         filename: 'Controle_Ferias_Pricing.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, windowWidth: 1000 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } // Formato paisagem para caber a tabela
+        html2canvas: {
+          scale: 2,
+          scrollX: 0,
+          scrollY: 0,
+          useCORS: true
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
       if (window.showToast) window.showToast("Preparando o seu PDF...", "info");
 
-      // Gera o PDF
       html2pdf().set(opt).from(element).save().then(() => {
-        // Remove a classe para os botões voltarem a aparecer
         document.body.classList.remove('gerando-pdf');
         if (window.showToast) window.showToast("PDF baixado com sucesso!", "success");
       }).catch(err => {
@@ -302,7 +304,6 @@
         }
       });
 
-      // LÓGICA ATUALIZADA AQUI: Carrega e ordena as férias
       const loadVacations = async () => {
         try {
           const res = await fetch("/api/vacations");
@@ -314,7 +315,6 @@
             return;
           }
 
-          // ORDENAÇÃO POR DATA DE INÍCIO
           currentVacations.sort((a, b) => {
             if (!a["Data de Início"]) return 1;
             if (!b["Data de Início"]) return -1;
@@ -448,7 +448,6 @@
   </script>
 
   <script type="module">
-    // Importando a configuração centralizada
     import { auth } from "./firebase-config.js";
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
