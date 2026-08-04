@@ -773,7 +773,8 @@
         <!-- Search -->
         <div class="search-bar">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-input" placeholder="Buscar link por nome..." oninput="window.filterLinks()">
+            <input type="text" id="search-input" placeholder="Buscar link por nome..." oninput="window.filterLinks()"
+                autocomplete="off">
         </div>
 
         <!-- Links Counter -->
@@ -843,7 +844,6 @@
     <div class="toast" id="toast"></div>
 
     <script type="module">
-        // Importando a configuração centralizada (agora com banco e auth)
         import { db, auth } from "./firebase-config.js";
         import { ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
         import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
