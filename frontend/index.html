@@ -339,8 +339,9 @@
     <!-- MOTOR DE AUTENTICAÇÃO -->
     <script type="module">
         import { auth, provider, db } from "./firebase-config.js";
-        import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // VERSÃO ATUALIZADA AQUI: 10.9.0
+        import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { ref, set, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         const loginSection = document.getElementById('login-section');
         const appSection = document.getElementById('app-section');
