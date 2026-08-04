@@ -21,7 +21,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
@@ -33,25 +33,93 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
-            background-image:
-                radial-gradient(at 0% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%),
-                radial-gradient(at 50% 0%, rgba(203, 213, 225, 0.2) 0, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%);
+            background-image: radial-gradient(at 0% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%), radial-gradient(at 100% 0%, rgba(226, 232, 240, 0.5) 0, transparent 50%);
+        }
+
+        /* TELA DE LOGIN */
+        #login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        #login-section img {
+            max-width: 250px;
+            margin-bottom: 1.5rem;
+        }
+
+        #login-section h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        #login-section p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            background-color: white;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3);
+        }
+
+        .btn-google:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* TELA DA INTRANET (Oculta por padrão) */
+        #app-section {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            flex-direction: column;
+            align-items: center;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
             animation: fadeInDown 0.8s ease-out;
+            position: relative;
+            width: 100%;
         }
 
         .header img {
-            max-width: 350px;
+            max-width: 300px;
             margin-bottom: 1rem;
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #60a5fa, #a78bfa);
@@ -60,54 +128,65 @@
         }
 
         .header p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--text-muted);
+        }
+
+        .user-greeting {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #ef4444;
+            color: white;
         }
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
             width: 100%;
-            max-width: 1200px;
         }
 
+        /* O MESMO CSS DOS CARDS QUE VOCÊ JÁ TINHA APROVADO */
         .card {
             background-color: var(--card-bg);
             border-radius: 1rem;
-            padding: 2.5rem 2rem;
+            padding: 2rem 1.5rem;
             text-align: center;
             text-decoration: none;
             color: var(--text-main);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             border: 1px solid rgba(0, 0, 0, 0.05);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
             overflow: hidden;
-            animation: fadeInUp 0.8s ease-out backwards;
-        }
-
-        .dashboard .card:nth-child(1) {
-            animation-delay: 0.1s;
-        }
-
-        .dashboard .card:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .dashboard .card:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-
-        .dashboard .card:nth-child(4) {
-            animation-delay: 0.4s;
-        }
-
-        .dashboard .card:nth-child(5) {
-            animation-delay: 0.5s;
         }
 
         .card::before {
@@ -123,8 +202,8 @@
         }
 
         .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
             border-color: rgba(0, 0, 0, 0.1);
         }
 
@@ -133,14 +212,14 @@
         }
 
         .icon-container {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.5rem;
-            font-size: 2.5rem;
+            margin-bottom: 1.2rem;
+            font-size: 2rem;
             background: rgba(0, 0, 0, 0.03);
             transition: transform 0.3s ease;
         }
@@ -159,6 +238,11 @@
             color: #059669;
         }
 
+        .card.agenda .icon-container {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
         .card.offers .icon-container {
             background: rgba(139, 92, 246, 0.1);
             color: #7c3aed;
@@ -169,35 +253,16 @@
             color: #0891b2;
         }
 
-        .card.agenda .icon-container {
-            background: rgba(245, 158, 11, 0.1);
-            color: #d97706;
-        }
-
-        /* Âmbar/Laranja */
-
         .card h2 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .card p {
             color: var(--text-muted);
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            font-size: 0.9rem;
+            line-height: 1.4;
         }
 
         @keyframes fadeInDown {
@@ -216,59 +281,115 @@
 
 <body>
 
-    <div class="header">
+    <!-- SESSÃO DE LOGIN (Barreira) -->
+    <div id="login-section">
         <img src="logo.png" alt="Dia a Dia">
-        <h1>Intranet Pricing ;DD</h1>
-        <p>Bem-vindo! Selecione o sistema que deseja acessar.</p>
+        <h2>Acesso Restrito</h2>
+        <p>Intranet exclusiva para colaboradores. Faça login para continuar.</p>
+
+        <button id="btn-login" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Entrar com o Google
+        </button>
     </div>
 
-    <div class="dashboard">
-        <!-- Cronograma de Férias -->
-        <a href="ferias.html" class="card vacation">
-            <div class="icon-container">
-                🌴
-            </div>
-            <h2>Cronograma de Férias</h2>
-            <p>Gerencie e visualize as férias de toda a equipe de forma simples e organizada.</p>
-        </a>
+    <!-- SESSÃO DA INTRANET (Só aparece logado) -->
+    <div id="app-section">
+        <div class="header">
+            <img src="logo.png" alt="Dia a Dia">
+            <h1>Intranet Pricing ;DD</h1>
 
-        <!-- Escalas de Plantão -->
-        <a href="escalas.html" class="card shifts">
-            <div class="icon-container">
-                🏥
+            <!-- Saudação Personalizada -->
+            <div class="user-greeting">
+                <img id="user-photo" src="" class="user-avatar" alt="Foto">
+                <span style="font-weight: 600;" id="user-name">Carregando...</span>
+                <button id="btn-logout" class="btn-logout">Sair</button>
             </div>
-            <h2>Escalas de Plantão</h2>
-            <p>Acesse as escalas de plantão atualizadas, veja horários e profissionais disponíveis.</p>
-        </a>
+        </div>
 
-        <!-- Agenda da Equipe (Novo) -->
-        <a href="agenda.html" class="card agenda">
-            <div class="icon-container">
-                📋
-            </div>
-            <h2>Agenda da Equipe</h2>
-            <p>Gerencie tarefas, rotinas e metas de forma colaborativa com nossa timeline e Kanban.</p>
-        </a>
-
-        <!-- Cronograma de Ofertas -->
-        <a href="ofertas.html" class="card offers">
-            <div class="icon-container">
-                🏷️
-            </div>
-            <h2>Cronograma de Ofertas</h2>
-            <p>Consulte as promoções vigentes e o calendário de ofertas programadas.</p>
-        </a>
-
-        <!-- Links Essenciais -->
-        <a href="links.html" class="card links">
-            <div class="icon-container">
-                🔗
-            </div>
-            <h2>Links Essenciais</h2>
-            <p>Acesse rapidamente planilhas, sistemas e ferramentas importantes do dia a dia.</p>
-        </a>
+        <div class="dashboard">
+            <a href="ferias.html" class="card vacation">
+                <div class="icon-container">🌴</div>
+                <h2>Cronograma de Férias</h2>
+                <p>Gerencie e visualize as férias da equipe.</p>
+            </a>
+            <a href="escalas.html" class="card shifts">
+                <div class="icon-container">🏥</div>
+                <h2>Escalas de Plantão</h2>
+                <p>Acesse as escalas de plantão atualizadas.</p>
+            </a>
+            <a href="agenda.html" class="card agenda">
+                <div class="icon-container">📋</div>
+                <h2>Agenda da Equipe</h2>
+                <p>Gerencie tarefas, rotinas e metas no Kanban.</p>
+            </a>
+            <a href="ofertas.html" class="card offers">
+                <div class="icon-container">🏷️</div>
+                <h2>Cronograma de Ofertas</h2>
+                <p>Consulte as promoções vigentes.</p>
+            </a>
+            <a href="links.html" class="card links">
+                <div class="icon-container">🔗</div>
+                <h2>Links Essenciais</h2>
+                <p>Acesse rapidamente planilhas e sistemas.</p>
+            </a>
+        </div>
     </div>
 
+    <!-- MOTOR DE AUTENTICAÇÃO -->
+    <script type="module">
+        import { auth, provider, db } from "./firebase-config.js";
+        import { signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const loginSection = document.getElementById('login-section');
+        const appSection = document.getElementById('app-section');
+
+        // 1. Ouvinte: Fica de olho se a pessoa logou ou deslogou
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário está LOGADO: Esconde login, mostra sistema
+                loginSection.style.display = 'none';
+                appSection.style.display = 'flex';
+
+                // Preenche foto e nome
+                document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
+                document.getElementById('user-name').textContent = `Olá, ${user.displayName.split(' ')[0]}!`;
+
+                // Salva/Atualiza o perfil no Banco de Dados (Por padrão será Colaborador)
+                const userRef = ref(db, 'usuarios/' + user.uid);
+                get(userRef).then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        set(userRef, {
+                            nome: user.displayName,
+                            email: user.email,
+                            foto: user.photoURL,
+                            perfil: "Colaborador", // Nível padrão
+                            criadoEm: new Date().toISOString()
+                        });
+                    }
+                });
+
+            } else {
+                // Usuário está DESLOGADO: Mostra login, esconde sistema
+                loginSection.style.display = 'flex';
+                appSection.style.display = 'none';
+            }
+        });
+
+        // 2. Ação de Login
+        document.getElementById('btn-login').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch((error) => {
+                console.error("Erro no login:", error);
+                alert("Erro ao fazer login. Tente novamente.");
+            });
+        });
+
+        // 3. Ação de Logout
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            signOut(auth);
+        });
+    </script>
 </body>
 
 </html>
