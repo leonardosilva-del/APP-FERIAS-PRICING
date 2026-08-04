@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace | Agenda Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SortableJS para o futuro Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <style>
+        :root {
+            /* Paleta de Cores SaaS Moderna */
+            --bg-body: #f3f4f6;
+            --bg-surface: #ffffff;
+            --bg-swimlane: #f8fafc;
+            
+            --text-900: #0f172a;
+            --text-600: #475569;
+            --text-400: #94a3b8;
+            
+            --border-light: #e2e8f0;
+            --border-hover: #cbd5e1;
+            
+            --brand-primary: #6366f1; /* Indigo vibrante */
+            --brand-primary-hover: #4f46e5;
+            --brand-secondary: #8b5cf6;
+            
+            --status-success: #10b981;
+            --status-success-bg: #d1fae5;
+            --status-warning: #f59e0b;
+            --status-danger: #ef4444;
+            --status-danger-hover: #dc2626;
+            --status-info: #0ea5e9;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-900);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* --- PADRÃO INTRANET: BOTOES, MODAL E TOASTS --- */
+        .back-btn {
+            text-decoration: none; 
+            color: var(--text-600); 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            padding: 8px 16px; 
+            border-radius: var(--radius-md); 
+            transition: all 0.2s; 
+            border: 1px solid var(--border-light);
+            background-color: var(--bg-swimlane);
+        }
+
+        .back-btn:hover {
+            background-color: var(--bg-surface);
+            color: var(--text-900);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-login, .btn-logout { 
+            padding: 8px 15px; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-login { background-color: var(--text-600); color: white; }
+        .btn-login:hover { background-color: var(--text-900); }
+        .btn-logout { background-color: var(--status-danger); color: white; display: none; }
+        .btn-logout:hover { background-color: var(--status-danger-hover); }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; box-shadow: var(--shadow-md); animation: slideIn 0.3s forwards; pointer-events: auto; }
+        .toast.success { background-color: var(--status-success); }
+        .toast.error { background-color: var(--status-danger); }
+        .toast.info { background-color: var(--status-info); }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; backdrop-filter: blur(2px); }
+        .modal-content { background: var(--bg-surface); padding: 30px; border-radius: var(--radius-lg); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; box-shadow: var(--shadow-lg); box-sizing: border-box; }
+        .modal-content h2 { margin: 0 0 10px 0; color: var(--text-900); font-size: 1.5rem; text-align: center; }
+        .modal-content input { padding: 12px; border: 1px solid var(--border-hover); border-radius: var(--radius-md); font-family: inherit; font-size: 1rem; width: 100%; box-sizing: border-box; outline: none; background: var(--bg-swimlane); }
+        .modal-content input:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); background: var(--bg-surface); }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.2s; }
+        .btn-save { background-color: var(--brand-primary); color: white; }
+        .btn-save:hover { background-color: var(--brand-primary-hover); }
+        .btn-cancel { background-color: var(--bg-swimlane); color: var(--text-600); border: 1px solid var(--border-light); }
+        .btn-cancel:hover { background-color: var(--border-light); color: var(--text-900); }
+
+        /* --- Header Superior da Agenda --- */
+        .topbar {
+            background: var(--bg-surface);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-light);
+            z-index: 30;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-900);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-body);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-600);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover { background: var(--bg-surface); color: var(--text-900); box-shadow: var(--shadow-sm); }
+
+        .week-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-600);
+            padding: 0 0.5rem;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary { background: var(--bg-surface); color: var(--text-600); border-color: var(--border-light); }
+        .btn-secondary:hover { border-color: var(--border-hover); color: var(--text-900); box-shadow: var(--shadow-sm); }
+        
+        .btn-primary { background: var(--brand-primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+        .btn-primary:hover { background: var(--brand-primary-hover); transform: translateY(-1px); box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3); }
+
+        /* --- Workspace Core --- */
+        .workspace {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .board-container {
+            flex: 1;
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            overflow: auto; 
+            position: relative;
+        }
+
+        /* --- Grid do Kanban --- */
+        .board-grid {
+            display: grid;
+            grid-template-columns: 280px repeat(6, minmax(280px, 1fr)); 
+            min-width: max-content;
+        }
+
+        /* Sticky Header dos Dias */
+        .day-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-surface);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .day-header.sticky-left {
+            left: 0;
+            z-index: 30; 
+            background: var(--bg-surface);
+        }
+
+        .day-info { display: flex; flex-direction: column; }
+        .day-name { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-400); font-weight: 600; }
+        .day-date { font-size: 1rem; font-weight: 700; color: var(--text-900); margin-top: 0.1rem; }
+        
+        .day-header.today { border-bottom: 3px solid var(--brand-primary); }
+        .day-header.today .day-date { color: var(--brand-primary); }
+
+        /* Célula do Colaborador (Sticky Left) */
+        .user-cell {
+            position: sticky;
+            left: 0;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1.5rem;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-ring-container {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: conic-gradient(var(--status-success) var(--progress), var(--border-light) 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-ring-inner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-900);
+            position: absolute;
+        }
+
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-size: 0.95rem; font-weight: 600; color: var(--text-900); }
+        .user-role { font-size: 0.75rem; color: var(--text-400); margin-top: 0.1rem; }
+
+        /* Raias (Swimlanes) de Tarefas */
+        .task-lane {
+            padding: 1rem;
+            background: var(--bg-swimlane);
+            border-right: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 180px; 
+        }
+
+        /* --- Cards de Tarefa --- */
+        .task-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; 
+            position: relative;
+            border-left: 3px solid var(--brand-primary); 
+        }
+
+        .task-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+        }
+
+        .task-card:active { cursor: grabbing; transform: scale(0.98); }
+
+        .task-card.priority-high { border-left-color: var(--status-danger); }
+        .task-card.priority-low { border-left-color: var(--status-info); }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .tags { display: flex; gap: 0.4rem; }
+        .tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .tag.base { background: #e0e7ff; color: #4338ca; }
+        .tag.extra { background: #fef3c7; color: #b45309; }
+
+        .task-options {
+            color: var(--text-400);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        .task-options:hover { background: var(--bg-body); color: var(--text-900); }
+
+        .task-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-900);
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-light);
+            padding-top: 0.5rem;
+            margin-top: auto;
+        }
+
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--text-600);
+            font-weight: 500;
+        }
+
+        .custom-checkbox input { display: none; }
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-hover);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .custom-checkbox input:checked + .checkmark {
+            background-color: var(--status-success);
+            border-color: var(--status-success);
+        }
+        .custom-checkbox input:checked + .checkmark::after {
+            content: "✓";
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .task-card.is-done {
+            background: #f8fafc;
+            border-left-color: var(--status-success);
+            opacity: 0.8;
+        }
+        .task-card.is-done .task-title {
+            text-decoration: line-through;
+            color: var(--text-400);
+        }
+
+        .add-task-btn {
+            border: 1px dashed var(--border-hover);
+            background: transparent;
+            color: var(--text-400);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: auto; 
+        }
+        .add-task-btn:hover {
+            border-color: var(--brand-primary);
+            color: var(--brand-primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* --- OVERLAY E SLIDE-OVER (PAINEL DE CHAT DA TAREFA) --- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .slide-over {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: var(--bg-surface);
+            z-index: 50;
+            box-shadow: -4px 0 25px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-over.active {
+            right: 0;
+        }
+
+        .slide-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: var(--bg-surface);
+        }
+
+        .slide-title-area {
+            flex: 1;
+            padding-right: 1rem;
+        }
+
+        .slide-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-900);
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-close-slide {
+            background: var(--bg-swimlane);
+            border: 1px solid var(--border-light);
+            color: var(--text-600);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-close-slide:hover {
+            background: var(--status-danger);
+            color: white;
+            border-color: var(--status-danger);
+        }
+
+        .chat-feed {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: var(--bg-swimlane);
+        }
+
+        /* Balões de Chat */
+        .chat-msg {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .chat-msg.me {
+            flex-direction: row-reverse;
+        }
+
+        .chat-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--border-hover);
+            color: var(--text-600);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .chat-msg.me .chat-avatar {
+            background: var(--brand-primary);
+            color: white;
+        }
+
+        .chat-content {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .chat-bubble {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            padding: 0.85rem 1rem;
+            border-radius: 12px 12px 12px 2px;
+            font-size: 0.9rem;
+            color: var(--text-900);
+            line-height: 1.5;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chat-msg.me .chat-bubble {
+            background: var(--brand-primary);
+            color: white;
+            border-color: var(--brand-primary);
+            border-radius: 12px 12px 2px 12px;
+        }
+
+        .chat-meta {
+            font-size: 0.7rem;
+            color: var(--text-400);
+            margin-top: 0.3rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-msg.me .chat-meta {
+            justify-content: flex-end;
+        }
+
+        /* Rodapé de Input do Chat */
+        .chat-input-area {
+            padding: 1rem 1.5rem;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .chat-input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.5rem;
+            border: 1px solid var(--border-hover);
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+            background: var(--bg-swimlane);
+        }
+
+        .chat-input:focus {
+            border-color: var(--brand-primary);
+            background: var(--bg-surface);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-attach {
+            position: absolute;
+            left: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-400);
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .btn-attach:hover { color: var(--brand-primary); }
+
+        .btn-send {
+            background: var(--brand-primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-send:hover {
+            background: var(--brand-primary-hover);
+            transform: scale(1.05);
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Padrão Intranet: Toasts e Modal -->
+    <div id="toast-container"></div>
+
+    <div id="modalLogin" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Acesso do Usuário</h2>
+            <input type="email" id="login-email" placeholder="Seu e-mail cadastrado">
+            <input type="password" id="login-senha" placeholder="Sua senha">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="fecharModalLogin()">Cancelar</button>
+                <button class="btn-save" onclick="fazerLogin()">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <!-- Botão Voltar Padrão -->
+            <a href="/" class="back-btn" title="Voltar ao Menu Principal">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Voltar
+            </a>
+
+            <div class="logo" style="margin-left: 10px;">
+                <div class="logo-icon">DD</div>
+                Workspace Pricing
+            </div>
+            
+            <div class="week-selector">
+                <button class="btn-icon">❮</button>
+                <span class="week-label">10 Ago - 15 Ago</span>
+                <button class="btn-icon">❯</button>
+            </div>
+            
+            <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Hoje</button>
+        </div>
+
+        <div class="topbar-actions">
+            <button class="btn btn-secondary" title="Filtros">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            </button>
+            <button class="btn btn-secondary" title="Dashboards Gerenciais">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            </button>
+            
+            <!-- Botões de Login Integrados -->
+            <button id="btn-login-header" class="btn-login" onclick="abrirModalLogin()">Fazer Login</button>
+            <button id="btn-logout-header" class="btn-logout" onclick="fazerLogout()">Sair</button>
+
+            <button class="btn btn-primary" style="display: none;" id="btn-nova-demanda">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Nova Demanda
+            </button>
+        </div>
+    </header>
+
+    <!-- Área de Trabalho -->
+    <main class="workspace">
+        <div class="board-container">
+            <div class="board-grid">
+                
+                <!-- Cabeçalhos das Colunas -->
+                <div class="day-header sticky-left">
+                    <span style="font-weight: 600; color: var(--text-600); font-size: 0.85rem;">Equipe (2)</span>
+                </div>
+                <div class="day-header">
+                    <div class="day-info">
+                        <span class="day-name">Segunda</span>
+                        <span class="day-date">10 Ago</span>
+                    </div>
+                </div>
+                <div class="day-header today">
+                    <div class="day-info">
+                        <span class="day-name">Terça</span>
+                        <span class="day-date">11 Ago</span>
+                    </div>
+                    <span class="tag base" style="background: var(--status-success-bg); color: var(--status-success);">Hoje</span>
+                </div>
+                <div class="day-header">
+                    <div class="day-info"><span class="day-name">Quarta</span><span class="day-date">12 Ago</span></div>
+                </div>
+                <div class="day-header">
+                    <div class="day-info"><span class="day-name">Quinta</span><span class="day-date">13 Ago</span></div>
+                </div>
+                <div class="day-header">
+                    <div class="day-info"><span class="day-name">Sexta</span><span class="day-date">14 Ago</span></div>
+                </div>
+                <div class="day-header">
+                    <div class="day-info"><span class="day-name">Sábado</span><span class="day-date">15 Ago</span></div>
+                </div>
+
+                <!-- ================= LINHA 1 ================= -->
+                <div class="user-cell">
+                    <div class="progress-ring-container" style="--progress: 85%;">
+                        <div class="progress-ring-inner">CL</div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Carolina Lima</span>
+                        <span class="user-role">Colaborador</span>
+                    </div>
+                </div>
+
+                <div class="task-lane">
+                    <div class="task-card" onclick="abrirPainel('Validação Tabloide FDS', 'Base')">
+                        <div class="task-header">
+                            <div class="tags"><span class="tag base">Rotina</span></div>
+                        </div>
+                        <h4 class="task-title">Validação Tabloide FDS</h4>
+                        <div class="task-footer">
+                            <label class="custom-checkbox" onclick="event.stopPropagation()">
+                                <input type="checkbox">
+                                <span class="checkmark"></span>
+                                <span class="status-text">Pendente</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="add-task-btn">+ Adicionar</button>
+                </div>
+
+                <!-- Terça (Hoje) -->
+                <div class="task-lane" style="background: rgba(59, 130, 246, 0.02);">
+                    <div class="task-card priority-high" onclick="abrirPainel('Revisar precificação Açougue', 'Urgente')">
+                        <div class="task-header">
+                            <div class="tags"><span class="tag extra" style="background: #fee2e2; color: #991b1b;">Urgente</span></div>
+                        </div>
+                        <h4 class="task-title">Revisar precificação Açougue Loja 15</h4>
+                        <div class="task-footer">
+                            <label class="custom-checkbox" onclick="event.stopPropagation()">
+                                <input type="checkbox">
+                                <span class="checkmark"></span>
+                                <span class="status-text">Pendente</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="add-task-btn">+ Adicionar</button>
+                </div>
+
+                <!-- Restante da semana -->
+                <div class="task-lane"><button class="add-task-btn">+ Adicionar</button></div>
+                <div class="task-lane"><button class="add-task-btn">+ Adicionar</button></div>
+                <div class="task-lane"><button class="add-task-btn">+ Adicionar</button></div>
+                <div class="task-lane"><button class="add-task-btn">+ Adicionar</button></div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- OVERLAY E SLIDE-OVER (CHAT DA TAREFA) -->
+    <div class="overlay" id="overlay" onclick="fecharPainel()"></div>
+    
+    <div class="slide-over" id="taskPanel">
+        <div class="slide-header">
+            <div class="slide-title-area">
+                <div class="tags" style="margin-bottom: 0.5rem;">
+                    <span class="tag base" id="panelTag">Rotina</span>
+                </div>
+                <h3 class="slide-title" id="panelTitle">Validação Tabloide FDS</h3>
+                <span style="font-size: 0.75rem; color: var(--text-400);">Criado por Sistema em 10/08</span>
+            </div>
+            <button class="btn-close-slide" onclick="fecharPainel()">✕</button>
+        </div>
+
+        <!-- Feed / Timeline de Chat -->
+        <div class="chat-feed">
+            
+            <!-- Mensagem do Sistema -->
+            <div class="chat-msg">
+                <div class="chat-avatar" style="background: var(--text-400); color: white;">🤖</div>
+                <div class="chat-content">
+                    <div class="chat-bubble">Tarefa criada automaticamente pela rotina base.</div>
+                    <div class="chat-meta">Ontem às 08:00</div>
+                </div>
+            </div>
+
+            <!-- Mensagem do Colaborador (Exemplo de evidência) -->
+            <div class="chat-msg me">
+                <div class="chat-avatar">CL</div>
+                <div class="chat-content">
+                    <div class="chat-bubble">Conferência inicial finalizada, aguardando o encarte final do marketing.</div>
+                    <div class="chat-meta">Hoje às 10:15</div>
+                </div>
+            </div>
+
+            <!-- Mensagem com Anexo -->
+            <div class="chat-msg me">
+                <div class="chat-avatar">CL</div>
+                <div class="chat-content">
+                    <div class="chat-bubble">
+                        Tabela de preços ajustada.
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.1); border-radius: 6px; font-size: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            📎 planilha_final_v2.xlsx
+                        </div>
+                    </div>
+                    <div class="chat-meta">Hoje às 10:45</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Input de Chat -->
+        <div class="chat-input-area">
+            <div class="chat-input-wrapper">
+                <button class="btn-attach" title="Anexar arquivo/print (Em breve)">📎</button>
+                <input type="text" class="chat-input" placeholder="Adicionar comentário ou status...">
+            </div>
+            <button class="btn-send" title="Enviar">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- INTERATIVIDADE VISUAL (Mockup) ---
+        document.querySelectorAll('.custom-checkbox input').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.task-card');
+                const textSpan = this.parentElement.querySelector('.status-text');
+                
+                if(this.checked) {
+                    card.classList.add('is-done');
+                    textSpan.textContent = "Finalizada";
+                } else {
+                    card.classList.remove('is-done');
+                    textSpan.textContent = "Pendente";
+                }
+            });
+        });
+
+        const overlay = document.getElementById('overlay');
+        const taskPanel = document.getElementById('taskPanel');
+        const panelTitle = document.getElementById('panelTitle');
+        const panelTag = document.getElementById('panelTag');
+
+        function abrirPainel(titulo, tipo) {
+            panelTitle.textContent = titulo;
+            panelTag.textContent = tipo;
+            
+            if (tipo === 'Urgente') {
+                panelTag.style.background = '#fee2e2';
+                panelTag.style.color = '#991b1b';
+            } else {
+                panelTag.style.background = '#e0e7ff';
+                panelTag.style.color = '#4338ca';
+            }
+
+            overlay.classList.add('active');
+            taskPanel.classList.add('active');
+        }
+
+        function fecharPainel() {
+            overlay.classList.remove('active');
+            taskPanel.classList.remove('active');
+        }
+
+        // --- FUNÇÕES DE AUTH PADRÃO DA INTRANET ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function abrirModalLogin() { document.getElementById('modalLogin').style.display = 'flex'; }
+        function fecharModalLogin() { document.getElementById('modalLogin').style.display = 'none'; }
+        function fazerLogin() { showToast("Login de demonstração efetuado.", "success"); fecharModalLogin(); }
+        function fazerLogout() { showToast("Logout efetuado.", "info"); }
+    </script>
+
+    <!-- MOTOR DO FIREBASE (Pronto para uso) -->
+    <!--
+    <script type="module">
+        import { db, auth } from "./firebase-config.js";
+        // Aqui conectaremos com a base de dados em breve!
+    </script>
+    -->
+</body>
+</html>
