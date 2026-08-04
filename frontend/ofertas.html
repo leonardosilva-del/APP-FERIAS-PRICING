@@ -15,6 +15,7 @@
             color: #333;
             margin: 0;
             padding: 20px;
+            position: relative;
         }
 
         .container {
@@ -28,7 +29,75 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Cabeçalho Simplificado */
+        /* --- WIDGET DE PERFIL --- */
+        .user-profile-widget {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            padding: 6px 16px 6px 6px;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .user-profile-widget:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #26417E;
+            object-fit: cover;
+        }
+
+        .user-info-widget {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .user-name-widget {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+
+        .user-role-widget {
+            font-size: 0.7rem;
+            color: #64748b;
+            line-height: 1.2;
+        }
+
+        .btn-logout-widget {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 6px;
+            margin-left: 4px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-logout-widget:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* Cabeçalho Simplificado com Logo */
         .header-top {
             display: flex;
             justify-content: space-between;
@@ -36,33 +105,20 @@
             border-bottom: 2px solid #26417E;
             padding-bottom: 15px;
             margin-bottom: 20px;
+            padding-right: 220px;
+            /* Espaço para o widget de perfil */
+        }
+
+        .header-logo {
+            height: 42px;
+            object-fit: contain;
         }
 
         h1 {
             color: #2c3e50;
             font-weight: 600;
             margin: 0;
-            font-size: 26px;
-        }
-
-        .btn-login,
-        .btn-logout {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-login {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-logout {
-            background-color: #dc3545;
-            color: white;
-            display: none;
+            font-size: 24px;
         }
 
         /* Container de Controles */
@@ -668,6 +724,22 @@
 
     <div id="toast-container"></div>
 
+    <!-- WIDGET DE PERFIL DO USUÁRIO -->
+    <div class="user-profile-widget">
+        <img id="user-photo" src="" class="user-avatar" alt="Foto">
+        <div class="user-info-widget">
+            <span id="user-name" class="user-name-widget">Carregando...</span>
+            <span id="user-role" class="user-role-widget">Colaborador</span>
+        </div>
+        <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                </path>
+            </svg>
+        </button>
+    </div>
+
     <div class="container">
         <div class="header-top">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -683,11 +755,8 @@
                     </svg>
                     Voltar
                 </a>
+                <img src="/logo.png" alt="Dia a Dia" class="header-logo">
                 <h1>Calendário Promocional - PRICING</h1>
-            </div>
-            <div>
-                <button id="btn-login-header" class="btn-login" onclick="abrirModalLogin()">Acesso Restrito</button>
-                <button id="btn-logout-header" class="btn-logout" onclick="fazerLogout()">Sair (Logado)</button>
             </div>
         </div>
 
@@ -778,18 +847,6 @@
     </div>
 
     <!-- Modais -->
-    <div id="modalLogin" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2>Acesso de Administrador</h2>
-            <input type="email" id="login-email" placeholder="Seu e-mail">
-            <input type="password" id="login-senha" placeholder="Sua senha">
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModalLogin()">Cancelar</button>
-                <button class="btn-save" onclick="fazerLogin()">Entrar</button>
-            </div>
-        </div>
-    </div>
-
     <div id="modalNovo" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
             <h2>Cadastrar Nova Campanha</h2>
@@ -912,16 +969,16 @@
 
     <!-- CONEXÃO COM O FIREBASE E MAKE.COM -->
     <script type="module">
-        // Importando a configuração centralizada
         import { db, auth } from "./firebase-config.js";
-        import { ref, push, onValue, remove, update, set } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
-        import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { ref, push, onValue, remove, update, set, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
         const tabelaRef = ref(db, 'campanhas_oficiais_v3');
         const historicoRef = ref(db, 'historico_auditoria_v3');
 
         const corpoTabela = document.getElementById('corpo-tabela');
         let usuarioLogado = false;
+        let perfilUsuario = "Colaborador";
         let dadosAtuais = null;
         let idSendoEditado = null;
 
@@ -931,7 +988,44 @@
 
         let graficoStatus, graficoEtapas, graficoResponsaveis, graficoRaioX;
 
-        // --- A ANTENA DO MAKE.COM ---
+        // VERIFICAÇÃO DE AUTENTICAÇÃO E PERFIL
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "/";
+                return;
+            }
+
+            usuarioLogado = true;
+            document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
+            document.getElementById('user-name').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
+
+            const userRef = ref(db, 'usuarios/' + user.uid);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    perfilUsuario = snapshot.val().perfil || "Colaborador";
+                }
+                document.getElementById('user-role').textContent = perfilUsuario;
+
+                if (perfilUsuario === "Gestor") {
+                    document.getElementById('btn-nova-campanha').style.display = 'inline-block';
+                    document.getElementById('btn-historico-dash').style.display = 'inline-block';
+                    document.getElementById('menu-import-export').style.display = 'inline-block';
+                } else {
+                    document.getElementById('btn-nova-campanha').style.display = 'none';
+                    document.getElementById('btn-historico-dash').style.display = 'none';
+                    document.getElementById('menu-import-export').style.display = 'none';
+                }
+
+                renderizarTabela(dadosAtuais);
+            });
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = "/";
+            });
+        });
+
         window.enviarParaMake = function (dadosCampanha) {
             const webhookUrl = "https://hook.us2.make.com/q4gat8dg77pd8m8tm651ffqg1k7yqboy";
 
@@ -958,7 +1052,7 @@
         };
 
         function registrarHistorico(acao, detalhes) {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             const dataHora = new Date().toLocaleString('pt-BR');
             const usuarioEmail = auth.currentUser && auth.currentUser.email ? auth.currentUser.email : 'Administrador';
             push(historicoRef, { dataHora, acao, detalhes, usuario: usuarioEmail });
@@ -1030,25 +1124,6 @@
             renderizarTabela(dadosAtuais);
         };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                usuarioLogado = true;
-                document.getElementById('btn-login-header').style.display = 'none';
-                document.getElementById('btn-logout-header').style.display = 'inline-block';
-                document.getElementById('btn-nova-campanha').style.display = 'inline-block';
-                document.getElementById('btn-historico-dash').style.display = 'inline-block';
-                document.getElementById('menu-import-export').style.display = 'inline-block';
-            } else {
-                usuarioLogado = false;
-                document.getElementById('btn-login-header').style.display = 'inline-block';
-                document.getElementById('btn-logout-header').style.display = 'none';
-                document.getElementById('btn-nova-campanha').style.display = 'none';
-                document.getElementById('btn-historico-dash').style.display = 'none';
-                document.getElementById('menu-import-export').style.display = 'none';
-            }
-            renderizarTabela(dadosAtuais);
-        });
-
         onValue(tabelaRef, (snapshot) => {
             let dadosLidos = snapshot.val();
 
@@ -1075,7 +1150,7 @@
 
                             if ((dataLimiteCom && dataHoje > dataLimiteCom) || (dataLimiteMkt && dataHoje > dataLimiteMkt)) {
                                 camp.status = 'atrasado';
-                                if (usuarioLogado) {
+                                if (perfilUsuario === "Gestor") {
                                     atualizacoesRobo[id + '/status'] = 'atrasado';
                                     fezAlgumaAlteracao = true;
                                 }
@@ -1084,7 +1159,7 @@
                     }
                 }
 
-                if (fezAlgumaAlteracao && usuarioLogado) {
+                if (fezAlgumaAlteracao && perfilUsuario === "Gestor") {
                     update(ref(db, 'campanhas_oficiais_v3'), atualizacoesRobo);
                 }
             }
@@ -1186,18 +1261,15 @@
             const scrollTopWrapper = tableWrapperElement ? tableWrapperElement.scrollTop : 0;
             const scrollTopWindow = window.scrollY || document.documentElement.scrollTop;
 
-            const selectFiltroMes = document.getElementById('filtro-mes');
-            const selectFiltroCampanha = document.getElementById('filtro-campanha');
-
             if (!dados) {
-                corpoTabela.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 20px;">Nenhuma campanha cadastrada. Faça login e crie ou importe campanhas.</td></tr>`;
+                corpoTabela.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 20px;">Nenhuma campanha cadastrada. Aguarde a publicação pela gestão.</td></tr>`;
                 atualizarGraficos([]);
                 return;
             }
 
-            const statusBloqueio = usuarioLogado ? "" : "disabled";
-            const statusReadonly = usuarioLogado ? "" : "readonly";
-            const statusAcoes = usuarioLogado ? "inline-block" : "none";
+            const statusBloqueio = (perfilUsuario === "Gestor") ? "" : "disabled";
+            const statusReadonly = (perfilUsuario === "Gestor") ? "" : "readonly";
+            const statusAcoes = (perfilUsuario === "Gestor") ? "inline-block" : "none";
 
             const mesesUnicos = new Set();
             const campanhasUnicas = new Set();
@@ -1238,7 +1310,7 @@
 
             let dataHoje = new Date();
 
-            listaFiltrada.forEach((camp, index) => {
+            listaFiltrada.forEach((camp) => {
                 const textoMes = camp.mes ? camp.mes.trim() : "Não Informado";
                 const textoCampanha = camp.nome ? camp.nome.trim() : "-";
 
@@ -1322,7 +1394,7 @@
         }
 
         window.exportarCSV = function () {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             let csv = [];
             let rows = document.querySelectorAll("table tr");
             for (let i = 0; i < rows.length; i++) {
@@ -1346,7 +1418,7 @@
         };
 
         window.moverLinha = function (idAtual, direcao) {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             let lista = [];
             for (let key in dadosAtuais) lista.push({ id: key, ...dadosAtuais[key] });
             lista.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
@@ -1360,7 +1432,7 @@
         };
 
         window.processarCSV = function (event) {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -1399,7 +1471,7 @@
                             mes: mesCSV, nome: nomeCSV, lojas: lojasCSV,
                             periodo: '', inicio: inicioCSV, fim: fimCSV,
                             inicioPreenchimento: inicioPreenchimentoCSV, finalPreenchimento: finalPreenchimentoCSV,
-                            prazo: finalPreenchimentoCSV, // <--- TRUQUE DO MAKE.COM
+                            prazo: finalPreenchimentoCSV,
                             prazoMkt: prazoMktCSV,
                             responsavel: 'Comercial', etapa: 'preenchimento-ofertas', status: 'dentro-prazo', atrasados: '',
                             ordem: Date.now() + i
@@ -1417,7 +1489,7 @@
         };
 
         window.mudarStatus = function (id, campo, valor) {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             let atualizacoes = { [campo]: valor };
 
             if (campo === 'etapa') {
@@ -1432,13 +1504,13 @@
 
             update(ref(db, 'campanhas_oficiais_v3/' + id), atualizacoes).then(() => {
                 let campanhaCompleta = { ...dadosAtuais[id], ...atualizacoes };
-                campanhaCompleta.prazo = campanhaCompleta.finalPreenchimento; // Garante o envio do prazo correto para o Make
+                campanhaCompleta.prazo = campanhaCompleta.finalPreenchimento;
                 window.enviarParaMake(campanhaCompleta);
             });
         };
 
         window.salvarCampanha = function () {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             const novaCampanhaObj = {
                 mes: document.getElementById('nova-mes').value,
                 nome: document.getElementById('nova-campanha').value, lojas: document.getElementById('novas-lojas').value,
@@ -1449,7 +1521,7 @@
                 responsavel: 'Comercial', etapa: 'preenchimento-ofertas', status: 'dentro-prazo', atrasados: '',
                 ordem: Date.now()
             };
-            novaCampanhaObj.prazo = novaCampanhaObj.finalPreenchimento; // Variável invisível para o Make.com
+            novaCampanhaObj.prazo = novaCampanhaObj.finalPreenchimento;
 
             if (!novaCampanhaObj.mes || !novaCampanhaObj.nome || !novaCampanhaObj.finalPreenchimento) { showToast("Preencha os campos essenciais!", "warning"); return; }
 
@@ -1458,12 +1530,12 @@
         };
 
         window.deletarCampanha = function (id) {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             if (confirm("Deseja excluir esta campanha?")) { remove(ref(db, 'campanhas_oficiais_v3/' + id)); showToast("Excluída!", "success"); }
         };
 
         window.abrirModalEditar = function (id) {
-            if (!usuarioLogado) return;
+            if (perfilUsuario !== "Gestor") return;
             idSendoEditado = id; const camp = dadosAtuais[id];
             document.getElementById('edit-mes').value = camp.mes || 'Não Informado';
             document.getElementById('edit-campanha').value = camp.nome || '';
@@ -1478,7 +1550,7 @@
         };
 
         window.salvarEdicao = function () {
-            if (!usuarioLogado || !idSendoEditado) return;
+            if (perfilUsuario !== "Gestor" || !idSendoEditado) return;
             const edicaoObj = {
                 mes: document.getElementById('edit-mes').value,
                 nome: document.getElementById('edit-campanha').value, lojas: document.getElementById('edit-lojas').value,
@@ -1487,24 +1559,14 @@
                 finalPreenchimento: document.getElementById('edit-final-preenchimento').value,
                 prazoMkt: document.getElementById('edit-prazo-mkt').value, atrasados: document.getElementById('edit-atrasados').value
             };
-            edicaoObj.prazo = edicaoObj.finalPreenchimento; // Atualiza a ponte com o Make
+            edicaoObj.prazo = edicaoObj.finalPreenchimento;
 
             update(ref(db, 'campanhas_oficiais_v3/' + idSendoEditado), edicaoObj).then(() => { window.enviarParaMake(edicaoObj); });
             showToast("Dados atualizados!", "success"); document.getElementById('modalEditar').style.display = 'none'; idSendoEditado = null;
         };
-
-        window.fazerLogin = function () {
-            signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-senha').value)
-                .then(() => { fecharModalLogin(); showToast("Login realizado com sucesso!", "success"); })
-                .catch(() => { showToast("Erro ao entrar. Verifique o e-mail e senha.", "error"); });
-        };
-
-        window.fazerLogout = function () { signOut(auth).then(() => { showToast("Você saiu do modo de edição.", "info"); }); };
     </script>
 
     <script>
-        function abrirModalLogin() { document.getElementById('modalLogin').style.display = 'flex'; }
-        function fecharModalLogin() { document.getElementById('modalLogin').style.display = 'none'; }
         function abrirModalNova() { document.getElementById('modalNovo').style.display = 'flex'; document.getElementById('nova-mes').value = ''; document.getElementById('nova-campanha').value = ''; document.getElementById('novas-lojas').value = ''; document.getElementById('nova-inicio').value = ''; document.getElementById('nova-fim').value = ''; document.getElementById('nova-inicio-preenchimento').value = ''; document.getElementById('nova-final-preenchimento').value = ''; document.getElementById('nova-prazo-mkt').value = ''; }
         function fecharModalNova() { document.getElementById('modalNovo').style.display = 'none'; }
         function fecharModalEditar() { document.getElementById('modalEditar').style.display = 'none'; }
