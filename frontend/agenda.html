@@ -9,33 +9,26 @@
 
     <style>
         :root {
-            /* Paleta de Cores SaaS Moderna */
             --bg-body: #f3f4f6;
             --bg-surface: #ffffff;
             --bg-swimlane: #f8fafc;
-
             --text-900: #0f172a;
             --text-600: #475569;
             --text-400: #94a3b8;
-
             --border-light: #e2e8f0;
             --border-hover: #cbd5e1;
-
             --brand-primary: #6366f1;
             --brand-primary-hover: #4f46e5;
             --brand-secondary: #8b5cf6;
-
             --status-success: #10b981;
             --status-success-bg: #d1fae5;
             --status-warning: #f59e0b;
             --status-danger: #ef4444;
             --status-danger-hover: #dc2626;
             --status-info: #0ea5e9;
-
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-
             --radius-md: 8px;
             --radius-lg: 12px;
             --radius-xl: 16px;
@@ -57,7 +50,6 @@
             overflow: hidden;
         }
 
-        /* --- PADRÃO INTRANET: BOTOES E MODAL --- */
         .back-btn {
             text-decoration: none;
             color: var(--text-600);
@@ -78,36 +70,6 @@
             color: var(--text-900);
             border-color: var(--border-hover);
             box-shadow: var(--shadow-sm);
-        }
-
-        .btn-login,
-        .btn-logout {
-            padding: 8px 15px;
-            border: none;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .btn-login {
-            background-color: var(--text-600);
-            color: white;
-        }
-
-        .btn-login:hover {
-            background-color: var(--text-900);
-        }
-
-        .btn-logout {
-            background-color: var(--status-danger);
-            color: white;
-            display: none;
-        }
-
-        .btn-logout:hover {
-            background-color: var(--status-danger-hover);
         }
 
         #toast-container {
@@ -140,10 +102,6 @@
             background-color: var(--status-danger);
         }
 
-        .toast.info {
-            background-color: var(--status-info);
-        }
-
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -156,7 +114,108 @@
             }
         }
 
-        /* --- Header Superior da Agenda --- */
+        /* Modal Nova Demanda */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 15px;
+            box-sizing: border-box;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: var(--shadow-lg);
+            box-sizing: border-box;
+        }
+
+        .modal-content h2 {
+            margin: 0 0 10px 0;
+            color: var(--text-900);
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .modal-content label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-600);
+            margin-bottom: -10px;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            padding: 12px;
+            border: 1px solid var(--border-hover);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            background: var(--bg-swimlane);
+        }
+
+        .modal-content input:focus,
+        .modal-content select:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: var(--bg-surface);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-save {
+            background-color: var(--brand-primary);
+            color: white;
+        }
+
+        .btn-save:hover {
+            background-color: var(--brand-primary-hover);
+        }
+
+        .btn-cancel {
+            background-color: var(--bg-swimlane);
+            color: var(--text-600);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--border-light);
+            color: var(--text-900);
+        }
+
+        /* Estrutura Core */
         .topbar {
             background: var(--bg-surface);
             padding: 1rem 2rem;
@@ -277,7 +336,6 @@
             box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
         }
 
-        /* --- Workspace Core --- */
         .workspace {
             flex: 1;
             padding: 1.5rem 2rem;
@@ -296,14 +354,12 @@
             position: relative;
         }
 
-        /* --- Grid do Kanban --- */
         .board-grid {
             display: grid;
             grid-template-columns: 280px repeat(6, minmax(280px, 1fr));
             min-width: max-content;
         }
 
-        /* Sticky Header dos Dias */
         .day-header {
             position: sticky;
             top: 0;
@@ -351,7 +407,6 @@
             color: var(--brand-primary);
         }
 
-        /* Célula do Colaborador (Sticky Left) */
         .user-cell {
             position: sticky;
             left: 0;
@@ -365,29 +420,12 @@
             gap: 1rem;
         }
 
-        .progress-ring-container {
-            position: relative;
-            width: 48px;
-            height: 48px;
+        .user-avatar-circle {
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            background: conic-gradient(var(--status-success) var(--progress), var(--border-light) 0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .progress-ring-inner {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--bg-surface);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-900);
-            position: absolute;
+            border: 2px solid var(--brand-primary);
+            object-fit: cover;
         }
 
         .user-info {
@@ -407,7 +445,6 @@
             margin-top: 0.1rem;
         }
 
-        /* Raias (Swimlanes) de Tarefas */
         .task-lane {
             padding: 1rem;
             background: var(--bg-swimlane);
@@ -419,7 +456,6 @@
             min-height: 180px;
         }
 
-        /* --- Cards de Tarefa --- */
         .task-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-light);
@@ -469,25 +505,6 @@
         .tag.base {
             background: #e0e7ff;
             color: #4338ca;
-        }
-
-        .tag.extra {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .task-options {
-            color: var(--text-400);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 2px;
-            border-radius: 4px;
-        }
-
-        .task-options:hover {
-            background: var(--bg-body);
-            color: var(--text-900);
         }
 
         .task-title {
@@ -584,19 +601,47 @@
 
     <div id="toast-container"></div>
 
+    <!-- Modal Nova Demanda -->
+    <div id="modalDemanda" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Nova Demanda</h2>
+
+            <label>O que precisa ser feito?</label>
+            <input type="text" id="demanda-titulo" placeholder="Ex: Análise de Preços">
+
+            <label>Responsável</label>
+            <select id="demanda-colaborador">
+                <!-- Injetado via JS com usuários do Firebase -->
+            </select>
+
+            <label>Data</label>
+            <input type="date" id="demanda-data">
+
+            <label>Prioridade/Tipo</label>
+            <select id="demanda-tipo">
+                <option value="Rotina">Rotina (Azul)</option>
+                <option value="Extra">Demanda Extra (Amarelo)</option>
+                <option value="Urgente">Urgente (Vermelho)</option>
+            </select>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="fecharModalDemanda()">Cancelar</button>
+                <button class="btn-save" id="btnSalvarDemanda">Salvar Tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topbar -->
     <header class="topbar">
         <div class="topbar-left">
             <a href="/" class="back-btn" title="Voltar ao Menu Principal">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Voltar
+                </svg> Voltar
             </a>
-
             <div class="logo" style="margin-left: 10px;">
-                <div class="logo-icon">DD</div>
-                Workspace Pricing
+                <div class="logo-icon">DD</div> Workspace Pricing
             </div>
 
             <div class="week-selector">
@@ -604,206 +649,308 @@
                 <span class="week-label" id="week-label">Carregando...</span>
                 <button class="btn-icon" id="btn-next-week" title="Próxima Semana">❯</button>
             </div>
-
             <button class="btn btn-secondary" id="btn-today"
                 style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Hoje</button>
         </div>
 
         <div class="topbar-actions">
-            <button class="btn btn-secondary" title="Filtros"><svg width="16" height="16" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                    </path>
-                </svg></button>
-            <button class="btn btn-secondary" title="Dashboards Gerenciais"><svg width="16" height="16" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                    </path>
-                </svg></button>
-            <button class="btn btn-primary"><svg width="16" height="16" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
+            <!-- Botão exibido somente para Gestor -->
+            <button class="btn btn-primary" id="btnAbrirModal" onclick="abrirModalDemanda()" style="display: none;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>Nova Demanda</button>
+                </svg>
+                Nova Demanda
+            </button>
         </div>
     </header>
 
     <main class="workspace">
         <div class="board-container">
-            <div class="board-grid">
-
-                <div class="day-header sticky-left">
-                    <span style="font-weight: 600; color: var(--text-600); font-size: 0.85rem;">Equipe (2)</span>
-                </div>
-                <!-- Dias da semana serão gerados via JS -->
-                <div class="day-header" id="header-day-0">
-                    <div class="day-info"><span class="day-name" id="name-day-0">Segunda</span><span class="day-date"
-                            id="date-day-0">--</span></div><span class="tag base" id="tag-hoje-0"
-                        style="background: var(--status-success-bg); color: var(--status-success); display: none;">Hoje</span>
-                </div>
-                <div class="day-header" id="header-day-1">
-                    <div class="day-info"><span class="day-name" id="name-day-1">Terça</span><span class="day-date"
-                            id="date-day-1">--</span></div><span class="tag base" id="tag-hoje-1"
-                        style="background: var(--status-success-bg); color: var(--status-success); display: none;">Hoje</span>
-                </div>
-                <div class="day-header" id="header-day-2">
-                    <div class="day-info"><span class="day-name" id="name-day-2">Quarta</span><span class="day-date"
-                            id="date-day-2">--</span></div><span class="tag base" id="tag-hoje-2"
-                        style="background: var(--status-success-bg); color: var(--status-success); display: none;">Hoje</span>
-                </div>
-                <div class="day-header" id="header-day-3">
-                    <div class="day-info"><span class="day-name" id="name-day-3">Quinta</span><span class="day-date"
-                            id="date-day-3">--</span></div><span class="tag base" id="tag-hoje-3"
-                        style="background: var(--status-success-bg); color: var(--status-success); display: none;">Hoje</span>
-                </div>
-                <div class="day-header" id="header-day-4">
-                    <div class="day-info"><span class="day-name" id="name-day-4">Sexta</span><span class="day-date"
-                            id="date-day-4">--</span></div><span class="tag base" id="tag-hoje-4"
-                        style="background: var(--status-success-bg); color: var(--status-success); display: none;">Hoje</span>
-                </div>
-                <div class="day-header" id="header-day-5">
-                    <div class="day-info"><span class="day-name" id="name-day-5">Sábado</span><span class="day-date"
-                            id="date-day-5">--</span></div><span class="tag base" id="tag-hoje-5"
-                        style="background: var(--status-success-bg); color: var(--status-success); display: none;">Hoje</span>
-                </div>
-
-                <!-- ================= LINHA 1 (MOCKUP) ================= -->
-                <div class="user-cell">
-                    <div class="progress-ring-container" style="--progress: 85%;">
-                        <div class="progress-ring-inner">CL</div>
-                    </div>
-                    <div class="user-info"><span class="user-name">Carolina Lima</span><span
-                            class="user-role">Colaborador</span></div>
-                </div>
-
-                <div class="task-lane" id="lane-0-0">
-                    <div class="task-card">
-                        <div class="task-header">
-                            <div class="tags"><span class="tag base">Rotina</span></div>
-                        </div>
-                        <h4 class="task-title">Validação Tabloide FDS</h4>
-                        <div class="task-footer"><label class="custom-checkbox" onclick="event.stopPropagation()"><input
-                                    type="checkbox"><span class="checkmark"></span><span
-                                    class="status-text">Pendente</span></label></div>
-                    </div>
-                    <button class="add-task-btn">+ Adicionar</button>
-                </div>
-                <div class="task-lane" id="lane-0-1">
-                    <div class="task-card priority-high">
-                        <div class="task-header">
-                            <div class="tags"><span class="tag extra"
-                                    style="background: #fee2e2; color: #991b1b;">Urgente</span></div>
-                        </div>
-                        <h4 class="task-title">Revisar precificação Açougue</h4>
-                        <div class="task-footer"><label class="custom-checkbox" onclick="event.stopPropagation()"><input
-                                    type="checkbox"><span class="checkmark"></span><span
-                                    class="status-text">Pendente</span></label></div>
-                    </div>
-                    <button class="add-task-btn">+ Adicionar</button>
-                </div>
-                <div class="task-lane" id="lane-0-2"><button class="add-task-btn">+ Adicionar</button></div>
-                <div class="task-lane" id="lane-0-3"><button class="add-task-btn">+ Adicionar</button></div>
-                <div class="task-lane" id="lane-0-4"><button class="add-task-btn">+ Adicionar</button></div>
-                <div class="task-lane" id="lane-0-5"><button class="add-task-btn">+ Adicionar</button></div>
+            <div class="board-grid" id="board-grid-content">
+                <!-- O JavaScript injeta as colunas e tarefas aqui -->
             </div>
         </div>
     </main>
 
-    <script>
-        // --- MOTOR DO CALENDÁRIO ---
+    <script type="module">
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { ref, onValue, push, set, update, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        // ==========================================
+        // VARIÁVEIS GLOBAIS
+        // ==========================================
+        let usuarioAtual = null;
+        let perfilUsuario = "Colaborador";
+        let listaUsuariosGlobal = [];
+        let listaTarefasGlobal = {};
+        let dataInicioSemana = getStartOfWeek(new Date());
+
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
-        // Função para achar a Segunda-feira da semana atual
+        // ==========================================
+        // UI & UTILITÁRIOS
+        // ==========================================
+        window.showToast = function (message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        window.abrirModalDemanda = function (dataPadrao = "") {
+            document.getElementById('modalDemanda').style.display = 'flex';
+            document.getElementById('demanda-titulo').value = '';
+            document.getElementById('demanda-data').value = dataPadrao || new Date().toISOString().split('T')[0];
+        }
+
+        window.fecharModalDemanda = function () {
+            document.getElementById('modalDemanda').style.display = 'none';
+        }
+
         function getStartOfWeek(data) {
             const d = new Date(data);
             const diaSemana = d.getDay();
-            // Se for domingo (0), volta 6 dias. Senão, volta (diaSemana - 1) dias.
             const diff = d.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
             return new Date(d.setDate(diff));
         }
 
-        let dataInicioSemana = getStartOfWeek(new Date());
-
-        function atualizarCalendario() {
-            const dataFimSemana = new Date(dataInicioSemana);
-            dataFimSemana.setDate(dataInicioSemana.getDate() + 5); // Adiciona 5 dias (Sábado)
-
-            // Atualiza Label Superior (Ex: 10 Ago - 15 Ago)
-            const lblInicio = `${dataInicioSemana.getDate()} ${meses[dataInicioSemana.getMonth()]}`;
-            const lblFim = `${dataFimSemana.getDate()} ${meses[dataFimSemana.getMonth()]}`;
-            document.getElementById('week-label').textContent = `${lblInicio} - ${lblFim}`;
-
-            // Pega o dia exato de hoje à meia-noite para comparar
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-
-            // Preenche os 6 dias da grade (Segunda a Sábado)
-            for (let i = 0; i < 6; i++) {
-                const dataAtualLoop = new Date(dataInicioSemana);
-                dataAtualLoop.setDate(dataInicioSemana.getDate() + i);
-                dataAtualLoop.setHours(0, 0, 0, 0);
-
-                const divHeader = document.getElementById(`header-day-${i}`);
-                const spanName = document.getElementById(`name-day-${i}`);
-                const spanDate = document.getElementById(`date-day-${i}`);
-                const spanTagHoje = document.getElementById(`tag-hoje-${i}`);
-
-                // Remove fundo da raia para limpar resquícios
-                const raia0 = document.getElementById(`lane-0-${i}`); // Mockup Colab 1
-                if (raia0) raia0.style.background = 'var(--bg-swimlane)';
-
-                // Alimenta Textos
-                spanName.textContent = diasDaSemana[dataAtualLoop.getDay()];
-                spanDate.textContent = `${dataAtualLoop.getDate()} ${meses[dataAtualLoop.getMonth()]}`;
-
-                // Verifica se o dia renderizado é exatamente HOJE
-                if (dataAtualLoop.getTime() === hoje.getTime()) {
-                    divHeader.classList.add('today');
-                    spanTagHoje.style.display = 'inline-block';
-                    if (raia0) raia0.style.background = 'rgba(59, 130, 246, 0.03)'; // Fundo azul claro na coluna de hoje
-                } else {
-                    divHeader.classList.remove('today');
-                    spanTagHoje.style.display = 'none';
-                }
-            }
+        function formataDataISO(data) {
+            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+            return (new Date(data - tzOffset)).toISOString().split('T')[0];
         }
 
-        // --- EVENTOS DOS BOTÕES ---
-        document.getElementById('btn-prev-week').addEventListener('click', () => {
-            dataInicioSemana.setDate(dataInicioSemana.getDate() - 7);
-            atualizarCalendario();
-        });
+        // ==========================================
+        // VERIFICAÇÃO DE AUTENTICAÇÃO E PERFIL
+        // ==========================================
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Redireciona se não estiver logado
+                window.location.href = "/";
+                return;
+            }
 
-        document.getElementById('btn-next-week').addEventListener('click', () => {
-            dataInicioSemana.setDate(dataInicioSemana.getDate() + 7);
-            atualizarCalendario();
-        });
+            usuarioAtual = user;
 
-        document.getElementById('btn-today').addEventListener('click', () => {
-            dataInicioSemana = getStartOfWeek(new Date());
-            atualizarCalendario();
-        });
-
-        // Inicializa o calendário ao abrir a tela
-        atualizarCalendario();
-
-        // --- INTERATIVIDADE DO CARD (Mockup) ---
-        document.querySelectorAll('.custom-checkbox input').forEach(checkbox => {
-            checkbox.addEventListener('change', function () {
-                const card = this.closest('.task-card');
-                const textSpan = this.parentElement.querySelector('.status-text');
-
-                if (this.checked) {
-                    card.classList.add('is-done');
-                    textSpan.textContent = "Finalizada";
-                } else {
-                    card.classList.remove('is-done');
-                    textSpan.textContent = "Pendente";
+            // Busca dados do usuário logado no banco
+            const userRef = ref(db, 'usuarios/' + user.uid);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const dados = snapshot.val();
+                    perfilUsuario = dados.perfil || "Colaborador";
                 }
+
+                // Se for Gestor, exibe botão de Nova Demanda
+                if (perfilUsuario === "Gestor") {
+                    document.getElementById('btnAbrirModal').style.display = 'inline-flex';
+                }
+
+                carregarUsuarios();
+                carregarTarefas();
             });
         });
+
+        // ==========================================
+        // CARREGAR USUÁRIOS E PREENCHER SELECT
+        // ==========================================
+        function carregarUsuarios() {
+            const usuariosRef = ref(db, 'usuarios');
+            onValue(usuariosRef, (snapshot) => {
+                listaUsuariosGlobal = [];
+                const selectColab = document.getElementById('demanda-colaborador');
+                selectColab.innerHTML = '';
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.keys(data).forEach(uid => {
+                        const u = data[uid];
+                        u.uid = uid;
+                        listaUsuariosGlobal.push(u);
+
+                        const option = document.createElement('option');
+                        option.value = u.email;
+                        option.textContent = u.nome || u.email;
+                        selectColab.appendChild(option);
+                    });
+                }
+                renderizarGrid();
+            });
+        }
+
+        // ==========================================
+        // RENDERIZAR GRID DA AGENDA
+        // ==========================================
+        function renderizarGrid() {
+            const gridContainer = document.getElementById('board-grid-content');
+            gridContainer.innerHTML = '';
+
+            const dataFimSemana = new Date(dataInicioSemana);
+            dataFimSemana.setDate(dataInicioSemana.getDate() + 5);
+            document.getElementById('week-label').textContent = `${dataInicioSemana.getDate()} ${meses[dataInicioSemana.getMonth()]} - ${dataFimSemana.getDate()} ${meses[dataFimSemana.getMonth()]}`;
+
+            const hojeISO = formataDataISO(new Date());
+
+            // Filtro de exibições base do perfil
+            let usuariosExibicao = [];
+            if (perfilUsuario === "Gestor") {
+                usuariosExibicao = listaUsuariosGlobal;
+            } else {
+                usuariosExibicao = listaUsuariosGlobal.filter(u => u.email === usuarioAtual.email);
+                if (usuariosExibicao.length === 0) {
+                    usuariosExibicao = [{
+                        uid: usuarioAtual.uid,
+                        nome: usuarioAtual.displayName,
+                        email: usuarioAtual.email,
+                        foto: usuarioAtual.photoURL,
+                        perfil: perfilUsuario
+                    }];
+                }
+            }
+
+            // 1. CABEÇALHO DOS DIAS
+            let headerHTML = `<div class="day-header sticky-left"><span style="font-weight: 600; color: var(--text-600); font-size: 0.85rem;">Equipe (${usuariosExibicao.length})</span></div>`;
+            let datasDaSemanaISO = [];
+
+            for (let i = 0; i < 6; i++) {
+                let dataLoop = new Date(dataInicioSemana);
+                dataLoop.setDate(dataInicioSemana.getDate() + i);
+                let isoDate = formataDataISO(dataLoop);
+                datasDaSemanaISO.push(isoDate);
+
+                let isToday = (isoDate === hojeISO);
+                let classToday = isToday ? 'today' : '';
+                let tagHoje = isToday ? `<span class="tag base" style="background: var(--status-success-bg); color: var(--status-success);">Hoje</span>` : '';
+
+                headerHTML += `
+                <div class="day-header ${classToday}">
+                    <div class="day-info">
+                        <span class="day-name">${diasDaSemana[dataLoop.getDay()]}</span>
+                        <span class="day-date">${dataLoop.getDate()} ${meses[dataLoop.getMonth()]}</span>
+                    </div>
+                    ${tagHoje}
+                </div>`;
+            }
+            gridContainer.innerHTML += headerHTML;
+
+            // 2. LINHAS DOS COLABORADORES
+            usuariosExibicao.forEach((colab) => {
+                let fotoUrl = colab.foto || 'https://via.placeholder.com/40';
+
+                let rowHTML = `
+                <div class="user-cell">
+                    <img src="${fotoUrl}" class="user-avatar-circle" alt="Foto">
+                    <div class="user-info">
+                        <span class="user-name">${colab.nome ? colab.nome.split(' ')[0] : colab.email}</span>
+                        <span class="user-role">${colab.perfil || 'Colaborador'}</span>
+                    </div>
+                </div>`;
+
+                datasDaSemanaISO.forEach(dataLoopStr => {
+                    let bgStyle = (dataLoopStr === hojeISO) ? 'background: rgba(99, 102, 241, 0.02);' : '';
+                    rowHTML += `<div class="task-lane" style="${bgStyle}">`;
+
+                    Object.keys(listaTarefasGlobal).forEach(taskId => {
+                        let task = listaTarefasGlobal[taskId];
+
+                        if (task.colaboradorEmail === colab.email && task.data === dataLoopStr) {
+                            let classPriority = task.tipo === 'Urgente' ? 'priority-high' : (task.tipo === 'Extra' ? 'priority-low' : '');
+                            let tagStyle = task.tipo === 'Urgente' ? 'style="background: #fee2e2; color: #991b1b;"' : (task.tipo === 'Extra' ? 'style="background: #fef3c7; color: #b45309;"' : '');
+                            let isDoneClass = task.status === 'Concluída' ? 'is-done' : '';
+                            let isChecked = task.status === 'Concluída' ? 'checked' : '';
+
+                            rowHTML += `
+                            <div class="task-card ${classPriority} ${isDoneClass}">
+                                <div class="task-header"><div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div></div>
+                                <h4 class="task-title">${task.titulo}</h4>
+                                <div class="task-footer">
+                                    <label class="custom-checkbox" onclick="event.stopPropagation()">
+                                        <input type="checkbox" data-id="${taskId}" class="task-updater" ${isChecked}>
+                                        <span class="checkmark"></span>
+                                        <span class="status-text">${task.status}</span>
+                                    </label>
+                                </div>
+                            </div>`;
+                        }
+                    });
+
+                    if (perfilUsuario === "Gestor") {
+                        rowHTML += `<button class="add-task-btn" onclick="abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button>`;
+                    }
+                    rowHTML += `</div>`;
+                });
+
+                gridContainer.innerHTML += rowHTML;
+            });
+
+            // VINCULAR EVENTO DE ATUALIZAÇÃO NOS CHECKBOXES
+            document.querySelectorAll('.task-updater').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const taskId = this.getAttribute('data-id');
+                    const novoStatus = this.checked ? "Concluída" : "Pendente";
+                    atualizarStatusFirebase(taskId, novoStatus);
+                });
+            });
+        }
+
+        // ==========================================
+        // NAVEGAÇÃO DA SEMANA
+        // ==========================================
+        document.getElementById('btn-prev-week').addEventListener('click', () => { dataInicioSemana.setDate(dataInicioSemana.getDate() - 7); renderizarGrid(); });
+        document.getElementById('btn-next-week').addEventListener('click', () => { dataInicioSemana.setDate(dataInicioSemana.getDate() + 7); renderizarGrid(); });
+        document.getElementById('btn-today').addEventListener('click', () => { dataInicioSemana = getStartOfWeek(new Date()); renderizarGrid(); });
+
+        // ==========================================
+        // FIREBASE CRUD
+        // ==========================================
+        function carregarTarefas() {
+            const tarefasRef = ref(db, 'agenda_tarefas');
+            onValue(tarefasRef, (snapshot) => {
+                listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
+                renderizarGrid();
+            });
+        }
+
+        document.getElementById('btnSalvarDemanda').addEventListener('click', () => {
+            const titulo = document.getElementById('demanda-titulo').value;
+            const colabEmail = document.getElementById('demanda-colaborador').value;
+            const data = document.getElementById('demanda-data').value;
+            const tipo = document.getElementById('demanda-tipo').value;
+
+            if (!titulo || !data || !colabEmail) {
+                showToast("Preencha todos os campos!", "error");
+                return;
+            }
+
+            const tarefasRef = ref(db, 'agenda_tarefas');
+            const novaTarefaRef = push(tarefasRef);
+
+            set(novaTarefaRef, {
+                titulo: titulo,
+                colaboradorEmail: colabEmail,
+                criadoPor: usuarioAtual.email,
+                data: data,
+                tipo: tipo,
+                status: "Pendente",
+                criadoEm: new Date().toISOString()
+            }).then(() => {
+                showToast("Tarefa atribuída com sucesso!", "success");
+                fecharModalDemanda();
+            }).catch((error) => {
+                showToast("Erro ao criar: " + error.message, "error");
+            });
+        });
+
+        function atualizarStatusFirebase(taskId, novoStatus) {
+            const updateRef = ref(db, 'agenda_tarefas/' + taskId);
+            update(updateRef, {
+                status: novoStatus,
+                atualizadoPor: usuarioAtual.email,
+                atualizadoEm: new Date().toISOString()
+            });
+        }
     </script>
 </body>
 
