@@ -3,9 +3,10 @@
 // 1. Importa as ferramentas de inicialização do Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+// Adicionado o GoogleAuthProvider na importação abaixo:
+import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
-// 2. A sua "Chave Mestra" (agora fica num lugar só!)
+// 2. A sua "Chave Mestra"
 const firebaseConfig = {
     apiKey: "AIzaSyD7eH-pHtJ0zor5rDmQavV5CZZbY6fWFuE",
     authDomain: "painel-pricing-96298.firebaseapp.com",
@@ -21,5 +22,8 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// 4. Exporta o banco (db) e a autenticação (auth) para as outras páginas usarem
-export { db, auth };
+// INICIALIZA O PROVEDOR DO GOOGLE AQUI
+const provider = new GoogleAuthProvider();
+
+// 4. Exporta o banco (db), autenticação (auth) e o provedor (provider) para as outras páginas usarem
+export { db, auth, provider };
