@@ -37,9 +37,47 @@
       transform: translateY(-2px);
     }
 
-    /* Ocultar elementos na hora de gerar o PDF */
+    /* ---------------------------------------------------
+       REGRAS EXCLUSIVAS PARA A GERAÇÃO DO PDF
+       Aqui forçamos cores sólidas e removemos transparências
+       --------------------------------------------------- */
     body.gerando-pdf .no-print {
       display: none !important;
+    }
+
+    body.gerando-pdf,
+    body.gerando-pdf #root {
+      background: #ffffff !important;
+      background-image: none !important;
+      color: #000000 !important;
+    }
+
+    body.gerando-pdf .glass-panel {
+      background: #ffffff !important;
+      backdrop-filter: none !important;
+      /* O blur buga o PDF */
+      box-shadow: none !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+
+    body.gerando-pdf h1,
+    body.gerando-pdf h2,
+    body.gerando-pdf th,
+    body.gerando-pdf td {
+      color: #1e293b !important;
+      /* Força um texto escuro e legível */
+      opacity: 1 !important;
+      text-shadow: none !important;
+    }
+
+    body.gerando-pdf table th {
+      font-weight: 700 !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+    }
+
+    body.gerando-pdf .logo-blue {
+      color: #ffffff !important;
+      /* Mantém o texto da logo legível */
     }
   </style>
 </head>
@@ -57,7 +95,7 @@
       </div>
     </div>
   </div>
-  <div id="root">
+  <div id="root" id="pdf-content">
     <div class="header-container glass-panel">
       <div class="logo">
         <img src="/logo.png" alt="DIA A DIA ;DD" style="height: 80px; object-fit: contain;"
@@ -164,8 +202,9 @@
   </div>
 
   <script>
-    // --- FUNÇÃO EXPORTAR PDF (Corrigida para não cortar a tela) ---
+    // --- FUNÇÃO EXPORTAR PDF (Corrigida para não cortar a tela e arrumar opacidade) ---
     window.exportarPDF = function () {
+      // Adiciona classe para esconder os botões indesejados e forçar cores sólidas
       document.body.classList.add('gerando-pdf');
 
       const element = document.getElementById('root');
@@ -178,14 +217,17 @@
           scale: 2,
           scrollX: 0,
           scrollY: 0,
-          useCORS: true
+          useCORS: true,
+          backgroundColor: '#ffffff' // Força o fundo branco no canvas
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
       if (window.showToast) window.showToast("Preparando o seu PDF...", "info");
 
+      // Gera o PDF
       html2pdf().set(opt).from(element).save().then(() => {
+        // Remove a classe para a página voltar ao normal (vidro/cores)
         document.body.classList.remove('gerando-pdf');
         if (window.showToast) window.showToast("PDF baixado com sucesso!", "success");
       }).catch(err => {
