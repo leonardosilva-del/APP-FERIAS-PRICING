@@ -123,13 +123,19 @@
             margin-bottom: 2.5rem;
             flex-wrap: wrap;
             gap: 1rem;
-            padding-right: 220px; /* Espaço para o widget de perfil */
+            padding-right: 220px;
+            /* Espaço para o widget de perfil */
         }
 
         .header-title {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1.25rem;
+        }
+
+        .header-logo {
+            height: 42px;
+            object-fit: contain;
         }
 
         .back-btn {
@@ -155,7 +161,7 @@
         }
 
         h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--text-main);
         }
@@ -503,13 +509,28 @@
             pointer-events: auto;
         }
 
-        .toast.success { background-color: #059669; }
-        .toast.error { background-color: #dc2626; }
-        .toast.info { background-color: #3b82f6; }
+        .toast.success {
+            background-color: #059669;
+        }
+
+        .toast.error {
+            background-color: #dc2626;
+        }
+
+        .toast.info {
+            background-color: #3b82f6;
+        }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
     </style>
 </head>
@@ -526,7 +547,11 @@
             <span id="user-role" class="user-role-widget">Colaborador</span>
         </div>
         <button id="btn-logout" class="btn-logout-widget" title="Sair">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                </path>
+            </svg>
         </button>
     </div>
 
@@ -535,10 +560,12 @@
             <div class="header-title">
                 <a href="/" class="back-btn no-print" title="Voltar ao Menu Principal">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     Voltar
                 </a>
+                <img src="/logo.png" alt="Dia a Dia" class="header-logo">
                 <h1>Escalas de Plantão</h1>
             </div>
 
@@ -546,18 +573,24 @@
                 <!-- Botão discreto para gerar PDF -->
                 <button onclick="exportarPDF()" class="btn-export-pdf" title="Exportar tela para PDF">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
                     </svg>
                 </button>
 
                 <!-- Importar Excel e Modelo (Visíveis apenas para o Gestor) -->
-                <button id="btn-template-header" class="btn-template" style="display: none;" onclick="gerarModeloExcel()" title="Baixar Modelo de Excel para Preenchimento">
+                <button id="btn-template-header" class="btn-template" style="display: none;"
+                    onclick="gerarModeloExcel()" title="Baixar Modelo de Excel para Preenchimento">
                     📄 Baixar Modelo
                 </button>
-                <input type="file" id="excel-file" accept=".xlsx, .xls" style="display: none;" onchange="processarExcel(event)">
-                <button id="btn-import-header" class="btn-import" style="display: none;" onclick="document.getElementById('excel-file').click();">
+                <input type="file" id="excel-file" accept=".xlsx, .xls" style="display: none;"
+                    onchange="processarExcel(event)">
+                <button id="btn-import-header" class="btn-import" style="display: none;"
+                    onclick="document.getElementById('excel-file').click();">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                     </svg>
                     Importar
                 </button>
@@ -587,7 +620,8 @@
                         </div>
                         <button type="submit" class="btn-add">
                             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                             Adicionar
                         </button>
@@ -600,7 +634,8 @@
         <div class="filters-section">
             <div class="filter-group no-print">
                 <span class="filter-icon">🔍</span>
-                <input type="text" id="filtro-nome" placeholder="Buscar por colaborador ou telefone..." oninput="aplicarFiltros()" autocomplete="off">
+                <input type="text" id="filtro-nome" placeholder="Buscar por colaborador ou telefone..."
+                    oninput="aplicarFiltros()" autocomplete="off">
             </div>
             <div class="filter-group">
                 <span class="filter-icon">📅</span>
