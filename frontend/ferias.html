@@ -13,6 +13,71 @@
   <style>
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      position: relative;
+    }
+
+    /* --- WIDGET DE PERFIL --- */
+    .user-profile-widget {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      padding: 6px 16px 6px 6px;
+      border-radius: 50px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+
+    .user-profile-widget:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      transform: translateY(-1px);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #0ea5e9;
+      object-fit: cover;
+    }
+
+    .user-info-widget {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .user-name-widget {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .user-role-widget {
+      font-size: 0.7rem;
+      color: #64748b;
+      line-height: 1.2;
+    }
+
+    .btn-logout-widget {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      padding: 6px;
+      margin-left: 4px;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-logout-widget:hover {
+      background: #fee2e2;
+      color: #ef4444;
     }
 
     /* Botão discreto de PDF */
@@ -39,7 +104,6 @@
 
     /* ---------------------------------------------------
        REGRAS EXCLUSIVAS PARA A GERAÇÃO DO PDF
-       Aqui forçamos cores sólidas e removemos transparências
        --------------------------------------------------- */
     body.gerando-pdf .no-print {
       display: none !important;
@@ -55,7 +119,6 @@
     body.gerando-pdf .glass-panel {
       background: #ffffff !important;
       backdrop-filter: none !important;
-      /* O blur buga o PDF */
       box-shadow: none !important;
       border: 1px solid #e2e8f0 !important;
     }
@@ -65,7 +128,6 @@
     body.gerando-pdf th,
     body.gerando-pdf td {
       color: #1e293b !important;
-      /* Força um texto escuro e legível */
       opacity: 1 !important;
       text-shadow: none !important;
     }
@@ -77,24 +139,13 @@
 
     body.gerando-pdf .logo-blue {
       color: #ffffff !important;
-      /* Mantém o texto da logo legível */
     }
   </style>
 </head>
 
 <body>
   <div id="toast-container"></div>
-  <div id="modalLogin" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <h2>Acesso da Gestão</h2>
-      <input type="email" id="login-email" placeholder="Seu e-mail">
-      <input type="password" id="login-senha" placeholder="Sua senha">
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="fecharModalLogin()">Cancelar</button>
-        <button class="btn-save" onclick="fazerLogin()">Entrar</button>
-      </div>
-    </div>
-  </div>
+
   <div id="root" id="pdf-content">
     <div class="header-container glass-panel">
       <div class="logo">
@@ -104,14 +155,14 @@
             class="logo-blue"
             style="background: #25408f; color: white; padding: 2px 8px; border-radius: 6px;">;DD</span></span>
       </div>
+
       <div style="margin-left: auto; display: flex; align-items: center; gap: 1rem;">
         <a href="/" class="no-print"
           style="text-decoration: none; color: #475569; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
           onmouseover="this.style.backgroundColor='#f1f5f9'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#475569'; this.style.borderColor='transparent';"
           title="Voltar ao Menu Principal">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
             </path>
           </svg>
@@ -121,16 +172,29 @@
 
         <!-- Botão discreto para gerar PDF -->
         <button onclick="window.exportarPDF()" class="btn-export-pdf no-print" title="Exportar Histórico para PDF">
-          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
             </path>
           </svg>
         </button>
 
-        <button id="btn-login-header" class="btn-login no-print" onclick="abrirModalLogin()">Acesso Gestão</button>
-        <button id="btn-logout-header" class="btn-logout no-print" onclick="fazerLogout()">Sair (Logado)</button>
+        <!-- WIDGET DE PERFIL DO USUÁRIO -->
+        <div class="user-profile-widget no-print">
+          <img id="user-photo" src="" class="user-avatar" alt="Foto">
+          <div class="user-info-widget">
+            <span id="user-name-widget" class="user-name-widget">Carregando...</span>
+            <span id="user-role-widget" class="user-role-widget">Colaborador</span>
+          </div>
+          <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+              </path>
+            </svg>
+          </button>
+        </div>
+
         <div style="position: relative;">
           <button type="button" class="settings-btn no-print" id="settingsBtn" title="Configurações">⚙</button>
           <div class="settings-dropdown no-print" id="settingsDropdown" style="display: none;">
@@ -202,11 +266,9 @@
   </div>
 
   <script>
-    // --- FUNÇÃO EXPORTAR PDF (Corrigida para não cortar a tela e arrumar opacidade) ---
+    // --- FUNÇÃO EXPORTAR PDF ---
     window.exportarPDF = function () {
-      // Adiciona classe para esconder os botões indesejados e forçar cores sólidas
       document.body.classList.add('gerando-pdf');
-
       const element = document.getElementById('root');
 
       const opt = {
@@ -218,16 +280,14 @@
           scrollX: 0,
           scrollY: 0,
           useCORS: true,
-          backgroundColor: '#ffffff' // Força o fundo branco no canvas
+          backgroundColor: '#ffffff'
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
       if (window.showToast) window.showToast("Preparando o seu PDF...", "info");
 
-      // Gera o PDF
       html2pdf().set(opt).from(element).save().then(() => {
-        // Remove a classe para a página voltar ao normal (vidro/cores)
         document.body.classList.remove('gerando-pdf');
         if (window.showToast) window.showToast("PDF baixado com sucesso!", "success");
       }).catch(err => {
@@ -283,7 +343,6 @@
       let fetchTimeout;
       let editIndex = null;
       let currentVacations = [];
-      window.usuarioLogado = false;
 
       const calculateDates = async () => {
         const inicio = inputInicio.value;
@@ -366,7 +425,7 @@
           });
 
           tableBody.innerHTML = "";
-          currentVacations.forEach((v, index) => {
+          currentVacations.forEach((v) => {
             const tr = document.createElement("tr");
 
             let badgeClass = 'status-agendado';
@@ -380,7 +439,7 @@
               <td>${formatDate(v["Dia de Retorno"])}</td>
               <td>${v["Dias de Férias"]}</td>
               <td><span class="status-badge ${badgeClass}">${v.Status}</span></td>
-              ${window.usuarioLogado ? `
+              ${window.perfilUsuario === 'Gestor' ? `
               <td class="no-print">
                 <button type="button" class="action-btn" onclick="window.editVacation(${v.id})">Editar</button>
                 <button type="button" class="action-btn danger" onclick="window.deleteVacation(${v.id})">Excluir</button>
@@ -390,12 +449,13 @@
           });
         } catch (err) {
           console.error(err);
-          tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ef4444;">Erro ao carregar dados. O backend pode estar offline ou houve erro na leitura da planilha Excel.</td></tr>';
+          tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ef4444;">Erro ao carregar dados do servidor.</td></tr>';
         }
       };
       window.loadVacationsGlobal = loadVacations;
 
       window.editVacation = (id) => {
+        if (window.perfilUsuario !== 'Gestor') return;
         const v = currentVacations.find(item => item.id === id);
         if (!v) return;
         inputNome.value = v.Nome;
@@ -413,6 +473,7 @@
       };
 
       window.deleteVacation = async (id) => {
+        if (window.perfilUsuario !== 'Gestor') return;
         if (!confirm("Tem certeza que deseja excluir esse registro?")) return;
 
         try {
@@ -446,6 +507,8 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (window.perfilUsuario !== 'Gestor') return;
+
         submitBtn.disabled = true;
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "Salvando...";
@@ -484,16 +547,18 @@
           submitBtn.innerText = originalText;
         }
       });
-
-      loadVacations();
     });
   </script>
 
+  <!-- FIREBASE AUTHENTICATION SCRIPT -->
   <script type="module">
-    import { auth } from "./firebase-config.js";
-    import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { auth, db } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { ref, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
-    window.showToast = function (message, type = 'success') {
+    window.perfilUsuario = "Colaborador";
+
+    window.showToast = function (message, type = 'info') {
       const container = document.getElementById('toast-container');
       if (!container) return;
       const toast = document.createElement('div');
@@ -504,54 +569,51 @@
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
       }, 3000);
-    }
-
-    window.abrirModalLogin = function () { document.getElementById('modalLogin').style.display = 'flex'; }
-    window.fecharModalLogin = function () { document.getElementById('modalLogin').style.display = 'none'; }
-
-    window.fazerLogin = function () {
-      const email = document.getElementById('login-email').value;
-      const senha = document.getElementById('login-senha').value;
-      signInWithEmailAndPassword(auth, email, senha)
-        .then(() => {
-          fecharModalLogin();
-          showToast("Acesso liberado!", "success");
-        })
-        .catch((err) => {
-          showToast("Erro ao entrar. Verifique o e-mail e senha.", "error");
-        });
-    };
-
-    window.fazerLogout = function () {
-      signOut(auth).then(() => {
-        showToast("Você saiu do modo gestão.", "info");
-      });
     };
 
     onAuthStateChanged(auth, (user) => {
-      const btnLogin = document.getElementById('btn-login-header');
-      const btnLogout = document.getElementById('btn-logout-header');
-      const btnNovo = document.getElementById('toggleFormBtn');
-      const thAcoes = document.getElementById('th-acoes');
-
-      if (user) {
-        window.usuarioLogado = true;
-        if (btnLogin) btnLogin.style.display = 'none';
-        if (btnLogout) btnLogout.style.display = 'inline-block';
-        if (btnNovo) btnNovo.style.display = 'block';
-        if (thAcoes) thAcoes.style.display = 'table-cell';
-      } else {
-        window.usuarioLogado = false;
-        if (btnLogin) btnLogin.style.display = 'inline-block';
-        if (btnLogout) btnLogout.style.display = 'none';
-        if (btnNovo) btnNovo.style.display = 'none';
-        if (thAcoes) thAcoes.style.display = 'none';
-        document.getElementById('agendarPanel').style.display = 'none';
+      if (!user) {
+        // Redireciona se não estiver logado
+        window.location.href = "/";
+        return;
       }
 
-      if (window.loadVacationsGlobal) {
-        window.loadVacationsGlobal();
-      }
+      // Preenche os dados no widget superior
+      document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
+      document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
+
+      // Busca perfil no banco de dados
+      const userRef = ref(db, 'usuarios/' + user.uid);
+      get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          window.perfilUsuario = snapshot.val().perfil || "Colaborador";
+        }
+
+        document.getElementById('user-role-widget').textContent = window.perfilUsuario;
+
+        const btnNovo = document.getElementById('toggleFormBtn');
+        const thAcoes = document.getElementById('th-acoes');
+
+        if (window.perfilUsuario === "Gestor") {
+          if (btnNovo) btnNovo.style.display = 'block';
+          if (thAcoes) thAcoes.style.display = 'table-cell';
+        } else {
+          if (btnNovo) btnNovo.style.display = 'none';
+          if (thAcoes) thAcoes.style.display = 'none';
+          document.getElementById('agendarPanel').style.display = 'none';
+        }
+
+        if (window.loadVacationsGlobal) {
+          window.loadVacationsGlobal();
+        }
+      });
+    });
+
+    // Evento Logout do Widget
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "/";
+      });
     });
   </script>
 </body>
