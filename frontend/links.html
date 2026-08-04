@@ -774,7 +774,7 @@
         <div class="search-bar">
             <span class="search-icon">🔍</span>
             <input type="text" id="search-input" placeholder="Buscar link por nome..." oninput="window.filterLinks()"
-                autocomplete="off">
+                readonly onfocus="this.removeAttribute('readonly');">
         </div>
 
         <!-- Links Counter -->
