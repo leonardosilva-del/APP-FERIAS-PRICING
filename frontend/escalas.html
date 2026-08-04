@@ -405,13 +405,13 @@
             padding: 0.75rem;
             border-radius: 0.75rem;
             text-align: center;
-            min-width: 90px;
+            min-width: 95px;
         }
 
         .date-badge .day {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.1;
             margin-bottom: 0.25rem;
             white-space: nowrap;
         }
@@ -689,18 +689,14 @@
         // --- VERIFICAÇÃO DE AUTENTICAÇÃO E PERMISSAO ---
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // Se não estiver logado, redireciona para a página de login
                 window.location.href = "/";
                 return;
             }
 
             usuarioLogado = true;
-
-            // Atualiza dados no widget de perfil
             document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
             document.getElementById('user-name').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
-            // Busca perfil no banco de dados
             const userRef = ref(db, 'usuarios/' + user.uid);
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
@@ -708,7 +704,6 @@
                 }
                 document.getElementById('user-role').textContent = perfilUsuario;
 
-                // Controle de exibição para GESTOR
                 if (perfilUsuario === "Gestor") {
                     document.getElementById('btn-import-header').style.display = 'flex';
                     document.getElementById('btn-template-header').style.display = 'flex';
@@ -723,7 +718,6 @@
             });
         });
 
-        // Evento Logout
         document.getElementById('btn-logout').addEventListener('click', () => {
             signOut(auth).then(() => {
                 window.location.href = "/";
@@ -926,8 +920,8 @@
                         diasTexto = diaI === diaF ? diaI : `${diaI} - ${diaF}`;
                         mesTexto = meses[dtI.getMonth()];
                     } else {
-                        diasTexto = `${diaI}/${meses[dtI.getMonth()]} - ${diaF}`;
-                        mesTexto = meses[dtF.getMonth()];
+                        diasTexto = `${diaI}/${meses[dtI.getMonth()]} - ${diaF}/${meses[dtF.getMonth()]}`;
+                        mesTexto = "";
                     }
                     anoTexto = dtI.getFullYear();
                 } else {
@@ -936,7 +930,6 @@
                     anoTexto = escala.dataFim || "";
                 }
 
-                // Botão de lixeira visível apenas para o Gestor
                 let btnLixeira = '';
                 if (perfilUsuario === "Gestor") {
                     btnLixeira = `
@@ -1016,61 +1009,83 @@
                             const p = dStr.split('/');
                             return `${ano}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                         }
-                        if (/^\d{1,2}$/.test(dStr)) return dStr;
                         return dStr;
                     }
 
-                    function splitDatas(dataStr) {
-                        if (!dataStr) return { inicio: null, fim: null };
-                        dataStr = String(dataStr).trim();
+                    function splitDatas(row) {
+                        // Tenta encontrar colunas explícitas de início e fim ou colunas combinadas
+                        let valInicio = null, valFim = null;
+
+                        Object.keys(row).forEach(k => {
+                            const chaveMin = k.toLowerCase().trim();
+                            if (chaveMin.includes('inicio') || chaveMin.includes('data 1') || chaveMin.includes('de')) valInicio = row[k];
+                            if (chaveMin.includes('fim') || chaveMin.includes('data 2') || chaveMin.includes('ate') || chaveMin.includes('até')) valFim = row[k];
+                        });
+
+                        // Se encontrou colunas separadas
+                        if (valInicio) {
+                            const inicioISO = parseDatePart(valInicio, anoAtual);
+                            const fimISO = valFim ? parseDatePart(valFim, anoAtual) : inicioISO;
+                            return { inicio: inicioISO, fim: fimISO };
+                        }
+
+                        // Caso contrário, procura em uma coluna única de período
+                        let valDataUnica = null;
+                        Object.keys(row).forEach(k => {
+                            const chaveMin = k.toLowerCase().trim();
+                            if (chaveMin.includes('data') || chaveMin.includes('plan') || chaveMin.includes('period')) valDataUnica = row[k];
+                        });
+
+                        if (!valDataUnica && Object.keys(row).length >= 2) {
+                            const chaves = Object.keys(row);
+                            const v0 = String(row[chaves[0]]);
+                            if (v0.match(/\d/)) valDataUnica = row[chaves[0]];
+                        }
+
+                        if (!valDataUnica) return { inicio: null, fim: null };
+
+                        const dataStr = String(valDataUnica).trim();
                         if (!isNaN(dataStr) && Number(dataStr) > 40000) {
                             const isoDate = excelDateToISO(Number(dataStr));
                             return { inicio: isoDate, fim: isoDate };
                         }
+
                         const separadores = [' e ', ' a ', ' - ', ' à ', ' E ', ' A '];
                         for (const sep of separadores) {
                             if (dataStr.includes(sep)) {
                                 const partes = dataStr.split(sep);
-                                let dataInicio = parseDatePart(partes[0].trim(), anoAtual);
-                                let dataFim = parseDatePart(partes[1].trim(), anoAtual);
-
-                                if (/^\d{1,2}$/.test(partes[0].trim()) && partes[1].includes('/')) {
-                                    const p2 = partes[1].split('/');
-                                    const mes = p2[1] ? p2[1].padStart(2, '0') : '01';
-                                    const ano = p2[2] || anoAtual;
-                                    dataInicio = `${ano}-${mes}-${partes[0].trim().padStart(2, '0')}`;
-                                }
-                                return { inicio: dataInicio, fim: dataFim };
+                                let inicio = parseDatePart(partes[0].trim(), anoAtual);
+                                let fim = parseDatePart(partes[1].trim(), anoAtual);
+                                return { inicio, fim: fim || inicio };
                             }
                         }
-                        const dataUnica = parseDatePart(dataStr, anoAtual);
-                        return { inicio: dataUnica, fim: dataUnica };
+
+                        const unica = parseDatePart(dataStr, anoAtual);
+                        return { inicio: unica, fim: unica };
                     }
 
                     json.forEach((row) => {
                         const chaves = Object.keys(row);
-                        let valNome = null, valData = null, valTel = "";
+                        let valNome = null, valTel = "";
 
                         chaves.forEach(k => {
                             const chaveMin = k.toLowerCase().trim();
                             if (chaveMin.includes('colab') || chaveMin.includes('nome') || chaveMin.includes('func')) valNome = row[k];
-                            if (chaveMin.includes('data') || chaveMin.includes('plan') || chaveMin.includes('period')) valData = row[k];
                             if (chaveMin.includes('tel') || chaveMin.includes('fone') || chaveMin.includes('celular')) valTel = row[k];
                         });
 
-                        if (!valNome && !valData && chaves.length >= 2) {
+                        if (!valNome && chaves.length >= 2) {
                             const v0 = String(row[chaves[0]]), v1 = String(row[chaves[1]]);
-                            if (v0.match(/\d/) && (v0.includes('/') || v0.includes('-') || v0.includes(' e '))) {
-                                valData = row[chaves[0]]; valNome = row[chaves[1]];
+                            if (!(v0.match(/\d/) && (v0.includes('/') || v0.includes('-')))) {
+                                valNome = row[chaves[0]];
                             } else {
-                                valNome = row[chaves[0]]; valData = row[chaves[1]];
+                                valNome = row[chaves[1]];
                             }
                         }
 
-                        if (!valNome || !valData) return;
+                        const datas = splitDatas(row);
 
-                        const datas = splitDatas(valData);
-                        if (datas.inicio) {
+                        if (valNome && datas.inicio) {
                             promises.push(
                                 push(escalasRef, {
                                     nome: String(valNome).trim(),
@@ -1091,7 +1106,10 @@
                     } else {
                         showToast('Nenhum plantão encontrado na planilha. Verifique o formato.', 'error');
                     }
-                } catch (error) { showToast('Erro ao importar arquivo Excel.', 'error'); }
+                } catch (error) {
+                    showToast('Erro ao importar arquivo Excel.', 'error');
+                    console.error(error);
+                }
             };
             reader.readAsBinaryString(file);
             event.target.value = '';
