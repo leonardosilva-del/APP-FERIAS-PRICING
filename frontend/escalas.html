@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SheetJS for Excel Reading -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- html2pdf for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root {
@@ -87,6 +89,28 @@
             font-size: 2.2rem;
             font-weight: 700;
             color: var(--text-main);
+        }
+
+        /* Botão discreto de PDF */
+        .btn-export-pdf {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+        }
+
+        .btn-export-pdf:hover {
+            opacity: 1;
+            color: var(--primary);
+            background-color: rgba(5, 150, 105, 0.1);
+            transform: translateY(-2px);
         }
 
         /* Botões de Login e Ações de Gestão */
@@ -384,6 +408,11 @@
             border: 1px dashed var(--border);
         }
 
+        /* Ocultar elementos na hora de gerar o PDF */
+        body.gerando-pdf .no-print {
+            display: none !important;
+        }
+
         /* Modal Login */
         .modal-overlay {
             position: fixed;
@@ -536,10 +565,10 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="container" id="pdf-content">
         <div class="header">
             <div class="header-title">
-                <a href="/" class="back-btn" title="Voltar ao Menu Principal">
+                <a href="/" class="back-btn no-print" title="Voltar ao Menu Principal">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -548,9 +577,19 @@
                     Voltar
                 </a>
                 <h1>Escalas de Plantão</h1>
+
+                <!-- Botão discreto para gerar PDF -->
+                <button onclick="exportarPDF()" class="btn-export-pdf no-print" title="Exportar tela para PDF">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                </button>
             </div>
 
-            <div class="header-actions">
+            <div class="header-actions no-print">
                 <!-- Botões de Auth -->
                 <button id="btn-login-header" class="btn-login" onclick="abrirModalLogin()">Acesso Gestão</button>
                 <button id="btn-logout-header" class="btn-logout" onclick="fazerLogout()">Sair (Logado)</button>
@@ -570,7 +609,7 @@
         </div>
 
         <!-- Container restrito à Gestão -->
-        <div id="area-gestao">
+        <div id="area-gestao" class="no-print">
             <div class="form-card">
                 <form id="form-escala" onsubmit="adicionarEscala(event)">
                     <div class="form-group">
@@ -600,7 +639,7 @@
 
         <!-- Barra de Filtros -->
         <div class="filters-section">
-            <div class="filter-group">
+            <div class="filter-group no-print">
                 <span class="filter-icon">🔍</span>
                 <input type="text" id="filtro-nome" placeholder="Buscar por colaborador..." oninput="aplicarFiltros()"
                     autocomplete="off">
@@ -622,7 +661,7 @@
                     <option value="10">Novembro</option>
                     <option value="11">Dezembro</option>
                 </select>
-                <span class="select-arrow">▼</span>
+                <span class="select-arrow no-print">▼</span>
             </div>
         </div>
 
@@ -657,6 +696,35 @@
 
         window.abrirModalLogin = function () { document.getElementById('modalLogin').style.display = 'flex'; }
         window.fecharModalLogin = function () { document.getElementById('modalLogin').style.display = 'none'; }
+
+        // --- LÓGICA DE EXPORTAÇÃO PDF ---
+        window.exportarPDF = function () {
+            // Adiciona classe para esconder os botões indesejados durante a captura
+            document.body.classList.add('gerando-pdf');
+
+            const element = document.getElementById('pdf-content');
+
+            const opt = {
+                margin: [10, 10, 10, 10], // Margens do PDF
+                filename: 'Escala_Plantao_Pricing.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, windowWidth: 900 }, // Trava a largura para não quebrar o layout
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showToast("Preparando o seu PDF...", "info");
+
+            // Gera o PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Remove a classe para os botões voltarem a aparecer
+                document.body.classList.remove('gerando-pdf');
+                showToast("PDF baixado com sucesso!", "success");
+            }).catch(err => {
+                document.body.classList.remove('gerando-pdf');
+                showToast("Erro ao gerar PDF.", "error");
+                console.error(err);
+            });
+        };
 
         // --- LÓGICA DE AUTENTICAÇÃO ---
         window.fazerLogin = function () {
@@ -863,10 +931,11 @@
                 }
 
                 // CRÍTICO: Só renderiza a lixeira se estiver logado
+                // A classe 'no-print' garante que a lixeirinha também suma no PDF
                 let btnLixeira = '';
                 if (usuarioLogado) {
                     btnLixeira = `
-                <button class="btn-delete" onclick="deletarEscala('${escala.id}')" title="Remover Plantão">
+                <button class="btn-delete no-print" onclick="deletarEscala('${escala.id}')" title="Remover Plantão">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>`;
                 }
