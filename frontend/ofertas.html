@@ -97,7 +97,7 @@
             color: #ef4444;
         }
 
-        /* Cabeçalho Simplificado com Logo */
+        /* Cabeçalho Simplificado com Logo e Proporção Equilibrada */
         .header-top {
             display: flex;
             justify-content: space-between;
@@ -110,15 +110,17 @@
         }
 
         .header-logo {
-            height: 42px;
+            height: 52px;
             object-fit: contain;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
         }
 
         h1 {
             color: #2c3e50;
-            font-weight: 600;
+            font-weight: 500;
             margin: 0;
-            font-size: 24px;
+            font-size: 20px;
+            letter-spacing: -0.2px;
         }
 
         /* Container de Controles */
@@ -734,7 +736,7 @@
         <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1">
                 </path>
             </svg>
         </button>
@@ -742,7 +744,7 @@
 
     <div class="container">
         <div class="header-top">
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 18px;">
                 <a href="/"
                     style="text-decoration: none; color: #475569; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
                     onmouseover="this.style.backgroundColor='#f1f5f9'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"

@@ -130,12 +130,14 @@
         .header-title {
             display: flex;
             align-items: center;
-            gap: 1.25rem;
+            gap: 1.5rem;
         }
 
         .header-logo {
-            height: 42px;
+            height: 65px;
+            max-width: 260px;
             object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
         }
 
         .back-btn {
@@ -161,7 +163,7 @@
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: var(--text-main);
         }
@@ -1013,7 +1015,6 @@
                     }
 
                     function splitDatas(row) {
-                        // Tenta encontrar colunas explícitas de início e fim ou colunas combinadas
                         let valInicio = null, valFim = null;
 
                         Object.keys(row).forEach(k => {
@@ -1022,14 +1023,12 @@
                             if (chaveMin.includes('fim') || chaveMin.includes('data 2') || chaveMin.includes('ate') || chaveMin.includes('até')) valFim = row[k];
                         });
 
-                        // Se encontrou colunas separadas
                         if (valInicio) {
                             const inicioISO = parseDatePart(valInicio, anoAtual);
                             const fimISO = valFim ? parseDatePart(valFim, anoAtual) : inicioISO;
                             return { inicio: inicioISO, fim: fimISO };
                         }
 
-                        // Caso contrário, procura em uma coluna única de período
                         let valDataUnica = null;
                         Object.keys(row).forEach(k => {
                             const chaveMin = k.toLowerCase().trim();
