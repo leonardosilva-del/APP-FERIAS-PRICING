@@ -159,27 +159,15 @@
             pointer-events: auto;
         }
 
-        .toast.success {
-            background-color: var(--status-success);
-        }
-
-        .toast.error {
-            background-color: var(--status-danger);
-        }
+        .toast.success { background-color: var(--status-success); }
+        .toast.error { background-color: var(--status-danger); }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Modal Nova Demanda */
+        /* MODAIS REUTILIZÁVEIS */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -207,7 +195,26 @@
             gap: 15px;
             box-shadow: var(--shadow-lg);
             box-sizing: border-box;
+            position: relative;
         }
+
+        .modal-content.large {
+            max-width: 550px;
+            max-height: 90vh;
+        }
+
+        .modal-header-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-400);
+            cursor: pointer;
+        }
+
+        .modal-header-close:hover { color: var(--text-900); }
 
         .modal-content h2 {
             margin: 0 0 10px 0;
@@ -224,7 +231,8 @@
         }
 
         .modal-content input,
-        .modal-content select {
+        .modal-content select,
+        .modal-content textarea {
             padding: 12px;
             border: 1px solid var(--border-hover);
             border-radius: var(--radius-md);
@@ -234,10 +242,12 @@
             box-sizing: border-box;
             outline: none;
             background: var(--bg-swimlane);
+            resize: none;
         }
 
         .modal-content input:focus,
-        .modal-content select:focus {
+        .modal-content select:focus,
+        .modal-content textarea:focus {
             border-color: var(--brand-primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
             background: var(--bg-surface);
@@ -260,24 +270,48 @@
             transition: all 0.2s;
         }
 
-        .btn-save {
-            background-color: var(--brand-primary);
-            color: white;
-        }
+        .btn-save { background-color: var(--brand-primary); color: white; }
+        .btn-save:hover { background-color: var(--brand-primary-hover); }
+        .btn-cancel { background-color: var(--bg-swimlane); color: var(--text-600); border: 1px solid var(--border-light); }
+        .btn-cancel:hover { background-color: var(--border-light); color: var(--text-900); }
 
-        .btn-save:hover {
-            background-color: var(--brand-primary-hover);
-        }
-
-        .btn-cancel {
-            background-color: var(--bg-swimlane);
+        /* DETALHES E COMENTÁRIOS DA TAREFA */
+        .task-detail-info {
+            background: var(--bg-swimlane);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
             color: var(--text-600);
             border: 1px solid var(--border-light);
         }
+        
+        .task-detail-info strong { color: var(--text-900); }
 
-        .btn-cancel:hover {
-            background-color: var(--border-light);
+        .comments-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .comment-bubble {
+            background: #f1f5f9;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             color: var(--text-900);
+            border-left: 3px solid var(--brand-primary);
+        }
+
+        .comment-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-400);
+            margin-bottom: 5px;
+            font-weight: 600;
         }
 
         /* Estrutura Core */
@@ -531,13 +565,8 @@
             border-color: var(--border-hover);
         }
 
-        .task-card.priority-high {
-            border-left-color: var(--status-danger);
-        }
-
-        .task-card.priority-low {
-            border-left-color: var(--status-info);
-        }
+        .task-card.priority-high { border-left-color: var(--status-danger); }
+        .task-card.priority-low { border-left-color: var(--status-info); }
 
         .task-header {
             display: flex;
@@ -559,10 +588,7 @@
             text-transform: uppercase;
         }
 
-        .tag.base {
-            background: #e0e7ff;
-            color: #4338ca;
-        }
+        .tag.base { background: #e0e7ff; color: #4338ca; }
 
         .task-title {
             font-size: 0.85rem;
@@ -591,9 +617,7 @@
             font-weight: 500;
         }
 
-        .custom-checkbox input {
-            display: none;
-        }
+        .custom-checkbox input { display: none; }
 
         .checkmark {
             width: 18px;
@@ -688,6 +712,31 @@
         </div>
     </div>
 
+    <!-- Modal Detalhes e Chat da Demanda -->
+    <div id="modalDetalhe" class="modal-overlay" style="display: none;">
+        <div class="modal-content large">
+            <button class="modal-header-close" onclick="fecharModalDetalhe()">×</button>
+            <h2>Detalhes da Demanda</h2>
+            
+            <div class="task-detail-info">
+                <p style="margin-bottom: 5px;"><strong>Título:</strong> <span id="detalhe-titulo"></span></p>
+                <p style="margin-bottom: 5px;"><strong>Responsável:</strong> <span id="detalhe-responsavel"></span></p>
+                <p style="margin-bottom: 5px;"><strong>Criado por:</strong> <span id="detalhe-criador"></span></p>
+                <p style="margin-bottom: 0;"><strong>Status Atual:</strong> <span id="detalhe-status" style="font-weight: bold; color: var(--brand-primary);"></span></p>
+            </div>
+
+            <h3 style="font-size: 1rem; color: var(--text-900); margin-top: 10px; margin-bottom: 5px;">Comentários e Histórico</h3>
+            <div id="comentarios-lista" class="comments-section">
+                <!-- Comentários injetados aqui -->
+            </div>
+
+            <div style="margin-top: 10px;">
+                <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="height: 60px; margin-bottom: 10px;"></textarea>
+                <button class="btn-save" id="btnSalvarComentario" style="width: 100%;">Enviar Comentário</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Topbar -->
     <header class="topbar">
         <div class="topbar-left">
@@ -758,6 +807,7 @@
         let listaUsuariosGlobal = [];
         let listaTarefasGlobal = {};
         let dataInicioSemana = getStartOfWeek(new Date());
+        let idTarefaDetalhe = null; // Armazena a tarefa aberta no chat
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -778,10 +828,36 @@
             document.getElementById('modalDemanda').style.display = 'flex';
             document.getElementById('demanda-titulo').value = '';
             document.getElementById('demanda-data').value = dataPadrao || formataDataISO(new Date());
+            
+            // Se o usuário logado for Colaborador, trava a seleção de responsável nele mesmo
+            if (perfilUsuario !== "Gestor") {
+                const selectColab = document.getElementById('demanda-colaborador');
+                selectColab.value = usuarioAtual.email;
+            }
         }
 
         window.fecharModalDemanda = function () {
             document.getElementById('modalDemanda').style.display = 'none';
+        }
+
+        window.fecharModalDetalhe = function () {
+            document.getElementById('modalDetalhe').style.display = 'none';
+            idTarefaDetalhe = null;
+        }
+
+        window.abrirDetalhesTarefa = function (taskId) {
+            idTarefaDetalhe = taskId;
+            const task = listaTarefasGlobal[taskId];
+            
+            document.getElementById('detalhe-titulo').textContent = task.titulo;
+            document.getElementById('detalhe-responsavel').textContent = task.colaboradorEmail;
+            document.getElementById('detalhe-criador').textContent = task.criadoPor;
+            document.getElementById('detalhe-status').textContent = task.status;
+            
+            document.getElementById('novo-comentario').value = '';
+            document.getElementById('modalDetalhe').style.display = 'flex';
+
+            renderizarComentarios(taskId);
         }
 
         function getStartOfWeek(data) {
@@ -801,18 +877,15 @@
         // ==========================================
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // Redireciona se não estiver logado
                 window.location.href = "/";
                 return;
             }
 
             usuarioAtual = user;
 
-            // Preenche os dados no widget superior
             document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
             document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
-            // Busca dados do usuário logado no banco
             const userRef = ref(db, 'usuarios/' + user.uid);
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
@@ -822,7 +895,6 @@
 
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
 
-                // Se for Gestor, exibe botão de Nova Demanda
                 if (perfilUsuario === "Gestor") {
                     document.getElementById('btnAbrirModal').style.display = 'inline-flex';
                 }
@@ -832,7 +904,6 @@
             });
         });
 
-        // Evento Logout do Widget
         document.getElementById('btn-logout').addEventListener('click', () => {
             signOut(auth).then(() => {
                 window.location.href = "/";
@@ -840,7 +911,7 @@
         });
 
         // ==========================================
-        // CARREGAR USUÁRIOS E PREENCHER SELECT
+        // CARREGAR USUÁRIOS
         // ==========================================
         function carregarUsuarios() {
             const usuariosRef = ref(db, 'usuarios');
@@ -856,10 +927,13 @@
                         u.uid = uid;
                         listaUsuariosGlobal.push(u);
 
-                        const option = document.createElement('option');
-                        option.value = u.email;
-                        option.textContent = u.nome || u.email;
-                        selectColab.appendChild(option);
+                        // Popula o select garantindo que, se for colaborador, só ele aparece e fica fixo
+                        if (perfilUsuario === "Gestor" || u.email === usuarioAtual.email) {
+                            const option = document.createElement('option');
+                            option.value = u.email;
+                            option.textContent = u.nome || u.email;
+                            selectColab.appendChild(option);
+                        }
                     });
                 }
                 renderizarGrid();
@@ -867,7 +941,7 @@
         }
 
         // ==========================================
-        // AUTOMAGIC ROLLOVER (TAREFAS ACUMULADAS)
+        // AUTOMAGIC ROLLOVER
         // ==========================================
         function verificarEAtualizarPendentes(tarefas) {
             const hojeStr = formataDataISO(new Date());
@@ -875,8 +949,7 @@
 
             Object.keys(tarefas).forEach(taskId => {
                 const task = tarefas[taskId];
-
-                // Se a tarefa estiver "Pendente" e a data for estritamente anterior a hoje
+                
                 if (task.status === "Pendente" && task.data < hojeStr) {
                     const taskRef = ref(db, 'agenda_tarefas/' + taskId);
                     update(taskRef, {
@@ -889,7 +962,7 @@
             });
 
             if (houveAtualizacao) {
-                window.showToast("Tarefas pendentes foram transferidas para hoje!", "info");
+                window.showToast("Tarefas pendentes rolaram para hoje!", "info");
             }
         }
 
@@ -906,7 +979,6 @@
 
             const hojeISO = formataDataISO(new Date());
 
-            // Filtro de exibições base do perfil
             let usuariosExibicao = [];
             if (perfilUsuario === "Gestor") {
                 usuariosExibicao = listaUsuariosGlobal;
@@ -923,7 +995,6 @@
                 }
             }
 
-            // 1. CABEÇALHO DOS DIAS
             let headerHTML = `<div class="day-header sticky-left"><span style="font-weight: 600; color: var(--text-600); font-size: 0.85rem;">Equipe (${usuariosExibicao.length})</span></div>`;
             let datasDaSemanaISO = [];
 
@@ -948,7 +1019,6 @@
             }
             gridContainer.innerHTML += headerHTML;
 
-            // 2. LINHAS DOS COLABORADORES
             usuariosExibicao.forEach((colab) => {
                 let fotoUrl = colab.foto || 'https://via.placeholder.com/40';
 
@@ -974,9 +1044,16 @@
                             let isDoneClass = task.status === 'Concluída' ? 'is-done' : '';
                             let isChecked = task.status === 'Concluída' ? 'checked' : '';
 
+                            // Conta a quantidade de comentários (se existir)
+                            let commentsCount = task.comentarios ? Object.keys(task.comentarios).length : 0;
+                            let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.7rem; color:var(--text-400);">💬 ${commentsCount}</span>` : '';
+
                             rowHTML += `
-                            <div class="task-card ${classPriority} ${isDoneClass}">
-                                <div class="task-header"><div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div></div>
+                            <div class="task-card ${classPriority} ${isDoneClass}" onclick="abrirDetalhesTarefa('${taskId}')">
+                                <div class="task-header">
+                                    <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div>
+                                    ${commentsBadge}
+                                </div>
                                 <h4 class="task-title">${task.titulo}</h4>
                                 <div class="task-footer">
                                     <label class="custom-checkbox" onclick="event.stopPropagation()">
@@ -989,7 +1066,8 @@
                         }
                     });
 
-                    if (perfilUsuario === "Gestor") {
+                    // O botão aparece tanto pro Gestor quanto se for a linha do próprio Colaborador
+                    if (perfilUsuario === "Gestor" || colab.email === usuarioAtual.email) {
                         rowHTML += `<button class="add-task-btn" onclick="abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button>`;
                     }
                     rowHTML += `</div>`;
@@ -998,7 +1076,7 @@
                 gridContainer.innerHTML += rowHTML;
             });
 
-            // VINCULAR EVENTO DE ATUALIZAÇÃO NOS CHECKBOXES
+            // ATUALIZAÇÃO NOS CHECKBOXES
             document.querySelectorAll('.task-updater').forEach(checkbox => {
                 checkbox.addEventListener('change', function () {
                     const taskId = this.getAttribute('data-id');
@@ -1008,15 +1086,12 @@
             });
         }
 
-        // ==========================================
-        // NAVEGAÇÃO DA SEMANA
-        // ==========================================
         document.getElementById('btn-prev-week').addEventListener('click', () => { dataInicioSemana.setDate(dataInicioSemana.getDate() - 7); renderizarGrid(); });
         document.getElementById('btn-next-week').addEventListener('click', () => { dataInicioSemana.setDate(dataInicioSemana.getDate() + 7); renderizarGrid(); });
         document.getElementById('btn-today').addEventListener('click', () => { dataInicioSemana = getStartOfWeek(new Date()); renderizarGrid(); });
 
         // ==========================================
-        // FIREBASE CRUD
+        // FIREBASE CRUD TAREFAS
         // ==========================================
         function carregarTarefas() {
             const tarefasRef = ref(db, 'agenda_tarefas');
@@ -1024,6 +1099,9 @@
                 if (snapshot.exists()) {
                     listaTarefasGlobal = snapshot.val();
                     verificarEAtualizarPendentes(listaTarefasGlobal);
+                    
+                    // Se o modal de detalhes estiver aberto, atualiza a lista de comentários em tempo real
+                    if(idTarefaDetalhe) renderizarComentarios(idTarefaDetalhe);
                 } else {
                     listaTarefasGlobal = {};
                 }
@@ -1069,6 +1147,64 @@
                 atualizadoEm: new Date().toISOString()
             });
         }
+
+        // ==========================================
+        // FIREBASE CRUD COMENTÁRIOS DA TAREFA
+        // ==========================================
+        document.getElementById('btnSalvarComentario').addEventListener('click', () => {
+            if (!idTarefaDetalhe) return;
+            
+            const texto = document.getElementById('novo-comentario').value.trim();
+            if (!texto) {
+                showToast("Digite algo para comentar", "warning");
+                return;
+            }
+
+            const comentariosRef = ref(db, `agenda_tarefas/${idTarefaDetalhe}/comentarios`);
+            const novoComentarioRef = push(comentariosRef);
+
+            set(novoComentarioRef, {
+                texto: texto,
+                autor: usuarioAtual.displayName ? usuarioAtual.displayName.split(' ')[0] : 'Usuário',
+                autorEmail: usuarioAtual.email,
+                dataHora: new Date().toLocaleString('pt-BR')
+            }).then(() => {
+                document.getElementById('novo-comentario').value = '';
+            }).catch(err => {
+                showToast("Erro ao enviar", "error");
+            });
+        });
+
+        function renderizarComentarios(taskId) {
+            const listaDiv = document.getElementById('comentarios-lista');
+            listaDiv.innerHTML = '';
+            
+            const task = listaTarefasGlobal[taskId];
+            if (!task || !task.comentarios) {
+                listaDiv.innerHTML = '<p style="text-align:center; color:var(--text-400); font-size:0.85rem; margin-top:10px;">Sem comentários ainda.</p>';
+                return;
+            }
+
+            const comentariosArray = Object.values(task.comentarios);
+            comentariosArray.forEach(c => {
+                const isMe = c.autorEmail === usuarioAtual.email;
+                const alignStyle = isMe ? 'margin-left: 20px; border-left:none; border-right:3px solid var(--brand-secondary); background:#f3e8ff;' : 'margin-right: 20px;';
+                
+                listaDiv.innerHTML += `
+                    <div class="comment-bubble" style="${alignStyle}">
+                        <div class="comment-meta">
+                            <span>${c.autor}</span>
+                            <span>${c.dataHora}</span>
+                        </div>
+                        <div>${c.texto}</div>
+                    </div>
+                `;
+            });
+
+            // Faz scroll automático para o final do chat
+            listaDiv.scrollTop = listaDiv.scrollHeight;
+        }
+
     </script>
 </body>
 
