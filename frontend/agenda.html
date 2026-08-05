@@ -253,6 +253,21 @@
             background: var(--bg-surface);
         }
 
+        /* Checkbox Dias Semana para Rotina Fixa */
+        .check-dias-semana {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px;
+        }
+        .check-dias-semana label {
+            display: flex; align-items: center; gap: 4px; font-weight: 500; font-size: 0.8rem;
+            background: #fff; border: 1px solid var(--border-light); padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .check-dias-semana input:checked + span {
+            color: var(--brand-primary); font-weight: 700;
+        }
+        .check-dias-semana input {
+            accent-color: var(--brand-primary); width: 14px; height: 14px;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -684,7 +699,7 @@
 
     <!-- Modal Nova Demanda -->
     <div id="modalDemanda" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
             <h2>Nova Demanda</h2>
 
             <label>O que precisa ser feito?</label>
@@ -695,9 +710,6 @@
                 <!-- Injetado via JS com usuários do Firebase -->
             </select>
 
-            <label>Data</label>
-            <input type="date" id="demanda-data">
-
             <label>Prioridade/Tipo</label>
             <select id="demanda-tipo">
                 <option value="Rotina">Rotina (Azul)</option>
@@ -705,9 +717,40 @@
                 <option value="Urgente">Urgente (Vermelho)</option>
             </select>
 
+            <!-- OPÇÃO DE TAREFA FIXA -->
+            <div style="margin-top: 10px; margin-bottom: 5px; padding: 12px; background: rgba(99, 102, 241, 0.05); border: 1px dashed var(--brand-primary); border-radius: 8px;">
+                <label class="custom-checkbox" style="margin-bottom: 0;">
+                    <input type="checkbox" id="chk-demanda-fixa" onchange="window.toggleDiasFixos()">
+                    <span class="checkmark"></span>
+                    <span style="font-weight: 600; color: var(--brand-primary);">📌 Tornar Demanda Fixa (Recorrente)</span>
+                </label>
+                
+                <div id="container-dias-fixos" class="check-dias-semana" style="display: none; margin-top: 12px;">
+                    <label><input type="checkbox" class="chk-dia" value="1"> <span>Seg</span></label>
+                    <label><input type="checkbox" class="chk-dia" value="2"> <span>Ter</span></label>
+                    <label><input type="checkbox" class="chk-dia" value="3"> <span>Qua</span></label>
+                    <label><input type="checkbox" class="chk-dia" value="4"> <span>Qui</span></label>
+                    <label><input type="checkbox" class="chk-dia" value="5"> <span>Sex</span></label>
+                    <label><input type="checkbox" class="chk-dia" value="6"> <span>Sáb</span></label>
+                </div>
+            </div>
+
+            <!-- CONTAINER DATA ESPECÍFICA -->
+            <div id="container-data" style="margin-top: 5px;">
+                <label>Data Específica</label>
+                <input type="date" id="demanda-data">
+            </div>
+
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="fecharModalDemanda()">Cancelar</button>
                 <button class="btn-save" id="btnSalvarDemanda">Salvar Tarefa</button>
+            </div>
+
+            <!-- LISTA DE DEMANDAS FIXAS (VISÍVEL PRA GERENCIAR) -->
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border-light);">
+            <h3 style="font-size: 0.95rem; color: var(--text-900); margin-bottom:10px;">📌 Suas Demandas Fixas Ativas</h3>
+            <div id="lista-fixas" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
+                <!-- Injetado via JS -->
             </div>
         </div>
     </div>
@@ -733,6 +776,11 @@
             <div style="margin-top: 10px;">
                 <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="height: 60px; margin-bottom: 10px;"></textarea>
                 <button class="btn-save" id="btnSalvarComentario" style="width: 100%;">Enviar Comentário</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-cancel" style="flex:1;" onclick="fecharModalDetalhe()">Fechar Aba</button>
+                <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--danger); border-color: var(--danger);" onclick="excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
             </div>
         </div>
     </div>
@@ -760,8 +808,8 @@
         </div>
 
         <div class="topbar-actions">
-            <!-- Botão exibido somente para Gestor -->
-            <button class="btn btn-primary" id="btnAbrirModal" onclick="abrirModalDemanda()" style="display: none;">
+            <!-- Botão de Nova Demanda visível para TODOS agora! -->
+            <button class="btn btn-primary" id="btnAbrirModal" onclick="abrirModalDemanda()" style="display: inline-flex;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -797,7 +845,7 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, onValue, push, set, update, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, onValue, push, set, update, remove, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         // ==========================================
         // VARIÁVEIS GLOBAIS
@@ -806,8 +854,12 @@
         let perfilUsuario = "Colaborador";
         let listaUsuariosGlobal = [];
         let listaTarefasGlobal = {};
+        let listaFixasGlobal = {};
         let dataInicioSemana = getStartOfWeek(new Date());
-        let idTarefaDetalhe = null; // Armazena a tarefa aberta no chat
+        let idTarefaDetalhe = null; 
+
+        let loadedFixas = false;
+        let loadedTarefas = false;
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -829,8 +881,11 @@
             document.getElementById('demanda-titulo').value = '';
             document.getElementById('demanda-data').value = dataPadrao || formataDataISO(new Date());
             
+            document.getElementById('chk-demanda-fixa').checked = false;
+            window.toggleDiasFixos();
+            
             // Se o usuário logado for Colaborador, trava a seleção de responsável nele mesmo
-            if (perfilUsuario !== "Gestor") {
+            if (perfilUsuario !== "Gestor" && usuarioAtual) {
                 const selectColab = document.getElementById('demanda-colaborador');
                 selectColab.value = usuarioAtual.email;
             }
@@ -858,6 +913,22 @@
             document.getElementById('modalDetalhe').style.display = 'flex';
 
             renderizarComentarios(taskId);
+        }
+
+        window.excluirTarefaAtual = function() {
+            if(!idTarefaDetalhe) return;
+            if(confirm("Tem certeza que deseja excluir esta tarefa específica do quadro?")) {
+                remove(ref(db, 'agenda_tarefas/' + idTarefaDetalhe)).then(() => {
+                    showToast("Tarefa excluída", "success");
+                    fecharModalDetalhe();
+                });
+            }
+        }
+
+        window.toggleDiasFixos = function() {
+            const isFixa = document.getElementById('chk-demanda-fixa').checked;
+            document.getElementById('container-data').style.display = isFixa ? 'none' : 'block';
+            document.getElementById('container-dias-fixos').style.display = isFixa ? 'flex' : 'none';
         }
 
         function getStartOfWeek(data) {
@@ -895,19 +966,13 @@
 
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
 
-                if (perfilUsuario === "Gestor") {
-                    document.getElementById('btnAbrirModal').style.display = 'inline-flex';
-                }
-
                 carregarUsuarios();
-                carregarTarefas();
+                carregarBasesDeDados();
             });
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "/";
-            });
+            signOut(auth).then(() => { window.location.href = "/"; });
         });
 
         // ==========================================
@@ -927,7 +992,6 @@
                         u.uid = uid;
                         listaUsuariosGlobal.push(u);
 
-                        // Popula o select garantindo que, se for colaborador, só ele aparece e fica fixo
                         if (perfilUsuario === "Gestor" || u.email === usuarioAtual.email) {
                             const option = document.createElement('option');
                             option.value = u.email;
@@ -936,33 +1000,207 @@
                         }
                     });
                 }
-                renderizarGrid();
+                if(loadedTarefas) renderizarGrid();
             });
         }
 
         // ==========================================
-        // AUTOMAGIC ROLLOVER
+        // FIREBASE CRUD: TAREFAS E FIXAS
+        // ==========================================
+        function carregarBasesDeDados() {
+            // Carrega Templates de Rotinas Fixas
+            onValue(ref(db, 'agenda_fixas'), (snapshot) => {
+                listaFixasGlobal = snapshot.exists() ? snapshot.val() : {};
+                loadedFixas = true;
+                renderizarFixasUI();
+                if (loadedTarefas) processarTudo();
+            });
+
+            // Carrega as Instâncias das Tarefas
+            onValue(ref(db, 'agenda_tarefas'), (snapshot) => {
+                listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
+                loadedTarefas = true;
+                if (loadedFixas) processarTudo();
+            });
+        }
+
+        function processarTudo() {
+            verificarEAtualizarPendentes(listaTarefasGlobal);
+            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
+            renderizarGrid();
+            if(idTarefaDetalhe) renderizarComentarios(idTarefaDetalhe);
+        }
+
+        // ==========================================
+        // LÓGICA DE DEMANDAS FIXAS (INSTANCIAÇÃO)
+        // ==========================================
+        function verificarEInstanciarFixas(fixas, tarefas) {
+            if (!fixas || Object.keys(fixas).length === 0) return;
+            
+            let novasTarefas = {};
+            let precisaAtualizar = false;
+
+            const datasAtuais = [];
+            for (let i = 0; i < 6; i++) {
+                let d = new Date(dataInicioSemana);
+                d.setDate(d.getDate() + i);
+                datasAtuais.push({
+                    iso: formataDataISO(d),
+                    diaSemana: d.getDay() // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
+                });
+            }
+
+            Object.keys(fixas).forEach(idFixa => {
+                const fixa = fixas[idFixa];
+                
+                datasAtuais.forEach(dataObj => {
+                    if (fixa.dias && fixa.dias.includes(dataObj.diaSemana)) {
+                        let jaExiste = false;
+                        Object.values(tarefas).forEach(t => {
+                            if (t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) {
+                                jaExiste = true;
+                            }
+                        });
+
+                        if (!jaExiste) {
+                            const newTaskId = push(ref(db, 'agenda_tarefas')).key;
+                            const nova = {
+                                titulo: fixa.titulo,
+                                colaboradorEmail: fixa.colaboradorEmail,
+                                criadoPor: 'Sistema (Rotina Fixa)',
+                                data: dataObj.iso,
+                                dataReferencia: dataObj.iso,
+                                idFixaRef: idFixa,
+                                tipo: fixa.tipo,
+                                status: "Pendente",
+                                criadoEm: new Date().toISOString()
+                            };
+                            novasTarefas['agenda_tarefas/' + newTaskId] = nova;
+                            tarefas[newTaskId] = nova; // Previne recriação imediata na mesma execução
+                            precisaAtualizar = true;
+                        }
+                    }
+                });
+            });
+
+            if (precisaAtualizar) {
+                update(ref(db), novasTarefas);
+            }
+        }
+
+        function renderizarFixasUI() {
+            const listaDiv = document.getElementById('lista-fixas');
+            if(!listaDiv) return;
+            listaDiv.innerHTML = '';
+            
+            let count = 0;
+            Object.keys(listaFixasGlobal).forEach(id => {
+                const f = listaFixasGlobal[id];
+                if (perfilUsuario === 'Gestor' || f.colaboradorEmail === usuarioAtual.email) {
+                    count++;
+                    const diasNomes = f.dias.map(d => diasDaSemana[d].substring(0,3)).join(', ');
+                    listaDiv.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; margin-bottom:6px; border:1px solid #e2e8f0;">
+                            <div>
+                                <strong style="color:var(--text-900); font-size:0.9rem;">${f.titulo}</strong><br>
+                                <span style="color:var(--brand-primary); font-weight:600; font-size:0.75rem;">${diasNomes}</span>
+                            </div>
+                            <button onclick="excluirFixa('${id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem;" title="Excluir Rotina Fixa">🗑️</button>
+                        </div>
+                    `;
+                }
+            });
+            if(count === 0) listaDiv.innerHTML = '<p style="color:var(--text-400);">Nenhuma rotina fixa cadastrada para você.</p>';
+        }
+
+        window.excluirFixa = function(id) {
+            if(confirm('Excluir essa demanda fixa? Ela NÃO será mais gerada nas próximas semanas.')) {
+                remove(ref(db, 'agenda_fixas/' + id)).then(() => showToast('Rotina fixa removida', 'success'));
+            }
+        }
+
+        // ==========================================
+        // SALVAR NOVA DEMANDA (NORMAL OU FIXA)
+        // ==========================================
+        document.getElementById('btnSalvarDemanda').addEventListener('click', () => {
+            const titulo = document.getElementById('demanda-titulo').value;
+            const colabEmail = document.getElementById('demanda-colaborador').value;
+            const tipo = document.getElementById('demanda-tipo').value;
+            const isFixa = document.getElementById('chk-demanda-fixa').checked;
+
+            if (!titulo || !colabEmail) {
+                showToast("Preencha o título e responsável!", "error");
+                return;
+            }
+
+            if (isFixa) {
+                const diasSelecionados = Array.from(document.querySelectorAll('.chk-dia:checked')).map(cb => parseInt(cb.value));
+                if(diasSelecionados.length === 0) {
+                    showToast("Selecione os dias da semana para a rotina.", "error");
+                    return;
+                }
+                
+                push(ref(db, 'agenda_fixas'), {
+                    titulo: titulo,
+                    colaboradorEmail: colabEmail,
+                    criadoPor: usuarioAtual.email,
+                    tipo: tipo,
+                    dias: diasSelecionados,
+                    criadoEm: new Date().toISOString()
+                }).then(() => {
+                    showToast("Rotina fixa criada com sucesso!", "success");
+                    fecharModalDemanda();
+                    verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
+                    renderizarGrid();
+                });
+                
+            } else {
+                const data = document.getElementById('demanda-data').value;
+                if(!data) {
+                    showToast("Preencha a data da tarefa!", "error");
+                    return;
+                }
+                
+                push(ref(db, 'agenda_tarefas'), {
+                    titulo: titulo,
+                    colaboradorEmail: colabEmail,
+                    criadoPor: usuarioAtual.email,
+                    data: data,
+                    tipo: tipo,
+                    status: "Pendente",
+                    criadoEm: new Date().toISOString()
+                }).then(() => {
+                    showToast("Tarefa atribuída com sucesso!", "success");
+                    fecharModalDemanda();
+                });
+            }
+        });
+
+        // ==========================================
+        // AUTOMAGIC ROLLOVER DAS PENDENTES
         // ==========================================
         function verificarEAtualizarPendentes(tarefas) {
             const hojeStr = formataDataISO(new Date());
             let houveAtualizacao = false;
+            let updates = {};
 
             Object.keys(tarefas).forEach(taskId => {
                 const task = tarefas[taskId];
                 
                 if (task.status === "Pendente" && task.data < hojeStr) {
-                    const taskRef = ref(db, 'agenda_tarefas/' + taskId);
-                    update(taskRef, {
-                        data: hojeStr,
-                        transferidaDe: task.data,
-                        transferidaEm: new Date().toISOString()
-                    });
+                    updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
+                    updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                    updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
+                    
+                    task.data = hojeStr; // impede loop local
                     houveAtualizacao = true;
                 }
             });
 
             if (houveAtualizacao) {
-                window.showToast("Tarefas pendentes rolaram para hoje!", "info");
+                update(ref(db), updates).then(() => {
+                    window.showToast("Tarefas pendentes rolaram para hoje!", "info");
+                });
             }
         }
 
@@ -984,7 +1222,7 @@
                 usuariosExibicao = listaUsuariosGlobal;
             } else {
                 usuariosExibicao = listaUsuariosGlobal.filter(u => u.email === usuarioAtual.email);
-                if (usuariosExibicao.length === 0) {
+                if (usuariosExibicao.length === 0 && usuarioAtual) {
                     usuariosExibicao = [{
                         uid: usuarioAtual.uid,
                         nome: usuarioAtual.displayName,
@@ -1044,9 +1282,8 @@
                             let isDoneClass = task.status === 'Concluída' ? 'is-done' : '';
                             let isChecked = task.status === 'Concluída' ? 'checked' : '';
 
-                            // Conta a quantidade de comentários (se existir)
                             let commentsCount = task.comentarios ? Object.keys(task.comentarios).length : 0;
-                            let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.7rem; color:var(--text-400);">💬 ${commentsCount}</span>` : '';
+                            let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.75rem; font-weight:700; color:var(--brand-primary); background:rgba(99,102,241,0.1); padding:2px 6px; border-radius:10px;">💬 ${commentsCount}</span>` : '';
 
                             rowHTML += `
                             <div class="task-card ${classPriority} ${isDoneClass}" onclick="abrirDetalhesTarefa('${taskId}')">
@@ -1066,7 +1303,6 @@
                         }
                     });
 
-                    // O botão aparece tanto pro Gestor quanto se for a linha do próprio Colaborador
                     if (perfilUsuario === "Gestor" || colab.email === usuarioAtual.email) {
                         rowHTML += `<button class="add-task-btn" onclick="abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button>`;
                     }
@@ -1076,7 +1312,6 @@
                 gridContainer.innerHTML += rowHTML;
             });
 
-            // ATUALIZAÇÃO NOS CHECKBOXES
             document.querySelectorAll('.task-updater').forEach(checkbox => {
                 checkbox.addEventListener('change', function () {
                     const taskId = this.getAttribute('data-id');
@@ -1086,57 +1321,20 @@
             });
         }
 
-        document.getElementById('btn-prev-week').addEventListener('click', () => { dataInicioSemana.setDate(dataInicioSemana.getDate() - 7); renderizarGrid(); });
-        document.getElementById('btn-next-week').addEventListener('click', () => { dataInicioSemana.setDate(dataInicioSemana.getDate() + 7); renderizarGrid(); });
-        document.getElementById('btn-today').addEventListener('click', () => { dataInicioSemana = getStartOfWeek(new Date()); renderizarGrid(); });
-
-        // ==========================================
-        // FIREBASE CRUD TAREFAS
-        // ==========================================
-        function carregarTarefas() {
-            const tarefasRef = ref(db, 'agenda_tarefas');
-            onValue(tarefasRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    listaTarefasGlobal = snapshot.val();
-                    verificarEAtualizarPendentes(listaTarefasGlobal);
-                    
-                    // Se o modal de detalhes estiver aberto, atualiza a lista de comentários em tempo real
-                    if(idTarefaDetalhe) renderizarComentarios(idTarefaDetalhe);
-                } else {
-                    listaTarefasGlobal = {};
-                }
-                renderizarGrid();
-            });
-        }
-
-        document.getElementById('btnSalvarDemanda').addEventListener('click', () => {
-            const titulo = document.getElementById('demanda-titulo').value;
-            const colabEmail = document.getElementById('demanda-colaborador').value;
-            const data = document.getElementById('demanda-data').value;
-            const tipo = document.getElementById('demanda-tipo').value;
-
-            if (!titulo || !data || !colabEmail) {
-                showToast("Preencha todos os campos!", "error");
-                return;
-            }
-
-            const tarefasRef = ref(db, 'agenda_tarefas');
-            const novaTarefaRef = push(tarefasRef);
-
-            set(novaTarefaRef, {
-                titulo: titulo,
-                colaboradorEmail: colabEmail,
-                criadoPor: usuarioAtual.email,
-                data: data,
-                tipo: tipo,
-                status: "Pendente",
-                criadoEm: new Date().toISOString()
-            }).then(() => {
-                showToast("Tarefa atribuída com sucesso!", "success");
-                fecharModalDemanda();
-            }).catch((error) => {
-                showToast("Erro ao criar: " + error.message, "error");
-            });
+        document.getElementById('btn-prev-week').addEventListener('click', () => { 
+            dataInicioSemana.setDate(dataInicioSemana.getDate() - 7); 
+            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
+            renderizarGrid(); 
+        });
+        document.getElementById('btn-next-week').addEventListener('click', () => { 
+            dataInicioSemana.setDate(dataInicioSemana.getDate() + 7); 
+            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
+            renderizarGrid(); 
+        });
+        document.getElementById('btn-today').addEventListener('click', () => { 
+            dataInicioSemana = getStartOfWeek(new Date()); 
+            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
+            renderizarGrid(); 
         });
 
         function atualizarStatusFirebase(taskId, novoStatus) {
@@ -1201,7 +1399,6 @@
                 `;
             });
 
-            // Faz scroll automático para o final do chat
             listaDiv.scrollTop = listaDiv.scrollHeight;
         }
 
