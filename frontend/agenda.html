@@ -161,6 +161,7 @@
 
         .toast.success { background-color: var(--status-success); }
         .toast.error { background-color: var(--status-danger); }
+        .toast.info { background-color: var(--status-info); }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(100%); }
@@ -743,7 +744,7 @@
 
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="fecharModalDemanda()">Cancelar</button>
-                <button class="btn-save" id="btnSalvarDemanda">Salvar Tarefa</button>
+                <button class="btn-save" id="btnSalvarDemanda" onclick="window.salvarDemanda()">Salvar Tarefa</button>
             </div>
 
             <!-- LISTA DE DEMANDAS FIXAS (VISÍVEL PRA GERENCIAR) -->
@@ -808,7 +809,7 @@
         </div>
 
         <div class="topbar-actions">
-            <!-- Botão de Nova Demanda visível para TODOS agora! -->
+            <!-- Botão de Nova Demanda visível para TODOS -->
             <button class="btn btn-primary" id="btnAbrirModal" onclick="abrirModalDemanda()" style="display: inline-flex;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -884,7 +885,6 @@
             document.getElementById('chk-demanda-fixa').checked = false;
             window.toggleDiasFixos();
             
-            // Se o usuário logado for Colaborador, trava a seleção de responsável nele mesmo
             if (perfilUsuario !== "Gestor" && usuarioAtual) {
                 const selectColab = document.getElementById('demanda-colaborador');
                 selectColab.value = usuarioAtual.email;
@@ -917,7 +917,7 @@
 
         window.excluirTarefaAtual = function() {
             if(!idTarefaDetalhe) return;
-            if(confirm("Tem certeza que deseja excluir esta tarefa específica do quadro?")) {
+            if(confirm("Tem certeza que deseja excluir esta tarefa do quadro?")) {
                 remove(ref(db, 'agenda_tarefas/' + idTarefaDetalhe)).then(() => {
                     showToast("Tarefa excluída", "success");
                     fecharModalDetalhe();
@@ -953,7 +953,6 @@
             }
 
             usuarioAtual = user;
-
             document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
             document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
@@ -965,7 +964,6 @@
                 }
 
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
-
                 carregarUsuarios();
                 carregarBasesDeDados();
             });
@@ -1008,7 +1006,6 @@
         // FIREBASE CRUD: TAREFAS E FIXAS
         // ==========================================
         function carregarBasesDeDados() {
-            // Carrega Templates de Rotinas Fixas
             onValue(ref(db, 'agenda_fixas'), (snapshot) => {
                 listaFixasGlobal = snapshot.exists() ? snapshot.val() : {};
                 loadedFixas = true;
@@ -1016,7 +1013,6 @@
                 if (loadedTarefas) processarTudo();
             });
 
-            // Carrega as Instâncias das Tarefas
             onValue(ref(db, 'agenda_tarefas'), (snapshot) => {
                 listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
                 loadedTarefas = true;
@@ -1076,7 +1072,7 @@
                                 criadoEm: new Date().toISOString()
                             };
                             novasTarefas['agenda_tarefas/' + newTaskId] = nova;
-                            tarefas[newTaskId] = nova; // Previne recriação imediata na mesma execução
+                            tarefas[newTaskId] = nova; 
                             precisaAtualizar = true;
                         }
                     }
@@ -1105,7 +1101,7 @@
                                 <strong style="color:var(--text-900); font-size:0.9rem;">${f.titulo}</strong><br>
                                 <span style="color:var(--brand-primary); font-weight:600; font-size:0.75rem;">${diasNomes}</span>
                             </div>
-                            <button onclick="excluirFixa('${id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem;" title="Excluir Rotina Fixa">🗑️</button>
+                            <button onclick="window.excluirFixa('${id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem;" title="Excluir Rotina Fixa">🗑️</button>
                         </div>
                     `;
                 }
@@ -1114,29 +1110,45 @@
         }
 
         window.excluirFixa = function(id) {
-            if(confirm('Excluir essa demanda fixa? Ela NÃO será mais gerada nas próximas semanas.')) {
-                remove(ref(db, 'agenda_fixas/' + id)).then(() => showToast('Rotina fixa removida', 'success'));
+            if(confirm('Excluir essa demanda fixa? As tarefas já concluídas serão mantidas, mas as pendentes futuras serão apagadas.')) {
+                
+                remove(ref(db, 'agenda_fixas/' + id)).then(() => {
+                    let updates = {};
+                    // Varre a agenda global buscando tarefas pendentes geradas por esse ID
+                    Object.keys(listaTarefasGlobal).forEach(taskId => {
+                        let t = listaTarefasGlobal[taskId];
+                        if (t.idFixaRef === id && t.status === "Pendente") {
+                            updates['agenda_tarefas/' + taskId] = null; // marca pra deletar
+                        }
+                    });
+
+                    if(Object.keys(updates).length > 0) {
+                        update(ref(db), updates);
+                    }
+                    showToast('Rotina fixa removida com sucesso', 'success');
+                });
             }
         }
 
         // ==========================================
         // SALVAR NOVA DEMANDA (NORMAL OU FIXA)
         // ==========================================
-        document.getElementById('btnSalvarDemanda').addEventListener('click', () => {
+        window.salvarDemanda = function() {
             const titulo = document.getElementById('demanda-titulo').value;
-            const colabEmail = document.getElementById('demanda-colaborador').value;
+            const selectColab = document.getElementById('demanda-colaborador');
+            const colabEmail = selectColab ? selectColab.value : null;
             const tipo = document.getElementById('demanda-tipo').value;
             const isFixa = document.getElementById('chk-demanda-fixa').checked;
 
             if (!titulo || !colabEmail) {
-                showToast("Preencha o título e responsável!", "error");
+                window.showToast("Preencha o título e responsável!", "error");
                 return;
             }
 
             if (isFixa) {
                 const diasSelecionados = Array.from(document.querySelectorAll('.chk-dia:checked')).map(cb => parseInt(cb.value));
                 if(diasSelecionados.length === 0) {
-                    showToast("Selecione os dias da semana para a rotina.", "error");
+                    window.showToast("Selecione os dias da semana para a rotina.", "error");
                     return;
                 }
                 
@@ -1148,16 +1160,16 @@
                     dias: diasSelecionados,
                     criadoEm: new Date().toISOString()
                 }).then(() => {
-                    showToast("Rotina fixa criada com sucesso!", "success");
-                    fecharModalDemanda();
-                    verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
-                    renderizarGrid();
+                    window.showToast("Rotina fixa criada com sucesso!", "success");
+                    window.fecharModalDemanda();
+                }).catch(err => {
+                    window.showToast("Erro: " + err.message, "error");
                 });
                 
             } else {
                 const data = document.getElementById('demanda-data').value;
                 if(!data) {
-                    showToast("Preencha a data da tarefa!", "error");
+                    window.showToast("Preencha a data da tarefa!", "error");
                     return;
                 }
                 
@@ -1170,11 +1182,13 @@
                     status: "Pendente",
                     criadoEm: new Date().toISOString()
                 }).then(() => {
-                    showToast("Tarefa atribuída com sucesso!", "success");
-                    fecharModalDemanda();
+                    window.showToast("Tarefa atribuída com sucesso!", "success");
+                    window.fecharModalDemanda();
+                }).catch(err => {
+                    window.showToast("Erro: " + err.message, "error");
                 });
             }
-        });
+        };
 
         // ==========================================
         // AUTOMAGIC ROLLOVER DAS PENDENTES
@@ -1192,7 +1206,7 @@
                     updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
                     updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
                     
-                    task.data = hojeStr; // impede loop local
+                    task.data = hojeStr; 
                     houveAtualizacao = true;
                 }
             });
@@ -1354,7 +1368,7 @@
             
             const texto = document.getElementById('novo-comentario').value.trim();
             if (!texto) {
-                showToast("Digite algo para comentar", "warning");
+                window.showToast("Digite algo para comentar", "warning");
                 return;
             }
 
@@ -1369,7 +1383,7 @@
             }).then(() => {
                 document.getElementById('novo-comentario').value = '';
             }).catch(err => {
-                showToast("Erro ao enviar", "error");
+                window.showToast("Erro ao enviar", "error");
             });
         });
 
