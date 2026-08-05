@@ -391,6 +391,13 @@
                 <h2>Links Essenciais</h2>
                 <p>Acesse rapidamente planilhas e sistemas.</p>
             </a>
+            
+            <!-- CARD GESTÃO DE USUÁRIOS (Vai ser oculto por JS se não for gestor) -->
+            <a href="usuarios.html" class="card" id="card-usuarios" style="display: none;">
+                <div class="icon-container" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👥</div>
+                <h2>Gestão de Usuários</h2>
+                <p>Gerencie acessos e perfis da equipe.</p>
+            </a>
         </div>
     </div>
 
@@ -427,10 +434,18 @@
                             criadoEm: new Date().toISOString()
                         });
                         document.getElementById('user-role').textContent = "Colaborador";
+                        document.getElementById('card-usuarios').style.display = 'none';
                     } else {
                         // Se já existir no banco, pega o perfil real (Gestor ou Colaborador)
                         const perfilDoBanco = snapshot.val().perfil || "Colaborador";
                         document.getElementById('user-role').textContent = perfilDoBanco;
+                        
+                        // Exibe o card de usuários apenas se for Gestor
+                        if(perfilDoBanco === "Gestor") {
+                            document.getElementById('card-usuarios').style.display = 'flex';
+                        } else {
+                            document.getElementById('card-usuarios').style.display = 'none';
+                        }
                     }
                 });
 
