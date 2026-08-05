@@ -568,7 +568,6 @@
             white-space: nowrap;
         }
 
-        /* --- Envoltório para resolver o CSS Grid Breakdown --- */
         .day-cell-wrapper {
             background: var(--bg-swimlane);
             border-right: 1px solid var(--border-light);
@@ -584,7 +583,7 @@
             flex-direction: column;
             gap: 0.75rem;
             min-height: 120px;
-            flex: 1; /* Estica a coluna empurrando o botão Adicionar pro final */
+            flex: 1; 
         }
 
         /* SortableJS Ghost Class - Estilo do card quando está sendo arrastado */
@@ -815,7 +814,7 @@
 
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button class="btn-cancel" style="flex:1;" onclick="window.fecharModalDetalhe()">Fechar Aba</button>
-                <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--danger); border-color: var(--danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
+                <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--status-danger); border-color: var(--status-danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
             </div>
         </div>
     </div>
@@ -892,7 +891,7 @@
         let listaFixasGlobal = {};
         let dataInicioSemana = getStartOfWeek(new Date());
         let idTarefaDetalhe = null; 
-        let currentSortables = []; // Guarda as instâncias ativas do SortableJS
+        let currentSortables = []; 
 
         let loadedFixas = false;
         let loadedTarefas = false;
@@ -923,7 +922,7 @@
             const selectColab = document.getElementById('demanda-colaborador');
             if (perfilUsuario !== "Gestor" && usuarioAtual) {
                 selectColab.value = usuarioAtual.email;
-                selectColab.disabled = true; // Impede alterar para outro usuário
+                selectColab.disabled = true;
             } else {
                 selectColab.disabled = false;
             }
@@ -963,12 +962,14 @@
 
                 // Suprime a recriação da tarefa se for de rotina fixa e estiver sendo excluída
                 if (task.idFixaRef && task.dataReferencia) {
-                    updates[`agenda_fixas_suprimidas/${task.idFixaRef}_${task.dataReferencia}`] = true;
+                    updates[`agenda_fixas/${task.idFixaRef}/suprimidas/${task.dataReferencia}`] = true;
                 }
 
                 update(ref(db), updates).then(() => {
                     showToast("Tarefa excluída", "success");
                     fecharModalDetalhe();
+                }).catch(err => {
+                    showToast("Erro: " + err.message, "error");
                 });
             }
         }
@@ -1053,8 +1054,6 @@
         // ==========================================
         // FIREBASE CRUD: TAREFAS E FIXAS
         // ==========================================
-        let fixasSuprimidasGlobal = {};
-
         function carregarBasesDeDados() {
             onValue(ref(db, 'agenda_fixas'), (snapshot) => {
                 listaFixasGlobal = snapshot.exists() ? snapshot.val() : {};
@@ -1067,11 +1066,6 @@
                 listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
                 loadedTarefas = true;
                 if (loadedFixas) processarTudo();
-            });
-
-            onValue(ref(db, 'agenda_fixas_suprimidas'), (snapshot) => {
-                fixasSuprimidasGlobal = snapshot.exists() ? snapshot.val() : {};
-                if (loadedTarefas && loadedFixas) processarTudo();
             });
         }
 
@@ -1107,12 +1101,18 @@
                 datasAtuais.forEach(dataObj => {
                     if (fixa.dias && fixa.dias.includes(dataObj.diaSemana)) {
                         
-                        // Verifica se o usuário deletou essa tarefa nesse dia específico para não recriar
-                        if (fixasSuprimidasGlobal[`${idFixa}_${dataObj.iso}`]) return;
+                        // Verifica se foi suprimida (deletada) nesse dia
+                        if (fixa.suprimidas && fixa.suprimidas[dataObj.iso]) return;
 
                         let jaExiste = false;
                         Object.values(tarefas).forEach(t => {
                             if (t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) {
+                                jaExiste = true;
+                            }
+                        });
+                        
+                        Object.values(novasTarefas).forEach(nt => {
+                            if (nt.idFixaRef === idFixa && nt.dataReferencia === dataObj.iso) {
                                 jaExiste = true;
                             }
                         });
@@ -1129,10 +1129,9 @@
                                 tipo: fixa.tipo,
                                 status: "Pendente",
                                 criadoEm: new Date().toISOString(),
-                                ordem: Date.now() // Ordenação inicial base
+                                ordem: Date.now() 
                             };
                             novasTarefas['agenda_tarefas/' + newTaskId] = nova;
-                            tarefas[newTaskId] = nova; 
                             precisaAtualizar = true;
                         }
                     }
@@ -1140,7 +1139,7 @@
             });
 
             if (precisaAtualizar) {
-                update(ref(db), novasTarefas);
+                update(ref(db), novasTarefas).catch(err => console.error("Erro na instância de fixas: ", err));
             }
         }
 
@@ -1172,19 +1171,20 @@
         window.excluirFixa = function(id) {
             if(confirm('Excluir essa demanda fixa? As tarefas já concluídas serão mantidas, mas as pendentes futuras serão apagadas.')) {
                 
-                remove(ref(db, 'agenda_fixas/' + id)).then(() => {
-                    let updates = {};
-                    Object.keys(listaTarefasGlobal).forEach(taskId => {
-                        let t = listaTarefasGlobal[taskId];
-                        if (t.idFixaRef === id && t.status === "Pendente") {
-                            updates['agenda_tarefas/' + taskId] = null; 
-                        }
-                    });
-
-                    if(Object.keys(updates).length > 0) {
-                        update(ref(db), updates);
+                let updates = {};
+                updates['agenda_fixas/' + id] = null;
+                
+                Object.keys(listaTarefasGlobal).forEach(taskId => {
+                    let t = listaTarefasGlobal[taskId];
+                    if (t.idFixaRef === id && t.status === "Pendente") {
+                        updates['agenda_tarefas/' + taskId] = null; 
                     }
+                });
+
+                update(ref(db), updates).then(() => {
                     showToast('Rotina fixa removida com sucesso', 'success');
+                }).catch(err => {
+                    showToast("Erro: " + err.message, "error");
                 });
             }
         }
