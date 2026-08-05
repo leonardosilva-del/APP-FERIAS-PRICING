@@ -248,6 +248,12 @@
             background: var(--bg-swimlane);
             resize: none;
         }
+        
+        .modal-content select:disabled {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            color: var(--text-600);
+        }
 
         .modal-content input:focus,
         .modal-content select:focus,
@@ -464,7 +470,7 @@
             position: relative;
         }
 
-        /* ----- ATUALIZAÇÃO DA GRADE KANBAN ----- */
+        /* ----- ATUALIZAÇÃO DA GRADE KANBAN E COLUNAS ----- */
         .board-grid {
             display: grid;
             grid-template-columns: 200px repeat(6, minmax(230px, 1fr));
@@ -562,15 +568,23 @@
             white-space: nowrap;
         }
 
-        .task-lane {
-            padding: 0.75rem;
+        /* --- Envoltório para resolver o CSS Grid Breakdown --- */
+        .day-cell-wrapper {
             background: var(--bg-swimlane);
             border-right: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
+            min-width: 0; 
+        }
+
+        .task-lane {
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
             gap: 0.75rem;
-            min-height: 180px;
+            min-height: 120px;
+            flex: 1; /* Estica a coluna empurrando o botão Adicionar pro final */
         }
 
         /* SortableJS Ghost Class - Estilo do card quando está sendo arrastado */
@@ -704,7 +718,6 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            margin-top: auto;
         }
 
         .add-task-btn:hover {
@@ -764,7 +777,7 @@
             </div>
 
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModalDemanda()">Cancelar</button>
+                <button class="btn-cancel" onclick="window.fecharModalDemanda()">Cancelar</button>
                 <button class="btn-save" id="btnSalvarDemanda" onclick="window.salvarDemanda()">Salvar Tarefa</button>
             </div>
 
@@ -780,7 +793,7 @@
     <!-- Modal Detalhes e Chat da Demanda -->
     <div id="modalDetalhe" class="modal-overlay" style="display: none;">
         <div class="modal-content large">
-            <button class="modal-header-close" onclick="fecharModalDetalhe()">×</button>
+            <button class="modal-header-close" onclick="window.fecharModalDetalhe()">×</button>
             <h2>Detalhes da Demanda</h2>
             
             <div class="task-detail-info">
@@ -801,8 +814,8 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-cancel" style="flex:1;" onclick="fecharModalDetalhe()">Fechar Aba</button>
-                <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--danger); border-color: var(--danger);" onclick="excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
+                <button class="btn-cancel" style="flex:1;" onclick="window.fecharModalDetalhe()">Fechar Aba</button>
+                <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--danger); border-color: var(--danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
             </div>
         </div>
     </div>
@@ -831,7 +844,7 @@
 
         <div class="topbar-actions">
             <!-- Botão de Nova Demanda visível para TODOS -->
-            <button class="btn btn-primary" id="btnAbrirModal" onclick="abrirModalDemanda()" style="display: inline-flex;">
+            <button class="btn btn-primary" id="btnAbrirModal" onclick="window.abrirModalDemanda()" style="display: inline-flex;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -907,9 +920,12 @@
             document.getElementById('chk-demanda-fixa').checked = false;
             window.toggleDiasFixos();
             
+            const selectColab = document.getElementById('demanda-colaborador');
             if (perfilUsuario !== "Gestor" && usuarioAtual) {
-                const selectColab = document.getElementById('demanda-colaborador');
                 selectColab.value = usuarioAtual.email;
+                selectColab.disabled = true; // Impede alterar para outro usuário
+            } else {
+                selectColab.disabled = false;
             }
         }
 
@@ -942,12 +958,10 @@
             if(confirm("Tem certeza que deseja excluir esta tarefa do quadro?")) {
                 const task = listaTarefasGlobal[idTarefaDetalhe];
                 
-                // Remove a instância normal
                 let updates = {};
                 updates['agenda_tarefas/' + idTarefaDetalhe] = null;
 
-                // SE a tarefa apagada veio de uma ROTINA FIXA, precisamos anotar que ela foi suprimida neste dia
-                // para que a função verificarEInstanciarFixas() não tente recriá-la imediatamente.
+                // Suprime a recriação da tarefa se for de rotina fixa e estiver sendo excluída
                 if (task.idFixaRef && task.dataReferencia) {
                     updates[`agenda_fixas_suprimidas/${task.idFixaRef}_${task.dataReferencia}`] = true;
                 }
@@ -1093,7 +1107,7 @@
                 datasAtuais.forEach(dataObj => {
                     if (fixa.dias && fixa.dias.includes(dataObj.diaSemana)) {
                         
-                        // Verifica se o usuário deletou essa tarefa nesse dia específico
+                        // Verifica se o usuário deletou essa tarefa nesse dia específico para não recriar
                         if (fixasSuprimidasGlobal[`${idFixa}_${dataObj.iso}`]) return;
 
                         let jaExiste = false;
@@ -1115,7 +1129,7 @@
                                 tipo: fixa.tipo,
                                 status: "Pendente",
                                 criadoEm: new Date().toISOString(),
-                                ordem: Date.now() // Ajuda na ordenação do Drag and Drop
+                                ordem: Date.now() // Ordenação inicial base
                             };
                             novasTarefas['agenda_tarefas/' + newTaskId] = nova;
                             tarefas[newTaskId] = nova; 
@@ -1270,7 +1284,7 @@
         function renderizarGrid() {
             const gridContainer = document.getElementById('board-grid-content');
             
-            // Destrói os sortables antigos para evitar vazamento de memória e duplicação
+            // Destrói os Sortables antigos para evitar vazamento de memória e duplicação
             currentSortables.forEach(s => s.destroy());
             currentSortables = [];
             gridContainer.innerHTML = '';
@@ -1328,18 +1342,21 @@
                 <div class="user-cell">
                     <img src="${fotoUrl}" class="user-avatar-circle" alt="Foto">
                     <div class="user-info">
-                        <span class="user-name">${colab.nome ? colab.nome.split(' ')[0] : colab.email}</span>
+                        <span class="user-name" title="${colab.nome}">${colab.nome ? colab.nome.split(' ')[0] : colab.email}</span>
                         <span class="user-role">${colab.perfil || 'Colaborador'}</span>
                     </div>
                 </div>`;
 
                 datasDaSemanaISO.forEach(dataLoopStr => {
                     let bgStyle = (dataLoopStr === hojeISO) ? 'background: rgba(99, 102, 241, 0.02);' : '';
-                    let uidUnicoLane = `lane-${colab.email.replace(/[@.]/g, '')}-${dataLoopStr}`;
+                    let uidUnicoLane = `lane-${colab.email.replace(/[^a-zA-Z0-9]/g, '')}-${dataLoopStr}`;
                     
-                    rowHTML += `<div class="task-lane sortable-lane" id="${uidUnicoLane}" data-email="${colab.email}" data-date="${dataLoopStr}" style="${bgStyle}">`;
+                    // Inicia o envoltorio que corrige o CSS Grid
+                    rowHTML += `<div class="day-cell-wrapper" style="${bgStyle}">`;
 
-                    // Pega as tarefas, filtra e ordena pela "ordem"
+                    // Inicia a área de Arrasto (Sortable Lane)
+                    rowHTML += `<div class="task-lane sortable-lane" id="${uidUnicoLane}" data-email="${colab.email}" data-date="${dataLoopStr}">`;
+
                     let tarefasColuna = Object.keys(listaTarefasGlobal)
                         .map(key => ({ id: key, ...listaTarefasGlobal[key] }))
                         .filter(t => t.colaboradorEmail === colab.email && t.data === dataLoopStr)
@@ -1355,7 +1372,7 @@
                         let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.75rem; font-weight:700; color:var(--brand-primary); background:rgba(99,102,241,0.1); padding:2px 6px; border-radius:10px;">💬 ${commentsCount}</span>` : '';
 
                         rowHTML += `
-                        <div class="task-card ${classPriority} ${isDoneClass}" data-id="${task.id}" onclick="abrirDetalhesTarefa('${task.id}')">
+                        <div class="task-card ${classPriority} ${isDoneClass}" data-id="${task.id}" onclick="window.abrirDetalhesTarefa('${task.id}')">
                             <div class="task-header">
                                 <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div>
                                 ${commentsBadge}
@@ -1371,19 +1388,21 @@
                         </div>`;
                     });
 
-                    // O botão Adicionar precisa ficar fora da área "arrastável" para não dar bug visual no Sortable
-                    rowHTML += `</div>`; 
+                    rowHTML += `</div>`; // Fecha sortable-lane
+
+                    // Botão Adicionar fora do sortable
                     if (perfilUsuario === "Gestor" || colab.email === usuarioAtual.email) {
-                        rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem; background: var(--bg-swimlane); border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);"><button class="add-task-btn" style="width: 100%;" onclick="abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button></div>`;
+                        rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem;"><button class="add-task-btn" style="width: 100%;" onclick="window.abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button></div>`;
                     } else {
-                        rowHTML += `<div style="background: var(--bg-swimlane); border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);"></div>`;
+                        rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem;"></div>`;
                     }
+
+                    rowHTML += `</div>`; // Fecha day-cell-wrapper
                 });
 
                 gridContainer.innerHTML += rowHTML;
             });
 
-            // ATIVAR O DRAG AND DROP APÓS RENDERIZAR
             iniciarDragAndDrop();
 
             document.querySelectorAll('.task-updater').forEach(checkbox => {
@@ -1400,10 +1419,9 @@
             lanes.forEach(lane => {
                 const isMyLane = perfilUsuario === "Gestor" || lane.getAttribute('data-email') === usuarioAtual.email;
                 
-                // Se a lane for do usuário ou se for Gestor, ele pode arrastar e soltar
                 if(isMyLane) {
                     const sortableInstance = new Sortable(lane, {
-                        group: 'shared', // Permite arrastar entre diferentes colunas
+                        group: 'shared', 
                         animation: 150,
                         ghostClass: 'sortable-ghost',
                         onEnd: function (evt) {
@@ -1414,11 +1432,9 @@
                             
                             let updates = {};
                             
-                            // 1. Atualiza quem é o dono e qual o dia, caso ele tenha arrastado para outra coluna
                             updates[`agenda_tarefas/${taskId}/colaboradorEmail`] = novoColab;
                             updates[`agenda_tarefas/${taskId}/data`] = novaData;
                             
-                            // 2. Reordena todas as tarefas dessa nova coluna
                             const cards = Array.from(novaLane.querySelectorAll('.task-card'));
                             cards.forEach((card, index) => {
                                 const id = card.getAttribute('data-id');
@@ -1426,7 +1442,7 @@
                             });
 
                             update(ref(db), updates).catch(err => {
-                                showToast("Erro ao reordenar: " + err.message, "error");
+                                window.showToast("Erro ao reordenar: " + err.message, "error");
                             });
                         }
                     });
