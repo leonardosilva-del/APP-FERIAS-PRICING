@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda Pricing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Biblioteca SortableJS para o Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <style>
         :root {
@@ -464,7 +467,6 @@
         /* ----- ATUALIZAÇÃO DA GRADE KANBAN ----- */
         .board-grid {
             display: grid;
-            /* A coluna do colaborador agora tem 200px, as demais no mínimo 230px */
             grid-template-columns: 200px repeat(6, minmax(230px, 1fr));
             min-width: max-content;
         }
@@ -522,11 +524,11 @@
             background: var(--bg-surface);
             border-right: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
-            padding: 1rem 1.25rem; /* Ajustado o espaçamento */
+            padding: 1rem 1.25rem;
             z-index: 10;
             display: flex;
             align-items: center;
-            gap: 0.8rem; /* Ajustado o espaçamento */
+            gap: 0.8rem;
         }
 
         .user-avatar-circle {
@@ -535,13 +537,13 @@
             border-radius: 50%;
             border: 2px solid var(--brand-primary);
             object-fit: cover;
-            flex-shrink: 0; /* Impede a imagem de amassar */
+            flex-shrink: 0;
         }
 
         .user-info {
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Garante que textos longos não quebrem a coluna */
+            overflow: hidden;
         }
 
         .user-name {
@@ -550,7 +552,7 @@
             color: var(--text-900);
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Coloca os "..." se o nome for gigante */
+            text-overflow: ellipsis;
         }
 
         .user-role {
@@ -561,7 +563,7 @@
         }
 
         .task-lane {
-            padding: 0.75rem; /* Ajuste para caber mais conteúdo */
+            padding: 0.75rem;
             background: var(--bg-swimlane);
             border-right: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
@@ -571,6 +573,13 @@
             min-height: 180px;
         }
 
+        /* SortableJS Ghost Class - Estilo do card quando está sendo arrastado */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #f8fafc;
+            border: 2px dashed var(--brand-primary) !important;
+        }
+
         .task-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-light);
@@ -578,9 +587,13 @@
             padding: 1rem;
             box-shadow: var(--shadow-sm);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
+            cursor: grab;
             position: relative;
             border-left: 3px solid var(--brand-primary);
+        }
+
+        .task-card:active {
+            cursor: grabbing;
         }
 
         .task-card:hover {
@@ -866,6 +879,7 @@
         let listaFixasGlobal = {};
         let dataInicioSemana = getStartOfWeek(new Date());
         let idTarefaDetalhe = null; 
+        let currentSortables = []; // Guarda as instâncias ativas do SortableJS
 
         let loadedFixas = false;
         let loadedTarefas = false;
@@ -926,7 +940,19 @@
         window.excluirTarefaAtual = function() {
             if(!idTarefaDetalhe) return;
             if(confirm("Tem certeza que deseja excluir esta tarefa do quadro?")) {
-                remove(ref(db, 'agenda_tarefas/' + idTarefaDetalhe)).then(() => {
+                const task = listaTarefasGlobal[idTarefaDetalhe];
+                
+                // Remove a instância normal
+                let updates = {};
+                updates['agenda_tarefas/' + idTarefaDetalhe] = null;
+
+                // SE a tarefa apagada veio de uma ROTINA FIXA, precisamos anotar que ela foi suprimida neste dia
+                // para que a função verificarEInstanciarFixas() não tente recriá-la imediatamente.
+                if (task.idFixaRef && task.dataReferencia) {
+                    updates[`agenda_fixas_suprimidas/${task.idFixaRef}_${task.dataReferencia}`] = true;
+                }
+
+                update(ref(db), updates).then(() => {
                     showToast("Tarefa excluída", "success");
                     fecharModalDetalhe();
                 });
@@ -1013,6 +1039,8 @@
         // ==========================================
         // FIREBASE CRUD: TAREFAS E FIXAS
         // ==========================================
+        let fixasSuprimidasGlobal = {};
+
         function carregarBasesDeDados() {
             onValue(ref(db, 'agenda_fixas'), (snapshot) => {
                 listaFixasGlobal = snapshot.exists() ? snapshot.val() : {};
@@ -1025,6 +1053,11 @@
                 listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
                 loadedTarefas = true;
                 if (loadedFixas) processarTudo();
+            });
+
+            onValue(ref(db, 'agenda_fixas_suprimidas'), (snapshot) => {
+                fixasSuprimidasGlobal = snapshot.exists() ? snapshot.val() : {};
+                if (loadedTarefas && loadedFixas) processarTudo();
             });
         }
 
@@ -1050,7 +1083,7 @@
                 d.setDate(d.getDate() + i);
                 datasAtuais.push({
                     iso: formataDataISO(d),
-                    diaSemana: d.getDay() // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
+                    diaSemana: d.getDay()
                 });
             }
 
@@ -1059,6 +1092,10 @@
                 
                 datasAtuais.forEach(dataObj => {
                     if (fixa.dias && fixa.dias.includes(dataObj.diaSemana)) {
+                        
+                        // Verifica se o usuário deletou essa tarefa nesse dia específico
+                        if (fixasSuprimidasGlobal[`${idFixa}_${dataObj.iso}`]) return;
+
                         let jaExiste = false;
                         Object.values(tarefas).forEach(t => {
                             if (t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) {
@@ -1077,7 +1114,8 @@
                                 idFixaRef: idFixa,
                                 tipo: fixa.tipo,
                                 status: "Pendente",
-                                criadoEm: new Date().toISOString()
+                                criadoEm: new Date().toISOString(),
+                                ordem: Date.now() // Ajuda na ordenação do Drag and Drop
                             };
                             novasTarefas['agenda_tarefas/' + newTaskId] = nova;
                             tarefas[newTaskId] = nova; 
@@ -1122,11 +1160,10 @@
                 
                 remove(ref(db, 'agenda_fixas/' + id)).then(() => {
                     let updates = {};
-                    // Varre a agenda global buscando tarefas pendentes geradas por esse ID
                     Object.keys(listaTarefasGlobal).forEach(taskId => {
                         let t = listaTarefasGlobal[taskId];
                         if (t.idFixaRef === id && t.status === "Pendente") {
-                            updates['agenda_tarefas/' + taskId] = null; // marca pra deletar
+                            updates['agenda_tarefas/' + taskId] = null; 
                         }
                     });
 
@@ -1188,7 +1225,8 @@
                     data: data,
                     tipo: tipo,
                     status: "Pendente",
-                    criadoEm: new Date().toISOString()
+                    criadoEm: new Date().toISOString(),
+                    ordem: Date.now()
                 }).then(() => {
                     window.showToast("Tarefa atribuída com sucesso!", "success");
                     window.fecharModalDemanda();
@@ -1231,6 +1269,10 @@
         // ==========================================
         function renderizarGrid() {
             const gridContainer = document.getElementById('board-grid-content');
+            
+            // Destrói os sortables antigos para evitar vazamento de memória e duplicação
+            currentSortables.forEach(s => s.destroy());
+            currentSortables = [];
             gridContainer.innerHTML = '';
 
             const dataFimSemana = new Date(dataInicioSemana);
@@ -1293,46 +1335,56 @@
 
                 datasDaSemanaISO.forEach(dataLoopStr => {
                     let bgStyle = (dataLoopStr === hojeISO) ? 'background: rgba(99, 102, 241, 0.02);' : '';
-                    rowHTML += `<div class="task-lane" style="${bgStyle}">`;
+                    let uidUnicoLane = `lane-${colab.email.replace(/[@.]/g, '')}-${dataLoopStr}`;
+                    
+                    rowHTML += `<div class="task-lane sortable-lane" id="${uidUnicoLane}" data-email="${colab.email}" data-date="${dataLoopStr}" style="${bgStyle}">`;
 
-                    Object.keys(listaTarefasGlobal).forEach(taskId => {
-                        let task = listaTarefasGlobal[taskId];
+                    // Pega as tarefas, filtra e ordena pela "ordem"
+                    let tarefasColuna = Object.keys(listaTarefasGlobal)
+                        .map(key => ({ id: key, ...listaTarefasGlobal[key] }))
+                        .filter(t => t.colaboradorEmail === colab.email && t.data === dataLoopStr)
+                        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
-                        if (task.colaboradorEmail === colab.email && task.data === dataLoopStr) {
-                            let classPriority = task.tipo === 'Urgente' ? 'priority-high' : (task.tipo === 'Extra' ? 'priority-low' : '');
-                            let tagStyle = task.tipo === 'Urgente' ? 'style="background: #fee2e2; color: #991b1b;"' : (task.tipo === 'Extra' ? 'style="background: #fef3c7; color: #b45309;"' : '');
-                            let isDoneClass = task.status === 'Concluída' ? 'is-done' : '';
-                            let isChecked = task.status === 'Concluída' ? 'checked' : '';
+                    tarefasColuna.forEach(task => {
+                        let classPriority = task.tipo === 'Urgente' ? 'priority-high' : (task.tipo === 'Extra' ? 'priority-low' : '');
+                        let tagStyle = task.tipo === 'Urgente' ? 'style="background: #fee2e2; color: #991b1b;"' : (task.tipo === 'Extra' ? 'style="background: #fef3c7; color: #b45309;"' : '');
+                        let isDoneClass = task.status === 'Concluída' ? 'is-done' : '';
+                        let isChecked = task.status === 'Concluída' ? 'checked' : '';
 
-                            let commentsCount = task.comentarios ? Object.keys(task.comentarios).length : 0;
-                            let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.75rem; font-weight:700; color:var(--brand-primary); background:rgba(99,102,241,0.1); padding:2px 6px; border-radius:10px;">💬 ${commentsCount}</span>` : '';
+                        let commentsCount = task.comentarios ? Object.keys(task.comentarios).length : 0;
+                        let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.75rem; font-weight:700; color:var(--brand-primary); background:rgba(99,102,241,0.1); padding:2px 6px; border-radius:10px;">💬 ${commentsCount}</span>` : '';
 
-                            rowHTML += `
-                            <div class="task-card ${classPriority} ${isDoneClass}" onclick="abrirDetalhesTarefa('${taskId}')">
-                                <div class="task-header">
-                                    <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div>
-                                    ${commentsBadge}
-                                </div>
-                                <h4 class="task-title">${task.titulo}</h4>
-                                <div class="task-footer">
-                                    <label class="custom-checkbox" onclick="event.stopPropagation()">
-                                        <input type="checkbox" data-id="${taskId}" class="task-updater" ${isChecked}>
-                                        <span class="checkmark"></span>
-                                        <span class="status-text">${task.status}</span>
-                                    </label>
-                                </div>
-                            </div>`;
-                        }
+                        rowHTML += `
+                        <div class="task-card ${classPriority} ${isDoneClass}" data-id="${task.id}" onclick="abrirDetalhesTarefa('${task.id}')">
+                            <div class="task-header">
+                                <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div>
+                                ${commentsBadge}
+                            </div>
+                            <h4 class="task-title">${task.titulo}</h4>
+                            <div class="task-footer">
+                                <label class="custom-checkbox" onclick="event.stopPropagation()">
+                                    <input type="checkbox" data-id="${task.id}" class="task-updater" ${isChecked}>
+                                    <span class="checkmark"></span>
+                                    <span class="status-text">${task.status}</span>
+                                </label>
+                            </div>
+                        </div>`;
                     });
 
+                    // O botão Adicionar precisa ficar fora da área "arrastável" para não dar bug visual no Sortable
+                    rowHTML += `</div>`; 
                     if (perfilUsuario === "Gestor" || colab.email === usuarioAtual.email) {
-                        rowHTML += `<button class="add-task-btn" onclick="abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button>`;
+                        rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem; background: var(--bg-swimlane); border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);"><button class="add-task-btn" style="width: 100%;" onclick="abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button></div>`;
+                    } else {
+                        rowHTML += `<div style="background: var(--bg-swimlane); border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);"></div>`;
                     }
-                    rowHTML += `</div>`;
                 });
 
                 gridContainer.innerHTML += rowHTML;
             });
+
+            // ATIVAR O DRAG AND DROP APÓS RENDERIZAR
+            iniciarDragAndDrop();
 
             document.querySelectorAll('.task-updater').forEach(checkbox => {
                 checkbox.addEventListener('change', function () {
@@ -1340,6 +1392,46 @@
                     const novoStatus = this.checked ? "Concluída" : "Pendente";
                     atualizarStatusFirebase(taskId, novoStatus);
                 });
+            });
+        }
+
+        function iniciarDragAndDrop() {
+            const lanes = document.querySelectorAll('.sortable-lane');
+            lanes.forEach(lane => {
+                const isMyLane = perfilUsuario === "Gestor" || lane.getAttribute('data-email') === usuarioAtual.email;
+                
+                // Se a lane for do usuário ou se for Gestor, ele pode arrastar e soltar
+                if(isMyLane) {
+                    const sortableInstance = new Sortable(lane, {
+                        group: 'shared', // Permite arrastar entre diferentes colunas
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        onEnd: function (evt) {
+                            const taskId = evt.item.getAttribute('data-id');
+                            const novaLane = evt.to;
+                            const novoColab = novaLane.getAttribute('data-email');
+                            const novaData = novaLane.getAttribute('data-date');
+                            
+                            let updates = {};
+                            
+                            // 1. Atualiza quem é o dono e qual o dia, caso ele tenha arrastado para outra coluna
+                            updates[`agenda_tarefas/${taskId}/colaboradorEmail`] = novoColab;
+                            updates[`agenda_tarefas/${taskId}/data`] = novaData;
+                            
+                            // 2. Reordena todas as tarefas dessa nova coluna
+                            const cards = Array.from(novaLane.querySelectorAll('.task-card'));
+                            cards.forEach((card, index) => {
+                                const id = card.getAttribute('data-id');
+                                updates[`agenda_tarefas/${id}/ordem`] = Date.now() + index; 
+                            });
+
+                            update(ref(db), updates).catch(err => {
+                                showToast("Erro ao reordenar: " + err.message, "error");
+                            });
+                        }
+                    });
+                    currentSortables.push(sortableInstance);
+                }
             });
         }
 
