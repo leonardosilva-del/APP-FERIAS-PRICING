@@ -470,7 +470,6 @@
             position: relative;
         }
 
-        /* ----- ATUALIZAÇÃO DA GRADE KANBAN E COLUNAS ----- */
         .board-grid {
             display: grid;
             grid-template-columns: 200px repeat(6, minmax(230px, 1fr));
@@ -586,7 +585,6 @@
             flex: 1; 
         }
 
-        /* SortableJS Ghost Class - Estilo do card quando está sendo arrastado */
         .sortable-ghost {
             opacity: 0.4;
             background-color: #f8fafc;
@@ -892,6 +890,7 @@
         let dataInicioSemana = getStartOfWeek(new Date());
         let idTarefaDetalhe = null; 
         let currentSortables = []; 
+        let rolagemInicialFeita = false; 
 
         let loadedFixas = false;
         let loadedTarefas = false;
@@ -952,25 +951,66 @@
             renderizarComentarios(taskId);
         }
 
+        window.excluirFixa = function(id) {
+            let updates = {};
+            updates['agenda_fixas/' + id] = null;
+            
+            Object.keys(listaTarefasGlobal).forEach(taskId => {
+                let t = listaTarefasGlobal[taskId];
+                if (t.idFixaRef === id && t.status === "Pendente") {
+                    updates['agenda_tarefas/' + taskId] = null; 
+                }
+            });
+
+            update(ref(db), updates).then(() => {
+                showToast('Rotina fixa removida com sucesso', 'success');
+            }).catch(err => {
+                showToast("Erro: " + err.message, "error");
+            });
+        }
+
         window.excluirTarefaAtual = function() {
             if(!idTarefaDetalhe) return;
-            if(confirm("Tem certeza que deseja excluir esta tarefa do quadro?")) {
-                const task = listaTarefasGlobal[idTarefaDetalhe];
+            
+            const task = listaTarefasGlobal[idTarefaDetalhe];
+            
+            // Se for tarefa de rotina fixa
+            if (task.idFixaRef) {
+                const deletarSerieCompleta = confirm("⚠️ ATENÇÃO: Esta é uma tarefa de ROTINA FIXA.\n\n[ OK ] - Para excluir TODA A SÉRIE (essa e as futuras).\n[ CANCELAR ] - Para excluir APENAS a tarefa de hoje.");
                 
-                let updates = {};
-                updates['agenda_tarefas/' + idTarefaDetalhe] = null;
+                if (deletarSerieCompleta) {
+                    window.excluirFixa(task.idFixaRef);
+                    window.fecharModalDetalhe();
+                    return;
+                } else {
+                    if(confirm("Tem certeza que deseja excluir APENAS A OCORRÊNCIA DESTE DIA?")) {
+                        let updates = {};
+                        updates['agenda_tarefas/' + idTarefaDetalhe] = null;
+                        if (task.dataReferencia) {
+                            updates[`agenda_fixas/${task.idFixaRef}/suprimidas/${task.dataReferencia}`] = true;
+                        }
 
-                // Suprime a recriação da tarefa se for de rotina fixa e estiver sendo excluída
-                if (task.idFixaRef && task.dataReferencia) {
-                    updates[`agenda_fixas/${task.idFixaRef}/suprimidas/${task.dataReferencia}`] = true;
+                        update(ref(db), updates).then(() => {
+                            window.showToast("Tarefa do dia excluída", "success");
+                            window.fecharModalDetalhe();
+                        }).catch(err => {
+                            window.showToast("Erro: " + err.message, "error");
+                        });
+                    }
                 }
+            } else {
+                // Se for tarefa normal (não fixa)
+                if(confirm("Tem certeza que deseja excluir esta tarefa do quadro?")) {
+                    let updates = {};
+                    updates['agenda_tarefas/' + idTarefaDetalhe] = null;
 
-                update(ref(db), updates).then(() => {
-                    showToast("Tarefa excluída", "success");
-                    fecharModalDetalhe();
-                }).catch(err => {
-                    showToast("Erro: " + err.message, "error");
-                });
+                    update(ref(db), updates).then(() => {
+                        window.showToast("Tarefa excluída", "success");
+                        window.fecharModalDetalhe();
+                    }).catch(err => {
+                        window.showToast("Erro: " + err.message, "error");
+                    });
+                }
             }
         }
 
@@ -1054,6 +1094,8 @@
         // ==========================================
         // FIREBASE CRUD: TAREFAS E FIXAS
         // ==========================================
+        let fixasSuprimidasGlobal = {};
+
         function carregarBasesDeDados() {
             onValue(ref(db, 'agenda_fixas'), (snapshot) => {
                 listaFixasGlobal = snapshot.exists() ? snapshot.val() : {};
@@ -1074,6 +1116,11 @@
             verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
             renderizarGrid();
             if(idTarefaDetalhe) renderizarComentarios(idTarefaDetalhe);
+            
+            if (!rolagemInicialFeita) {
+                rolarParaHoje();
+                rolagemInicialFeita = true;
+            }
         }
 
         // ==========================================
@@ -1098,10 +1145,11 @@
             Object.keys(fixas).forEach(idFixa => {
                 const fixa = fixas[idFixa];
                 
+                const fixaDataCriacao = fixa.criadoEm ? formataDataISO(new Date(fixa.criadoEm)) : "2000-01-01";
+                
                 datasAtuais.forEach(dataObj => {
-                    if (fixa.dias && fixa.dias.includes(dataObj.diaSemana)) {
+                    if (fixa.dias && fixa.dias.includes(dataObj.diaSemana) && dataObj.iso >= fixaDataCriacao) {
                         
-                        // Verifica se foi suprimida (deletada) nesse dia
                         if (fixa.suprimidas && fixa.suprimidas[dataObj.iso]) return;
 
                         let jaExiste = false;
@@ -1166,27 +1214,6 @@
                 }
             });
             if(count === 0) listaDiv.innerHTML = '<p style="color:var(--text-400);">Nenhuma rotina fixa cadastrada para você.</p>';
-        }
-
-        window.excluirFixa = function(id) {
-            if(confirm('Excluir essa demanda fixa? As tarefas já concluídas serão mantidas, mas as pendentes futuras serão apagadas.')) {
-                
-                let updates = {};
-                updates['agenda_fixas/' + id] = null;
-                
-                Object.keys(listaTarefasGlobal).forEach(taskId => {
-                    let t = listaTarefasGlobal[taskId];
-                    if (t.idFixaRef === id && t.status === "Pendente") {
-                        updates['agenda_tarefas/' + taskId] = null; 
-                    }
-                });
-
-                update(ref(db), updates).then(() => {
-                    showToast('Rotina fixa removida com sucesso', 'success');
-                }).catch(err => {
-                    showToast("Erro: " + err.message, "error");
-                });
-            }
         }
 
         // ==========================================
@@ -1414,6 +1441,20 @@
             });
         }
 
+        function rolarParaHoje() {
+            setTimeout(() => {
+                const colunaHoje = document.querySelector('.day-header.today');
+                const container = document.querySelector('.board-container');
+                
+                if (colunaHoje && container) {
+                    container.scrollTo({
+                        left: colunaHoje.offsetLeft - 220, 
+                        behavior: 'smooth'
+                    });
+                }
+            }, 150); 
+        }
+
         function iniciarDragAndDrop() {
             const lanes = document.querySelectorAll('.sortable-lane');
             lanes.forEach(lane => {
@@ -1465,6 +1506,7 @@
             dataInicioSemana = getStartOfWeek(new Date()); 
             verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
             renderizarGrid(); 
+            rolarParaHoje(); 
         });
 
         function atualizarStatusFirebase(taskId, novoStatus) {
