@@ -7,6 +7,24 @@
     <title>Gestão de Usuários - Intranet Pricing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- SCRIPT DO MODO DARK GLOBAL (Impede a tela de piscar branco) -->
+    <script>
+        if (localStorage.getItem('tema-intranet') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+        function toggleDark() {
+            document.documentElement.classList.toggle('dark-theme');
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            localStorage.setItem('tema-intranet', isDark ? 'dark' : 'light');
+            
+            // Troca o ícone do botão
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) {
+                btnIcon.textContent = isDark ? '☀️' : '🌙';
+            }
+        }
+    </script>
+
     <style>
         :root {
             --bg-body: #f3f4f6;
@@ -25,6 +43,27 @@
             --radius-lg: 12px;
         }
 
+        /* --- MODO DARK --- */
+        html.dark-theme {
+            --bg-body: #0f172a;        
+            --bg-surface: #1e293b;     
+            --text-900: #f8fafc;       
+            --text-600: #94a3b8;       
+            --text-400: #64748b;       
+            --border-light: #334155;   
+            --border-hover: #475569;
+        }
+
+        /* Ajustes Finos para Usuários no Dark Mode */
+        html.dark-theme .panel-header { background: #0f172a; }
+        html.dark-theme tr:hover td { background: #0f172a; }
+        html.dark-theme .role-select { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
+        html.dark-theme .role-select.gestor { background-color: rgba(37, 99, 235, 0.1); border-color: #2563eb; color: #60a5fa; }
+        html.dark-theme .role-select.colaborador { background-color: rgba(16, 185, 129, 0.1); border-color: #059669; color: #34d399; }
+        html.dark-theme .role-select.bloqueado { background-color: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #f87171; }
+        html.dark-theme .btn-excluir:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        /* Fim Modo Dark */
+
         * {
             margin: 0;
             padding: 0;
@@ -39,6 +78,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            transition: background-color 0.3s ease;
         }
 
         /* --- TELA DE CARREGAMENTO --- */
@@ -52,6 +92,7 @@
             align-items: center;
             justify-content: center;
             color: var(--text-600);
+            transition: background-color 0.3s ease;
         }
 
         @keyframes spin {
@@ -64,11 +105,39 @@
             color: var(--brand-primary);
         }
 
-        /* --- WIDGET DE PERFIL --- */
-        .user-profile-widget {
+        /* --- CONTROLES DO TOPO DIREITO --- */
+        .top-controls {
             position: absolute;
             top: 24px;
             right: 32px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .btn-theme {
+            background: var(--bg-surface);
+            color: var(--text-900);
+            border: 1px solid var(--border-light);
+            font-size: 1.1rem;
+            padding: 0.5rem 0.7rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-theme:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* --- WIDGET DE PERFIL --- */
+        .user-profile-widget {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -78,7 +147,6 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-light);
             transition: all 0.2s ease;
-            z-index: 100;
         }
 
         .user-profile-widget:hover {
@@ -146,6 +214,8 @@
             align-items: center;
             margin-bottom: 2rem;
             gap: 1.5rem;
+            flex-wrap: wrap;
+            padding-right: 250px;
         }
 
         .header-logo {
@@ -188,12 +258,14 @@
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-sm);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .panel-header {
             padding: 1.5rem;
             border-bottom: 1px solid var(--border-light);
             background: #f8fafc;
+            transition: all 0.3s ease;
         }
 
         .panel-header h2 {
@@ -206,6 +278,10 @@
             font-size: 0.9rem;
             color: var(--text-600);
             margin-top: 0.25rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
         }
 
         table {
@@ -223,12 +299,14 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             border-bottom: 1px solid var(--border-light);
+            transition: all 0.3s ease;
         }
 
         td {
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-light);
             vertical-align: middle;
+            transition: all 0.3s ease;
         }
 
         tr:last-child td {
@@ -352,20 +430,28 @@
         <h2 style="font-weight: 600; font-size: 1.2rem;">Autenticando acesso...</h2>
     </div>
 
-    <!-- WIDGET DE PERFIL DO USUÁRIO -->
-    <div class="user-profile-widget" style="display: none;" id="widget-perfil">
-        <img id="user-photo" src="" class="user-avatar" alt="Foto">
-        <div class="user-info-widget">
-            <span id="user-name-widget" class="user-name-widget">Carregando...</span>
-            <span id="user-role-widget" class="user-role-widget">Gestor</span>
-        </div>
-        <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                </path>
-            </svg>
+    <!-- CONTROLES DO TOPO DIREITO -->
+    <div class="top-controls" style="display: none;" id="widget-perfil">
+        <!-- BOTÃO DE TEMA (DARK MODE) -->
+        <button onclick="toggleDark()" class="btn-theme" title="Alternar Tema Escuro/Claro">
+            <span id="icon-theme">🌙</span>
         </button>
+
+        <!-- WIDGET DE PERFIL -->
+        <div class="user-profile-widget">
+            <img id="user-photo" src="" class="user-avatar" alt="Foto">
+            <div class="user-info-widget">
+                <span id="user-name-widget" class="user-name-widget">Carregando...</span>
+                <span id="user-role-widget" class="user-role-widget">Gestor</span>
+            </div>
+            <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="container" id="main-container">
@@ -385,19 +471,21 @@
                 <h2>Equipe Cadastrada</h2>
                 <p>Controle os níveis de acesso das pessoas à Intranet Pricing.</p>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Colaborador</th>
-                        <th>Data de Primeiro Acesso</th>
-                        <th>Nível de Permissão</th>
-                        <th style="text-align: center;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-usuarios">
-                    <tr><td colspan="4" style="text-align: center; padding: 2rem; color: #94a3b8;">Carregando usuários...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Colaborador</th>
+                            <th>Data de Primeiro Acesso</th>
+                            <th>Nível de Permissão</th>
+                            <th style="text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-usuarios">
+                        <tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-600);">Carregando usuários...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -405,6 +493,13 @@
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
         import { ref, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        // Ajusta o ícone inicial com base no tema
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('tema-intranet') === 'dark';
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) btnIcon.textContent = isDark ? '☀️' : '🌙';
+        });
 
         let usuarioAtual = null;
 
@@ -471,7 +566,7 @@
                 tbody.innerHTML = '';
 
                 if (!snapshot.exists()) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum usuário encontrado.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-600);">Nenhum usuário encontrado.</td></tr>';
                     return;
                 }
 
