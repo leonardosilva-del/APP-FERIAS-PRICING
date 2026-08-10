@@ -17,7 +17,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("COLOQUE_SUA_PUBLIC_KEY_AQUI"); // Preencha depois criando conta no EmailJS
+          emailjs.init("v9Thm91vAnsKayEmy"); // API Key (Public Key) configurada!
        })();
     </script>
 
@@ -763,12 +763,21 @@
                 btnUpload.disabled = false;
                 btnUpload.innerHTML = "📥 Salvar Planilha";
                 
-                // DISPARO DE E-MAIL (Descomente o emailjs quando tiver as chaves)
-                /*
-                const templateParams = { campanha_nome: nome, campanha_regiao: regiao, link_acesso: link };
-                emailjs.send("SEU_SERVICE_ID", "SEU_TEMPLATE_ID", templateParams)
-                    .then(function(res) { console.log('Email enviado!'); }, function(err) { console.error('Erro envio email', err); });
-                */
+                // DISPARO DE E-MAIL (Ativado!)
+                const templateParams = { 
+                    campanha_nome: nome, 
+                    campanha_regiao: regiao, 
+                    link_acesso: link 
+                };
+                
+                // Disparo com chaves inseridas
+                emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
+                    .then(function(res) { 
+                        console.log('Email enviado com sucesso!'); 
+                    }, function(err) { 
+                        console.error('Erro envio email', err); 
+                    });
+                
             });
         };
 
