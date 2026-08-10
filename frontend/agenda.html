@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda Pricing</title>
+    
+    <!-- FAVICON (Ícone da aba do navegador) -->
+    <link rel="icon" type="image/jpeg" href="https://diaadiaatacadista.com.br/epsunoos/2023/12/cropped-Fav-icon.jpg?v=2">
+    <link rel="shortcut icon" type="image/jpeg" href="https://diaadiaatacadista.com.br/epsunoos/2023/12/cropped-Fav-icon.jpg?v=2">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Biblioteca SortableJS para o Drag and Drop -->
@@ -363,7 +368,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -794,6 +799,9 @@
             <label>O que precisa ser feito?</label>
             <input type="text" id="demanda-titulo" placeholder="Ex: Análise de Preços">
 
+            <label>Descrição/Resumo da Atividade (Opcional):</label>
+            <textarea id="demanda-descricao" placeholder="Descreva brevemente o que deve ser feito nesta demanda..." style="height: 70px;"></textarea>
+
             <label>Responsável</label>
             <select id="demanda-colaborador">
                 <!-- Injetado via JS com usuários do Firebase -->
@@ -857,17 +865,24 @@
                 <p style="margin-bottom: 0;"><strong>Status Atual:</strong> <span id="detalhe-status" style="font-weight: bold; color: var(--brand-primary);"></span></p>
             </div>
 
+            <!-- NOVA ÁREA DE DESCRIÇÃO -->
+            <div style="margin-top: 5px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-600); margin-bottom: 6px;">📝 Descrição / Resumo da Atividade:</label>
+                <textarea id="detalhe-descricao" placeholder="Escreva um resumo da atividade a ser realizada..." style="height: 65px; margin-bottom: 6px;"></textarea>
+                <button class="btn-secondary" onclick="window.salvarDescricaoFirebase()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">💾 Salvar Descrição</button>
+            </div>
+
             <h3 style="font-size: 1rem; color: var(--text-900); margin-top: 10px; margin-bottom: 5px;">Comentários e Histórico</h3>
             <div id="comentarios-lista" class="comments-section">
                 <!-- Comentários injetados aqui -->
             </div>
 
             <div style="margin-top: 10px;">
-                <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="height: 60px; margin-bottom: 10px;"></textarea>
+                <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="height: 55px; margin-bottom: 10px;"></textarea>
                 <button class="btn-save" id="btnSalvarComentario" style="width: 100%;">Enviar Comentário</button>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button class="btn-cancel" style="flex:1;" onclick="window.fecharModalDetalhe()">Fechar Aba</button>
                 <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--status-danger); border-color: var(--status-danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
             </div>
@@ -982,6 +997,7 @@
         window.abrirModalDemanda = function (dataPadrao = "") {
             document.getElementById('modalDemanda').style.display = 'flex';
             document.getElementById('demanda-titulo').value = '';
+            document.getElementById('demanda-descricao').value = '';
             document.getElementById('demanda-data').value = dataPadrao || formataDataISO(new Date());
             
             document.getElementById('chk-demanda-fixa').checked = false;
@@ -1013,11 +1029,25 @@
             document.getElementById('detalhe-responsavel').textContent = task.colaboradorEmail;
             document.getElementById('detalhe-criador').textContent = task.criadoPor;
             document.getElementById('detalhe-status').textContent = task.status;
+            document.getElementById('detalhe-descricao').value = task.descricao || '';
             
             document.getElementById('novo-comentario').value = '';
             document.getElementById('modalDetalhe').style.display = 'flex';
 
             renderizarComentarios(taskId);
+        }
+
+        window.salvarDescricaoFirebase = function() {
+            if(!idTarefaDetalhe) return;
+            const desc = document.getElementById('detalhe-descricao').value.trim();
+            
+            update(ref(db, `agenda_tarefas/${idTarefaDetalhe}`), {
+                descricao: desc
+            }).then(() => {
+                window.showToast("Descrição atualizada!", "success");
+            }).catch(err => {
+                window.showToast("Erro ao salvar descrição: " + err.message, "error");
+            });
         }
 
         window.excluirFixa = function(id) {
@@ -1236,6 +1266,7 @@
                             const newTaskId = push(ref(db, 'agenda_tarefas')).key;
                             const nova = {
                                 titulo: fixa.titulo,
+                                descricao: fixa.descricao || '',
                                 colaboradorEmail: fixa.colaboradorEmail,
                                 criadoPor: 'Sistema (Rotina Fixa)',
                                 data: dataObj.iso,
@@ -1288,6 +1319,7 @@
         // ==========================================
         window.salvarDemanda = function() {
             const titulo = document.getElementById('demanda-titulo').value;
+            const descricao = document.getElementById('demanda-descricao').value.trim();
             const selectColab = document.getElementById('demanda-colaborador');
             const colabEmail = selectColab ? selectColab.value : null;
             const tipo = document.getElementById('demanda-tipo').value;
@@ -1307,6 +1339,7 @@
                 
                 push(ref(db, 'agenda_fixas'), {
                     titulo: titulo,
+                    descricao: descricao,
                     colaboradorEmail: colabEmail,
                     criadoPor: usuarioAtual.email,
                     tipo: tipo,
@@ -1328,6 +1361,7 @@
                 
                 push(ref(db, 'agenda_tarefas'), {
                     titulo: titulo,
+                    descricao: descricao,
                     colaboradorEmail: colabEmail,
                     criadoPor: usuarioAtual.email,
                     data: data,
