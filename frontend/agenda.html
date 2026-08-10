@@ -10,6 +10,24 @@
     <!-- Biblioteca SortableJS para o Drag and Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
+    <!-- SCRIPT DO MODO DARK GLOBAL (Impede a tela de piscar branco) -->
+    <script>
+        if (localStorage.getItem('tema-intranet') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+        function toggleDark() {
+            document.documentElement.classList.toggle('dark-theme');
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            localStorage.setItem('tema-intranet', isDark ? 'dark' : 'light');
+            
+            // Troca o ícone do botão
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) {
+                btnIcon.textContent = isDark ? '☀️' : '🌙';
+            }
+        }
+    </script>
+
     <style>
         :root {
             --bg-body: #f3f4f6;
@@ -36,6 +54,35 @@
             --radius-lg: 12px;
             --radius-xl: 16px;
         }
+
+        /* --- MODO DARK --- */
+        html.dark-theme {
+            --bg-body: #0f172a;         /* Fundo slate escuro */
+            --bg-surface: #1e293b;      /* Superfícies / Cards */
+            --bg-swimlane: #0f172a;     /* Colunas / Faixas */
+            --text-900: #f8fafc;        /* Texto principal claro */
+            --text-600: #94a3b8;        /* Texto secundário */
+            --text-400: #64748b;        /* Texto sutil */
+            --border-light: #334155;    /* Bordas escuras */
+            --border-hover: #475569;
+            --status-success-bg: #064e3b; /* Ajuste para etiquetas não ofuscarem */
+        }
+
+        /* Pequeno ajuste extra para Inputs e Modais ficarem perfeitos no Dark Mode */
+        html.dark-theme .task-card { background: #1e293b; }
+        html.dark-theme .task-card.is-done { background: #0f172a; border-left-color: #059669; }
+        html.dark-theme .modal-content input, 
+        html.dark-theme .modal-content select, 
+        html.dark-theme .modal-content textarea {
+            background-color: #0f172a;
+            color: #f8fafc;
+            border-color: #334155;
+        }
+        html.dark-theme .modal-content select:disabled { background-color: #334155; color: #94a3b8; }
+        html.dark-theme .check-dias-semana label { background: #1e293b; border-color: #334155; color: #f8fafc; }
+        html.dark-theme .comment-bubble { background: #334155; color: #f8fafc; }
+        /* Fim Modo Dark */
+
 
         * {
             margin: 0;
@@ -269,7 +316,7 @@
         }
         .check-dias-semana label {
             display: flex; align-items: center; gap: 4px; font-weight: 500; font-size: 0.8rem;
-            background: #fff; border: 1px solid var(--border-light); padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+            background: var(--bg-surface); border: 1px solid var(--border-light); padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;
         }
         .check-dias-semana input:checked + span {
             color: var(--brand-primary); font-weight: 700;
@@ -398,6 +445,16 @@
             background: var(--bg-surface);
             color: var(--text-900);
             box-shadow: var(--shadow-sm);
+        }
+
+        /* BTN DE TEMA ESPECIAL */
+        .btn-theme {
+            background: var(--bg-swimlane);
+            border: 1px solid var(--border-light);
+            font-size: 1.1rem;
+            padding: 0.4rem;
+            border-radius: 8px;
+            margin-left: 10px;
         }
 
         .week-label {
@@ -691,7 +748,7 @@
         }
 
         .task-card.is-done {
-            background: #f8fafc;
+            background: var(--bg-swimlane);
             border-left-color: var(--status-success);
             opacity: 0.8;
         }
@@ -848,6 +905,11 @@
                 Nova Demanda
             </button>
 
+            <!-- BOTÃO DE TEMA (DARK MODE) -->
+            <button onclick="toggleDark()" class="btn-icon btn-theme" title="Alternar Tema Escuro/Claro">
+                <span id="icon-theme">🌙</span>
+            </button>
+
             <!-- WIDGET DE PERFIL DO USUÁRIO -->
             <div class="user-profile-widget">
                 <img id="user-photo" src="" class="user-avatar" alt="Foto">
@@ -878,6 +940,13 @@
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
         import { ref, onValue, push, set, update, remove, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        // Ajusta o ícone inicial com base no tema salvo
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('tema-intranet') === 'dark';
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) btnIcon.textContent = isDark ? '☀️' : '🌙';
+        });
 
         // ==========================================
         // VARIÁVEIS GLOBAIS
@@ -974,7 +1043,6 @@
             
             const task = listaTarefasGlobal[idTarefaDetalhe];
             
-            // Se for tarefa de rotina fixa
             if (task.idFixaRef) {
                 const deletarSerieCompleta = confirm("⚠️ ATENÇÃO: Esta é uma tarefa de ROTINA FIXA.\n\n[ OK ] - Para excluir TODA A SÉRIE (essa e as futuras).\n[ CANCELAR ] - Para excluir APENAS a tarefa de hoje.");
                 
@@ -999,7 +1067,6 @@
                     }
                 }
             } else {
-                // Se for tarefa normal (não fixa)
                 if(confirm("Tem certeza que deseja excluir esta tarefa do quadro?")) {
                     let updates = {};
                     updates['agenda_tarefas/' + idTarefaDetalhe] = null;
@@ -1311,7 +1378,6 @@
         function renderizarGrid() {
             const gridContainer = document.getElementById('board-grid-content');
             
-            // Destrói os Sortables antigos para evitar vazamento de memória e duplicação
             currentSortables.forEach(s => s.destroy());
             currentSortables = [];
             gridContainer.innerHTML = '';
@@ -1378,10 +1444,7 @@
                     let bgStyle = (dataLoopStr === hojeISO) ? 'background: rgba(99, 102, 241, 0.02);' : '';
                     let uidUnicoLane = `lane-${colab.email.replace(/[^a-zA-Z0-9]/g, '')}-${dataLoopStr}`;
                     
-                    // Inicia o envoltorio que corrige o CSS Grid
                     rowHTML += `<div class="day-cell-wrapper" style="${bgStyle}">`;
-
-                    // Inicia a área de Arrasto (Sortable Lane)
                     rowHTML += `<div class="task-lane sortable-lane" id="${uidUnicoLane}" data-email="${colab.email}" data-date="${dataLoopStr}">`;
 
                     let tarefasColuna = Object.keys(listaTarefasGlobal)
@@ -1415,16 +1478,15 @@
                         </div>`;
                     });
 
-                    rowHTML += `</div>`; // Fecha sortable-lane
+                    rowHTML += `</div>`; 
 
-                    // Botão Adicionar fora do sortable
                     if (perfilUsuario === "Gestor" || colab.email === usuarioAtual.email) {
                         rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem;"><button class="add-task-btn" style="width: 100%;" onclick="window.abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button></div>`;
                     } else {
                         rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem;"></div>`;
                     }
 
-                    rowHTML += `</div>`; // Fecha day-cell-wrapper
+                    rowHTML += `</div>`; 
                 });
 
                 gridContainer.innerHTML += rowHTML;

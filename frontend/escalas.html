@@ -11,6 +11,24 @@
     <!-- html2pdf for PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+    <!-- SCRIPT DO MODO DARK GLOBAL (Impede a tela de piscar branco) -->
+    <script>
+        if (localStorage.getItem('tema-intranet') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+        function toggleDark() {
+            document.documentElement.classList.toggle('dark-theme');
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            localStorage.setItem('tema-intranet', isDark ? 'dark' : 'light');
+            
+            // Troca o ícone do botão
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) {
+                btnIcon.textContent = isDark ? '☀️' : '🌙';
+            }
+        }
+    </script>
+
     <style>
         :root {
             --bg-color: #f1f5f9;
@@ -23,6 +41,25 @@
             --danger-hover: #dc2626;
             --border: #e2e8f0;
         }
+
+        /* --- MODO DARK --- */
+        html.dark-theme {
+            --bg-color: #0f172a;        
+            --card-bg: #1e293b;     
+            --text-main: #f8fafc;       
+            --text-muted: #94a3b8;       
+            --border: #334155;   
+        }
+
+        /* Ajustes finos adicionais pro Dark Mode na Escala */
+        html.dark-theme body { background-image: radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.1) 0, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 23, 42, 1) 0, transparent 50%); }
+        html.dark-theme .input-box input, html.dark-theme .filter-group input, html.dark-theme .filter-group select { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
+        html.dark-theme .btn-template { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
+        html.dark-theme .btn-template:hover { background-color: #1e293b; border-color: #475569; }
+        html.dark-theme .back-btn { background-color: rgba(30, 41, 59, 0.5); color: #cbd5e1; }
+        html.dark-theme .back-btn:hover { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
+        html.dark-theme .info .phone { background-color: rgba(5, 150, 105, 0.15); color: #34d399; }
+        /* Fim Modo Dark */
 
         * {
             margin: 0;
@@ -41,6 +78,7 @@
                 radial-gradient(at 100% 100%, rgba(241, 245, 249, 1) 0, transparent 50%);
             background-attachment: fixed;
             position: relative;
+            transition: background-color 0.3s ease;
         }
 
         .container {
@@ -60,7 +98,7 @@
             padding: 6px 16px 6px 6px;
             border-radius: 50px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
             transition: all 0.2s ease;
             z-index: 100;
         }
@@ -231,6 +269,23 @@
             transform: translateY(-2px);
         }
 
+        /* BTN DE TEMA ESPECIAL */
+        .btn-theme {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            font-size: 1.1rem;
+            padding: 0.5rem 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-theme:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
         /* Área restrita (Inclusão/Importação) */
         #area-gestao {
             display: none;
@@ -292,7 +347,7 @@
         .input-box input:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-            background-color: #ffffff;
+            background-color: transparent;
         }
 
         .btn-add {
@@ -488,52 +543,6 @@
             display: none !important;
         }
 
-        /* Toasts */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .toast {
-            padding: 15px 20px;
-            border-radius: 5px;
-            color: white;
-            font-weight: 500;
-            font-size: 14px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            animation: slideIn 0.3s forwards;
-            pointer-events: auto;
-        }
-
-        .toast.success {
-            background-color: #059669;
-        }
-
-        .toast.error {
-            background-color: #dc2626;
-        }
-
-        .toast.info {
-            background-color: #3b82f6;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
     </style>
 </head>
 
@@ -595,6 +604,11 @@
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                     </svg>
                     Importar
+                </button>
+
+                <!-- BOTÃO DE TEMA (DARK MODE) -->
+                <button onclick="toggleDark()" class="btn-theme" title="Alternar Tema Escuro/Claro">
+                    <span id="icon-theme">🌙</span>
                 </button>
             </div>
         </div>
@@ -669,6 +683,13 @@
         import { db, auth } from "./firebase-config.js";
         import { ref, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
         import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+        // Ajusta o ícone inicial com base no tema salvo
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.getItem('tema-intranet') === 'dark';
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) btnIcon.textContent = isDark ? '☀️' : '🌙';
+        });
 
         const escalasRef = ref(db, 'escalas_plantao');
 
