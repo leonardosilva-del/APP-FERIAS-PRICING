@@ -157,7 +157,8 @@
         .btn-add,
         .btn-dash,
         .btn-historico,
-        .btn-listas {
+        .btn-listas,
+        .btn-emails {
             color: white;
             padding: 10px 20px;
             border: none;
@@ -270,7 +271,7 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* --- ESTILO DOS MODAIS GLOBAIS --- */
+        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
@@ -286,6 +287,18 @@
         
         .modal-content h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem; font-weight: 600; text-align: center; }
         
+        .modal-header-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        .modal-header-close:hover { color: #0f172a; }
+
         /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
         .modal-content label { 
             font-size: 13px; 
@@ -840,20 +853,18 @@
                 }
                 document.getElementById('user-role').textContent = perfilUsuario;
 
-                // TODOS podem enviar os links, a área fica liberada
+                // TODOS podem enviar os links e criar campanhas
                 document.getElementById('area-upload-listas').style.display = 'block';
+                document.getElementById('btn-nova-campanha').style.display = 'inline-block';
+                document.getElementById('btn-gerenciar-emails').style.display = 'inline-flex';
 
                 // Apenas Gestor vê botões de configuração pesada
                 if (perfilUsuario === "Gestor") {
-                    document.getElementById('btn-nova-campanha').style.display = 'inline-block';
                     document.getElementById('btn-historico-dash').style.display = 'inline-block';
                     document.getElementById('menu-import-export').style.display = 'inline-block';
-                    document.getElementById('btn-gerenciar-emails').style.display = 'inline-flex';
                 } else {
-                    document.getElementById('btn-nova-campanha').style.display = 'none';
                     document.getElementById('btn-historico-dash').style.display = 'none';
                     document.getElementById('menu-import-export').style.display = 'none';
-                    document.getElementById('btn-gerenciar-emails').style.display = 'none';
                 }
 
                 renderizarTabela(dadosAtuais);
@@ -1205,7 +1216,7 @@
                 if (camp.etapa === 'preenchimento-ofertas') { countEtapas['Preenchimento']++; }
                 else if (camp.etapa === 'diagramacao') { countEtapas['Diagramação']++; }
                 else if (camp.etapa === 'aprovacao-comercial') { countEtapas['Aprovação Com.']++; }
-                else if (camp.etapa === 'correcao-pricing') { countEtapas['Correção Pricing']++; }
+                else if (camp.etapa === 'correção-pricing') { countEtapas['Correção Pricing']++; }
                 else if (camp.etapa === 'validacao-final-marketing') { countEtapas['Valid. Final MKT']++; }
 
                 let resp = camp.responsavel || 'Pricing';
@@ -1283,9 +1294,10 @@
                 return;
             }
 
-            const statusBloqueio = (perfilUsuario === "Gestor") ? "" : "disabled";
-            const statusReadonly = (perfilUsuario === "Gestor") ? "" : "readonly";
-            const statusAcoes = (perfilUsuario === "Gestor") ? "inline-block" : "none";
+            // Liberado para todos interagirem com os status e edições
+            const statusBloqueio = "";
+            const statusReadonly = "";
+            const statusAcoes = "inline-block";
 
             const mesesUnicos = new Set();
             const campanhasUnicas = new Set();
@@ -1434,7 +1446,6 @@
         };
 
         window.moverLinha = function (idAtual, direcao) {
-            if (perfilUsuario !== "Gestor") return;
             let lista = [];
             for (let key in dadosAtuais) lista.push({ id: key, ...dadosAtuais[key] });
             lista.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
@@ -1505,7 +1516,6 @@
         };
 
         window.mudarStatus = function (id, campo, valor) {
-            if (perfilUsuario !== "Gestor") return;
             let atualizacoes = { [campo]: valor };
 
             if (campo === 'etapa') {
@@ -1526,7 +1536,6 @@
         };
 
         window.salvarCampanha = function () {
-            if (perfilUsuario !== "Gestor") return;
             const novaCampanhaObj = {
                 mes: document.getElementById('nova-mes').value,
                 nome: document.getElementById('nova-campanha').value, lojas: document.getElementById('novas-lojas').value,
@@ -1546,12 +1555,10 @@
         };
 
         window.deletarCampanha = function (id) {
-            if (perfilUsuario !== "Gestor") return;
             if (confirm("Deseja excluir esta campanha?")) { remove(ref(db, 'campanhas_oficiais_v3/' + id)); showToast("Excluída!", "success"); }
         };
 
         window.abrirModalEditar = function (id) {
-            if (perfilUsuario !== "Gestor") return;
             idSendoEditado = id; const camp = dadosAtuais[id];
             document.getElementById('edit-mes').value = camp.mes || 'Não Informado';
             document.getElementById('edit-campanha').value = camp.nome || '';
@@ -1566,7 +1573,7 @@
         };
 
         window.salvarEdicao = function () {
-            if (perfilUsuario !== "Gestor" || !idSendoEditado) return;
+            if (!idSendoEditado) return;
             const edicaoObj = {
                 mes: document.getElementById('edit-mes').value,
                 nome: document.getElementById('edit-campanha').value, lojas: document.getElementById('edit-lojas').value,
