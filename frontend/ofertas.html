@@ -157,8 +157,7 @@
         .btn-add,
         .btn-dash,
         .btn-historico,
-        .btn-listas,
-        .btn-emails {
+        .btn-listas {
             color: white;
             padding: 10px 20px;
             border: none;
@@ -271,7 +270,7 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
+        /* --- ESTILO DOS MODAIS GLOBAIS --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
@@ -287,18 +286,6 @@
         
         .modal-content h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem; font-weight: 600; text-align: center; }
         
-        .modal-header-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: transparent;
-            border: none;
-            font-size: 1.5rem;
-            color: #94a3b8;
-            cursor: pointer;
-        }
-        .modal-header-close:hover { color: #0f172a; }
-
         /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
         .modal-content label { 
             font-size: 13px; 
@@ -527,9 +514,6 @@
                 
                 <!-- BOTÃO BASE DE LISTAS -->
                 <button id="btn-listas" class="btn-listas" onclick="abrirModalListas()">📂 Base de Listas</button>
-                
-                <!-- BOTÃO E-MAILS (GESTOR APENAS) -->
-                <button id="btn-gerenciar-emails" class="btn-emails" onclick="abrirModalEmails()">📧 E-mails Notificados</button>
 
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="processarCSV(event)">
             </div>
@@ -605,14 +589,17 @@
 
     <!-- Modais -->
     <!-- Modal Base de Listas (Totalmente Reformulado) -->
-    <div id="modalListas" class="modal-overlay" style="display: none;">
+    <div id="modalListas" class="modal-overlay" style="display: none; z-index: 1000;">
         <div class="modal-content extra-large" style="background-color: #f4f7f6;">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
                     📂 Base de Listas (Excel)
                 </h2>
-                <button class="modal-header-close" onclick="fecharModalListas()">×</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-gerenciar-emails" class="btn-corp-primary" onclick="abrirModalEmails()" style="display: none; background: #10b981; border: none; color: white;">📧 E-mails Notificados</button>
+                    <button class="btn-cancel" onclick="fecharModalListas()" style="padding: 8px 16px; min-height: 42px;">✕ Fechar</button>
+                </div>
             </div>
             
             <!-- Área de Upload de Links (Todos podem enviar) -->
@@ -665,19 +652,24 @@
     </div>
 
     <!-- Modal Gerenciar E-mails -->
-    <div id="modalEmails" class="modal-overlay" style="display: none;">
+    <div id="modalEmails" class="modal-overlay" style="display: none; z-index: 1050;">
         <div class="modal-content">
-            <button class="modal-header-close" onclick="fecharModalEmails()">×</button>
             <h2>📧 Gerenciar Notificações</h2>
-            <p style="font-size: 13px; color: #64748b; margin-top: -10px; margin-bottom: 15px; text-align: center;">E-mails que serão avisados quando uma nova Planilha for enviada para a Base de Listas.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px; text-align: center;">E-mails que serão avisados quando uma nova Planilha for enviada.</p>
 
-            <div style="display: flex; gap: 10px;">
-                <input type="email" id="novo-email-notificacao" placeholder="Ex: joao@atacadaodiaadia.com.br" style="flex: 1;">
-                <button class="btn-save" onclick="adicionarEmailNotificacao()" style="padding: 0 15px;">Adicionar</button>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="font-size: 0.8rem; color: #475569;">Cole um ou vários e-mails (separados por vírgula):</label>
+                <textarea id="novo-email-notificacao" placeholder="Ex: joao@atacadaodiaadia.com.br, maria@atacadaodiaadia.com.br" style="height: 80px; resize: vertical;"></textarea>
+                <button class="btn-save" onclick="adicionarEmailNotificacao()" style="width: 100%;">➕ Adicionar E-mail(s)</button>
             </div>
 
-            <div id="lista-emails-cadastrados" style="margin-top: 15px; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+            <div id="lista-emails-cadastrados" style="margin-top: 15px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
                 <!-- emails renderizados aqui -->
+            </div>
+
+            <!-- Botão Fechar claro no rodapé -->
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button class="btn-cancel" onclick="fecharModalEmails()" style="width: 100%;">Fechar Janela</button>
             </div>
         </div>
     </div>
@@ -856,7 +848,7 @@
                     document.getElementById('btn-nova-campanha').style.display = 'inline-block';
                     document.getElementById('btn-historico-dash').style.display = 'inline-block';
                     document.getElementById('menu-import-export').style.display = 'inline-block';
-                    document.getElementById('btn-gerenciar-emails').style.display = 'inline-block';
+                    document.getElementById('btn-gerenciar-emails').style.display = 'inline-flex';
                 } else {
                     document.getElementById('btn-nova-campanha').style.display = 'none';
                     document.getElementById('btn-historico-dash').style.display = 'none';
@@ -913,7 +905,7 @@
 
                     if (listaDiv) {
                         listaDiv.innerHTML += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1;">
                                 <span style="font-size: 14px; color: #1e293b; font-weight: 500;">✉️ ${emailInfo}</span>
                                 <button onclick="window.removerEmailNotificacao('${id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding: 4px;" title="Remover">🗑️</button>
                             </div>
@@ -927,23 +919,51 @@
 
         window.adicionarEmailNotificacao = function() {
             const input = document.getElementById('novo-email-notificacao');
-            const email = input.value.trim().toLowerCase();
+            const texto = input.value.trim().toLowerCase();
             
-            if (!email || !email.includes('@')) {
-                showToast("Digite um e-mail válido.", "warning");
-                return;
-            }
-            if (listaEmailsDisparo.includes(email)) {
-                showToast("Este e-mail já está na lista.", "info");
+            if (!texto) {
+                showToast("Digite pelo menos um e-mail.", "warning");
                 return;
             }
 
-            push(emailsConfigRef, { email: email }).then(() => {
-                input.value = '';
-                showToast("E-mail adicionado!", "success");
-            }).catch(err => {
-                showToast("Erro ao adicionar: " + err.message, "error");
+            // Separa os emails inseridos no textarea (por vírgula, ponto e vírgula ou quebra de linha)
+            const emailsRaw = texto.split(/[,;\n]+/);
+            let adicionados = 0;
+            let invalidos = 0;
+            let duplicados = 0;
+
+            const promises = [];
+
+            emailsRaw.forEach(emailRaw => {
+                const email = emailRaw.trim();
+                if (email) {
+                    if (!email.includes('@')) {
+                        invalidos++;
+                    } else if (listaEmailsDisparo.includes(email)) {
+                        duplicados++;
+                    } else {
+                        promises.push(push(emailsConfigRef, { email: email }));
+                        // Otimização para não processar a mesma duplicação no mesmo loop
+                        listaEmailsDisparo.push(email); 
+                        adicionados++;
+                    }
+                }
             });
+
+            if (promises.length > 0) {
+                Promise.all(promises).then(() => {
+                    input.value = '';
+                    let msg = `${adicionados} e-mail(s) adicionado(s)!`;
+                    if (duplicados > 0) msg += ` (${duplicados} já existiam).`;
+                    if (invalidos > 0) msg += ` (${invalidos} inválidos).`;
+                    showToast(msg, "success");
+                }).catch(err => {
+                    showToast("Erro ao adicionar: " + err.message, "error");
+                });
+            } else {
+                if (duplicados > 0) showToast("Os e-mails já estão na lista.", "info");
+                else if (invalidos > 0) showToast("E-mails inválidos.", "error");
+            }
         };
 
         window.removerEmailNotificacao = function(id) {
