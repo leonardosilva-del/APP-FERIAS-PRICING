@@ -7,9 +7,9 @@
 
     <title>Calendário Promocional - PRICING</title>
     
-    <!-- FAVICON PADRONIZADO (COM BYPASS DE CACHE) -->
-    <link rel="icon" type="image/jpeg" href="https://diaadiaatacadista.com.br/epsunoos/2023/12/cropped-Fav-icon.jpg?v=2">
-    <link rel="shortcut icon" type="image/jpeg" href="https://diaadiaatacadista.com.br/epsunoos/2023/12/cropped-Fav-icon.jpg?v=2">
+    <!-- FAVICON LOCAL (PADRÃO DEFINITIVO) -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/favicon.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -161,10 +161,11 @@
             color: white;
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             transition: 0.2s;
+            font-size: 14px;
         }
 
         .btn-add { background-color: #26417E; display: none; }
@@ -177,51 +178,51 @@
         .btn-historico:hover { background-color: #732d91; }
 
         /* NOVO BOTÃO: BASE DE LISTAS */
-        .btn-listas { background-color: #6f42c1; color: white; }
-        .btn-listas:hover { background-color: #59359a; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-listas { background-color: #6366f1; color: white; }
+        .btn-listas:hover { background-color: #4f46e5; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
         /* MENU DROPDOWN IMPORTAR/EXPORTAR */
         .dropdown { position: relative; display: inline-block; display: none; }
-        .dropbtn { background-color: #107c41; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .dropbtn:hover { background-color: #0c5e31; }
+        .dropbtn { background-color: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px; }
+        .dropbtn:hover { background-color: #059669; }
         
         .dropdown-content {
             display: none; position: absolute; background-color: #fff; min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); z-index: 100; border-radius: 5px;
-            overflow: hidden; top: 100%; right: 0; margin-top: 5px; border: 1px solid #ddd;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); z-index: 100; border-radius: 6px;
+            overflow: hidden; top: 100%; right: 0; margin-top: 5px; border: 1px solid #e2e8f0;
         }
-        .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-weight: 500; font-size: 14px; transition: background 0.2s; }
-        .dropdown-content a:hover { background-color: #f1f3f5; color: #107c41; }
+        .dropdown-content a { color: #334155; padding: 12px 16px; text-decoration: none; display: block; font-weight: 500; font-size: 14px; transition: background 0.2s; }
+        .dropdown-content a:hover { background-color: #f8fafc; color: #10b981; }
         .show { display: block; }
 
         /* Estilo dos Filtros */
         .filters-group { display: flex; gap: 20px; flex-wrap: wrap; }
         .filter-bar { display: flex; align-items: center; gap: 10px; }
-        .filter-bar label { font-weight: 600; color: #2c3e50; font-size: 14px; }
-        .filter-bar select { width: auto; padding: 8px 15px; background-color: #f8f9fa; border: 1px solid #ced4da; }
+        .filter-bar label { font-weight: 600; color: #475569; font-size: 14px; }
+        .filter-bar select { width: auto; padding: 8px 15px; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;}
 
         /* ÁREA DOS GRÁFICOS (DASHBOARD) */
         .dashboard-container {
             display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
-            margin-bottom: 25px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;
+            margin-bottom: 25px; padding: 20px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;
         }
-        .chart-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); display: flex; justify-content: center; align-items: center; height: 280px; }
+        .chart-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; justify-content: center; align-items: center; height: 280px; }
         .chart-box.wide { grid-column: 1 / -1; height: 320px; }
         .dashboard-footer { grid-column: 1 / -1; text-align: center; margin-top: 10px; }
 
         /* Estilo da Lista de Histórico */
         .history-list { list-style: none; padding: 0; margin: 0; }
-        .history-item { padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #444; display: flex; flex-direction: column; gap: 5px; }
+        .history-item { padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 5px; }
         .history-item:last-child { border-bottom: none; }
-        .history-time { font-weight: bold; color: #26417E; font-size: 12px; }
-        .history-action { font-weight: 600; color: #333; }
+        .history-time { font-weight: 600; color: #26417E; font-size: 12px; }
+        .history-action { font-weight: 500; color: #334155; }
 
         /* CABEÇALHO CONGELADO (STICKY HEADER) */
-        .table-wrapper { width: 100%; max-height: 65vh; overflow-y: auto; overflow-x: auto; border-radius: 8px 8px 0 0; -webkit-overflow-scrolling: touch; border-bottom: 1px solid #ddd; }
+        .table-wrapper { width: 100%; max-height: 65vh; overflow-y: auto; overflow-x: auto; border-radius: 8px 8px 0 0; -webkit-overflow-scrolling: touch; border-bottom: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; min-width: 1700px; }
-        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
-        thead { background: linear-gradient(to right, #26417E 0%, #C0080B 100%); position: sticky; top: 0; z-index: 20; box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.3); }
-        th { color: white; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; text-align: center; font-size: 13px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        thead { background: #26417E; position: sticky; top: 0; z-index: 20; box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1); }
+        th { color: white; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; text-align: center; font-size: 12px; }
 
         /* Larguras das Colunas */
         th:first-child, td:first-child { min-width: 90px; }
@@ -232,85 +233,222 @@
 
         /* SEMAFORIZAÇÃO DE LINHAS E STATUS */
         tbody tr { transition: background-color 0.2s; }
-        tbody tr:hover { background-color: #f5f5f5; }
-        tr.row-atencao { background-color: #fff3cd; }
-        tr.row-atencao:hover { background-color: #ffeeba; }
-        tr.row-atrasado { background-color: #f8d7da; }
-        tr.row-atrasado:hover { background-color: #f5c6cb; }
-        tr.row-concluido { background-color: #e9ecef; opacity: 0.85; }
-        tr.row-concluido:hover { background-color: #dee2e6; }
+        tbody tr:hover { background-color: #f8fafc; }
+        tr.row-atencao { background-color: #fef3c7; }
+        tr.row-atencao:hover { background-color: #fde68a; }
+        tr.row-atrasado { background-color: #fee2e2; }
+        tr.row-atrasado:hover { background-color: #fecaca; }
+        tr.row-concluido { background-color: #f1f5f9; opacity: 0.85; }
+        tr.row-concluido:hover { background-color: #e2e8f0; }
 
-        select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-family: inherit; width: 100%; font-size: 13px; font-weight: 500; cursor: pointer; background-color: rgba(255, 255, 255, 0.7); }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; width: 100%; font-size: 13px; font-weight: 500; cursor: pointer; background-color: rgba(255, 255, 255, 0.8); transition: border-color 0.2s; outline: none; }
+        select:focus { border-color: #26417E; box-shadow: 0 0 0 3px rgba(38,65,126,0.1); }
         select:disabled { cursor: not-allowed; opacity: 0.6; }
 
         .textarea-inline {
-            padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-family: inherit; width: 100%;
+            padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; width: 100%;
             font-size: 13px; box-sizing: border-box; resize: none; height: 54px; overflow: hidden;
-            transition: height 0.3s ease, border-color 0.2s; line-height: 1.4; background-color: rgba(255, 255, 255, 0.7);
+            transition: height 0.3s ease, border-color 0.2s; line-height: 1.4; background-color: rgba(255, 255, 255, 0.8);
         }
-        .textarea-inline:focus { height: 100px; overflow-y: auto; border-color: #26417E; outline: none; z-index: 10; position: relative; background-color: #fff; }
-        .textarea-inline[readonly] { background-color: transparent; cursor: pointer; color: #555; border-color: transparent; }
-        .textarea-inline[readonly]:focus { border-color: #ccc; background-color: #fff; }
+        .textarea-inline:focus { height: 100px; overflow-y: auto; border-color: #26417E; outline: none; z-index: 10; position: relative; background-color: #fff; box-shadow: 0 0 0 3px rgba(38,65,126,0.1); }
+        .textarea-inline[readonly] { background-color: transparent; cursor: pointer; color: #64748b; border-color: transparent; }
+        .textarea-inline[readonly]:focus { border-color: #cbd5e1; background-color: #fff; }
 
-        /* Novas Cores das Etapas e Status */
-        .status-select.preenchimento-ofertas { background-color: #e2e3e5; color: #383d41; border-color: #d6d8db; }
-        .status-select.diagramacao { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
-        .status-select.aprovacao-comercial { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
-        .status-select.correcao-pricing { background-color: #ffe8cc; color: #d97706; border-color: #ffd8a8; }
-        .status-select.validacao-final-marketing { background-color: #e2d9f3; color: #4b0082; border-color: #d1c4e9; }
+        /* Cores das Etapas e Status (Tons mais modernos e limpos) */
+        .status-select.preenchimento-ofertas { background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+        .status-select.diagramacao { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .status-select.aprovacao-comercial { background-color: #dcfce7; color: #047857; border-color: #a7f3d0; }
+        .status-select.correcao-pricing { background-color: #ffedd5; color: #b45309; border-color: #fde047; }
+        .status-select.validacao-final-marketing { background-color: #f3e8ff; color: #6d28d9; border-color: #e9d5ff; }
 
-        .status-prazo.dentro-prazo { background-color: #28a745; color: white; border-color: #1e7e34; }
-        .status-prazo.em-andamento { background-color: #0d6efd; color: white; border-color: #0a58ca; }
-        .status-prazo.prazo-atencao { background-color: #ffc107; color: #212529; border-color: #d39e00; }
-        .status-prazo.atrasado { background-color: #dc3545; color: white; border-color: #bd2130; }
-        .status-prazo.concluido { background-color: #6c757d; color: white; border-color: #5a6268; }
+        .status-prazo.dentro-prazo { background-color: #10b981; color: white; border-color: #059669; }
+        .status-prazo.em-andamento { background-color: #3b82f6; color: white; border-color: #2563eb; }
+        .status-prazo.prazo-atencao { background-color: #f59e0b; color: white; border-color: #d97706; }
+        .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
+        .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* Estilo dos Modais */
+        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
+            backdrop-filter: blur(2px);
         }
         .modal-content {
-            background: white; padding: 30px; border-radius: 10px; width: 100%; max-width: 450px;
-            display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); box-sizing: border-box;
+            background: white; padding: 32px; border-radius: 12px; width: 100%; max-width: 450px;
+            display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); box-sizing: border-box;
+            border: 1px solid #e2e8f0;
         }
         .modal-content.large { max-width: 600px; }
-        .modal-content.extra-large { max-width: 750px; }
-        .modal-content h2 { margin: 0 0 5px 0; color: #2c3e50; font-size: 20px; text-align: center; }
-        .modal-content input, .modal-content textarea, .modal-content select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit; font-size: 14px; width: 100%; box-sizing: border-box; }
-        .modal-content label { font-size: 13px; color: #2c3e50; font-weight: bold; margin-bottom: -8px; margin-top: 2px; text-align: left; display: block; }
+        .modal-content.extra-large { max-width: 800px; }
+        
+        .modal-content h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem; font-weight: 600; text-align: center; }
+        
+        /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
+        .modal-content label { 
+            font-size: 13px; 
+            color: #475569; 
+            font-weight: 600; 
+            margin-bottom: 6px; 
+            margin-top: 8px; 
+            text-align: left; 
+            display: block; 
+        }
 
-        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-save { background-color: #28a745; color: white; }
-        .btn-cancel { background-color: #dc3545; color: white; }
+        .modal-content input, .modal-content textarea, .modal-content select { 
+            padding: 10px 14px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 6px; 
+            font-family: inherit; 
+            font-size: 14px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            color: #334155;
+            transition: all 0.2s;
+            outline: none;
+            background: #f8fafc;
+        }
+        .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus {
+            border-color: #26417E;
+            box-shadow: 0 0 0 3px rgba(38,65,126,0.1);
+            background: #ffffff;
+        }
+        
+        .modal-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+        .modal-buttons button { flex: none; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        
+        /* Botões Clean do Modal */
+        .btn-save { background-color: #10b981; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-save:hover { background-color: #059669; }
+        .btn-cancel { background-color: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
+        .btn-cancel:hover { background-color: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
 
         .btn-action { background: transparent; border: none; cursor: pointer; font-size: 16px; transition: transform 0.2s; display: none; margin: 0 3px; padding: 0; }
         .btn-action:hover:not(:disabled) { transform: scale(1.2); }
         .btn-action:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* ITEM DA LISTA EXCEL (MODAL LISTAS) */
-        .item-lista {
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px 15px; background: #fff; border: 1px solid #ddd; 
-            border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        /* --- ESTILO CORPORATIVO - BASE DE LISTAS --- */
+        .corp-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .item-lista-info { display: flex; flex-direction: column; gap: 4px; }
-        .item-lista-titulo { font-weight: 600; font-size: 14px; color: #2c3e50; }
-        .item-lista-meta { font-size: 12px; color: #6c757d; }
-        .item-lista-acoes { display: flex; gap: 8px; }
-        .btn-dl { background: #107c41; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; transition: background 0.2s;}
-        .btn-dl:hover { background: #0c5e31; }
-        .btn-del-lista { background: #dc3545; color: white; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s;}
-        .btn-del-lista:hover { background: #bd2130; }
+        .corp-panel h3 {
+            font-size: 15px;
+            color: #1e293b;
+            margin-top: 0;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .corp-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .corp-group {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        .corp-group label {
+            margin-top: 0; /* Override modal default */
+        }
+        .btn-corp-primary {
+            background: #26417E;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 42px; /* Alinha com os inputs */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .btn-corp-primary:hover {
+            background: #1e3362;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* ITENS DA LISTA (PLANILHAS) */
+        .item-lista-corp {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .item-lista-corp:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            background: #f8fafc;
+        }
+        .item-lista-info { display: flex; flex-direction: column; gap: 6px; }
+        .item-lista-titulo { 
+            font-weight: 600; 
+            font-size: 14px; 
+            color: #0f172a; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .item-lista-meta { font-size: 12px; color: #64748b; }
+        .item-lista-acoes { display: flex; gap: 8px; align-items: center; }
+        
+        .btn-dl-corp { 
+            background: #f1f5f9; 
+            color: #0f172a; 
+            border: 1px solid #cbd5e1; 
+            padding: 8px 14px; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-dl-corp:hover { background: #e2e8f0; border-color: #94a3b8; }
+        
+        .btn-del-corp { 
+            background: #fef2f2; 
+            color: #ef4444; 
+            border: 1px solid #fecaca; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-del-corp:hover { background: #fee2e2; border-color: #fca5a5; }
 
         /* NOTIFICAÇÕES TOAST */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { padding: 15px 20px; border-radius: 5px; color: white; font-weight: 500; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); opacity: 0; transform: translateX(100%); animation: slideIn 0.3s forwards; pointer-events: auto; }
-        .toast.success { background-color: #28a745; border-left: 5px solid #1e7e34; }
-        .toast.error { background-color: #dc3545; border-left: 5px solid #bd2130; }
-        .toast.warning { background-color: #f39c12; border-left: 5px solid #d68910; }
-        .toast.info { background-color: #17a2b8; border-left: 5px solid #117a8b; }
+        .toast { padding: 15px 20px; border-radius: 6px; color: white; font-weight: 500; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); opacity: 0; transform: translateX(100%); animation: slideIn 0.3s forwards; pointer-events: auto; }
+        .toast.success { background-color: #10b981; border-left: 5px solid #059669; }
+        .toast.error { background-color: #ef4444; border-left: 5px solid #dc2626; }
+        .toast.warning { background-color: #f59e0b; border-left: 5px solid #d97706; }
+        .toast.info { background-color: #3b82f6; border-left: 5px solid #2563eb; }
         @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
     </style>
@@ -330,7 +468,7 @@
         <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1">
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1">
                 </path>
             </svg>
         </button>
@@ -340,9 +478,9 @@
         <div class="header-top">
             <div style="display: flex; align-items: center; gap: 18px;">
                 <a href="/"
-                    style="text-decoration: none; color: #475569; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
-                    onmouseover="this.style.backgroundColor='#f1f5f9'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#475569'; this.style.borderColor='transparent';"
+                    style="text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
+                    onmouseover="this.style.backgroundColor='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#64748b'; this.style.borderColor='transparent';"
                     title="Voltar ao Menu Principal">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -447,21 +585,30 @@
     </div>
 
     <!-- Modais -->
-    <!-- Modal Base de Listas -->
+    <!-- Modal Base de Listas (Totalmente Reformulado) -->
     <div id="modalListas" class="modal-overlay" style="display: none;">
-        <div class="modal-content extra-large" style="max-height: 90vh; overflow-y: auto; background-color: #f4f7f6;">
-            <h2 style="margin-bottom: 20px;">📂 Base de Listas (Excel)</h2>
+        <div class="modal-content extra-large" style="background-color: #f4f7f6;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
+                    📂 Base de Listas (Excel)
+                </h2>
+                <button class="btn-cancel" onclick="fecharModalListas()" style="padding: 8px 16px;">✕ Fechar</button>
+            </div>
             
             <!-- Área de Upload de Links (Todos podem enviar) -->
-            <div id="area-upload-listas" style="display: none; background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h3 style="margin-top: 0; font-size: 16px; color: #26417E; margin-bottom: 15px;">⬆️ Salvar Novo Link de Planilha</h3>
+            <div id="area-upload-listas" class="corp-panel" style="display: none;">
+                <h3>
+                    <svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
+                    Salvar Novo Link de Planilha
+                </h3>
                 
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <div style="flex: 2;">
+                <div class="corp-row">
+                    <div class="corp-group" style="flex: 2;">
                         <label>Nome da Campanha</label>
                         <input type="text" id="nome-lista" placeholder="Ex: Fim de Semana das Carnes">
                     </div>
-                    <div style="flex: 1;">
+                    <div class="corp-group" style="flex: 1;">
                         <label>Região</label>
                         <select id="regiao-lista">
                             <option value="Todas as Lojas">Todas as Lojas</option>
@@ -472,27 +619,29 @@
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 10px; align-items: flex-end;">
-                    <div style="flex: 1;">
+                <div class="corp-row" style="align-items: flex-end; margin-bottom: 0;">
+                    <div class="corp-group" style="flex: 1;">
                         <label>Link da Planilha (Drive/OneDrive)</label>
                         <input type="url" id="link-lista" placeholder="Cole o link de compartilhamento aqui" required>
                     </div>
-                    <button class="btn-save" onclick="salvarLinkLista()" id="btn-upload-lista" style="padding: 11px 20px; white-space: nowrap; height: 40px;">📥 Salvar Planilha</button>
+                    <button class="btn-corp-primary" onclick="salvarLinkLista()" id="btn-upload-lista">
+                        📥 Salvar Planilha
+                    </button>
                 </div>
             </div>
 
             <!-- Lista de Arquivos -->
-            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h3 style="margin-top: 0; font-size: 16px; color: #26417E; border-bottom: 2px solid #eee; padding-bottom: 8px;">📥 Planilhas Disponíveis</h3>
+            <div class="corp-panel" style="margin-bottom: 0;">
+                <h3>
+                    <svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg> 
+                    Planilhas Disponíveis
+                </h3>
                 
-                <div id="grid-listas" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px; min-height: 100px;">
+                <div id="grid-listas" style="display: flex; flex-direction: column; min-height: 100px;">
                     <!-- JS Injeta os itens aqui -->
                 </div>
             </div>
 
-            <div class="modal-buttons" style="justify-content: flex-end;">
-                <button class="btn-cancel" onclick="fecharModalListas()" style="flex: none; padding: 10px 30px;">Fechar Janela</button>
-            </div>
         </div>
     </div>
 
@@ -527,7 +676,7 @@
             <label>Vigência da Campanha (Início e Fim):</label>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <input type="date" id="nova-inicio" style="flex: 1;">
-                <span style="font-weight: bold; color: #555;">até</span>
+                <span style="font-weight: 500; color: #64748b; font-size: 14px;">até</span>
                 <input type="date" id="nova-fim" style="flex: 1;">
             </div>
 
@@ -542,7 +691,7 @@
 
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="fecharModalNova()">Cancelar</button>
-                <button class="btn-save" onclick="salvarCampanha()">Salvar</button>
+                <button class="btn-save" onclick="salvarCampanha()">Salvar Campanha</button>
             </div>
         </div>
     </div>
@@ -578,7 +727,7 @@
             <label>Vigência da Campanha (Início e Fim):</label>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <input type="date" id="edit-inicio" style="flex: 1;">
-                <span style="font-weight: bold; color: #555;">até</span>
+                <span style="font-weight: 500; color: #64748b; font-size: 14px;">até</span>
                 <input type="date" id="edit-fim" style="flex: 1;">
             </div>
 
@@ -612,8 +761,7 @@
                 </ul>
             </div>
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModalHistorico()" style="width: 100%;">Fechar
-                    Histórico</button>
+                <button class="btn-cancel" onclick="fecharModalHistorico()" style="width: 100%;">Fechar Histórico</button>
             </div>
         </div>
     </div>
@@ -707,13 +855,13 @@
             }, 3000);
         };
 
-        // --- SISTEMA DE LISTAS (APENAS LINKS) ---
+        // --- SISTEMA DE LISTAS (NOVO ESTILO CORPORATIVO) ---
         onValue(listasRef, (snapshot) => {
             const grid = document.getElementById('grid-listas');
             grid.innerHTML = '';
             
             if (!snapshot.exists()) {
-                grid.innerHTML = '<p style="text-align: center; color: #999; margin: 20px 0;">Nenhuma lista disponível no momento.</p>';
+                grid.innerHTML = '<p style="text-align: center; color: #94a3b8; margin: 20px 0; font-size: 14px;">Nenhuma lista disponível no momento.</p>';
                 return;
             }
 
@@ -722,16 +870,21 @@
             
             arquivos.reverse().forEach(arq => {
                 // Apenas o Gestor pode DELETAR o arquivo
-                let btnDel = (perfilUsuario === "Gestor") ? `<button class="btn-del-lista" onclick="window.deletarLista('${arq.id}')" title="Excluir">🗑️</button>` : '';
+                let btnDel = (perfilUsuario === "Gestor") ? `<button class="btn-del-corp" onclick="window.deletarLista('${arq.id}')" title="Excluir Planilha">🗑️</button>` : '';
                 
                 grid.innerHTML += `
-                    <div class="item-lista">
+                    <div class="item-lista-corp">
                         <div class="item-lista-info">
-                            <span class="item-lista-titulo">📄 ${arq.nome}</span>
-                            <span class="item-lista-meta"><strong>Região:</strong> ${arq.regiao} | <strong>Adicionado em:</strong> ${arq.dataCriacao} por ${arq.criadoPor.split(' ')[0]}</span>
+                            <span class="item-lista-titulo">
+                                <svg width="18" height="18" fill="none" stroke="#107c41" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                ${arq.nome}
+                            </span>
+                            <span class="item-lista-meta">
+                                <strong>Região:</strong> ${arq.regiao} <span style="color:#cbd5e1; margin:0 4px;">|</span> <strong>Data:</strong> ${arq.dataCriacao} por ${arq.criadoPor.split(' ')[0]}
+                            </span>
                         </div>
                         <div class="item-lista-acoes">
-                            <a href="${arq.urlArquivo}" target="_blank" class="btn-dl">🔗 Acessar Planilha</a>
+                            <a href="${arq.urlArquivo}" target="_blank" class="btn-dl-corp">🔗 Acessar Planilha</a>
                             ${btnDel}
                         </div>
                     </div>
@@ -771,7 +924,6 @@
                     link_acesso: link 
                 };
                 
-                // Disparo com chaves inseridas
                 emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
                     .then(function(res) { 
                         console.log('Email enviado com sucesso!'); 
@@ -820,7 +972,7 @@
             lista.innerHTML = '';
             const dados = snapshot.val();
             if (!dados) {
-                lista.innerHTML = '<li class="history-item" style="text-align:center; color:#999;">Nenhum registro encontrado ainda.</li>';
+                lista.innerHTML = '<li class="history-item" style="text-align:center; color:#94a3b8;">Nenhum registro encontrado ainda.</li>';
                 return;
             }
 
@@ -828,7 +980,7 @@
             logs.forEach(log => {
                 const li = document.createElement('li');
                 li.className = 'history-item';
-                const usuarioTexto = log.usuario ? `<span style="color: #107c41; font-weight: 600; font-size: 12px; margin-left: 10px;">👤 ${log.usuario}</span>` : '';
+                const usuarioTexto = log.usuario ? `<span style="color: #10b981; font-weight: 600; font-size: 12px; margin-left: 10px;">👤 ${log.usuario}</span>` : '';
                 li.innerHTML = `
                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
                     <span class="history-time">${log.dataHora}</span> 
@@ -951,7 +1103,7 @@
                 type: 'doughnut',
                 data: {
                     labels: ['No Prazo', 'Em Andamento', 'Em Atenção', 'Atrasado', 'Concluído'],
-                    datasets: [{ data: [countStatus.noPrazo, countStatus.andamento, countStatus.atencao, countStatus.atrasado, countStatus.concluido], backgroundColor: ['#28a745', '#0d6efd', '#ffc107', '#dc3545', '#6c757d'] }]
+                    datasets: [{ data: [countStatus.noPrazo, countStatus.andamento, countStatus.atencao, countStatus.atrasado, countStatus.concluido], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#64748b'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Termômetro de Prazos', font: { size: 16 } } } }
             });
@@ -971,7 +1123,7 @@
                 type: 'pie',
                 data: {
                     labels: Object.keys(countResp),
-                    datasets: [{ data: Object.values(countResp), backgroundColor: ['#6c757d', '#107c41', '#17a2b8'] }]
+                    datasets: [{ data: Object.values(countResp), backgroundColor: ['#64748b', '#10b981', '#3b82f6'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Carga por Equipe', font: { size: 16 } } } }
             });
@@ -988,10 +1140,10 @@
                 data: {
                     labels: labelsRaioX,
                     datasets: [
-                        { label: 'No Prazo', data: dataRaioXNoPrazo, backgroundColor: '#28a745' },
-                        { label: 'Em Andamento', data: dataRaioXAndamento, backgroundColor: '#0d6efd' },
-                        { label: 'Em Atenção', data: dataRaioXAtencao, backgroundColor: '#ffc107' },
-                        { label: 'Atrasado', data: dataRaioXAtrasado, backgroundColor: '#dc3545' }
+                        { label: 'No Prazo', data: dataRaioXNoPrazo, backgroundColor: '#10b981' },
+                        { label: 'Em Andamento', data: dataRaioXAndamento, backgroundColor: '#3b82f6' },
+                        { label: 'Em Atenção', data: dataRaioXAtencao, backgroundColor: '#f59e0b' },
+                        { label: 'Atrasado', data: dataRaioXAtrasado, backgroundColor: '#ef4444' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Raio-X dos Atrasos', font: { size: 16 } } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
@@ -1004,7 +1156,7 @@
             const scrollTopWindow = window.scrollY || document.documentElement.scrollTop;
 
             if (!dados) {
-                corpoTabela.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 20px;">Nenhuma campanha cadastrada. Aguarde a publicação pela gestão.</td></tr>`;
+                corpoTabela.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 20px; color: #64748b;">Nenhuma campanha cadastrada. Aguarde a publicação pela gestão.</td></tr>`;
                 atualizarGraficos([]);
                 return;
             }
@@ -1046,7 +1198,7 @@
             atualizarGraficos(listaFiltrada);
 
             if (listaFiltrada.length === 0) {
-                corpoTabela.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 20px;">Nenhuma campanha encontrada para este(s) filtro(s).</td></tr>`;
+                corpoTabela.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 20px; color: #64748b;">Nenhuma campanha encontrada para este(s) filtro(s).</td></tr>`;
                 return;
             }
 
@@ -1074,9 +1226,9 @@
                     }
                 }
 
-                let visualInicioCom = `<span style="color: #2c3e50;">${formatarDataVisivel(camp.inicioPreenchimento)}</span>`;
-                let visualFinalCom = isComercialAtrasado ? `<span style="color: #dc3545; font-weight: 800;">⚠️ ${formatarDataVisivel(camp.finalPreenchimento)}</span>` : `<span style="color: #d35400;">${formatarDataVisivel(camp.finalPreenchimento)}</span>`;
-                let visualPrazoMkt = isMktAtrasado ? `<span style="color: #dc3545; font-weight: 800;">🚨 ${formatarDataVisivel(camp.prazoMkt)}</span>` : `<span style="color: #2c3e50;">${formatarDataVisivel(camp.prazoMkt)}</span>`;
+                let visualInicioCom = `<span style="color: #334155;">${formatarDataVisivel(camp.inicioPreenchimento)}</span>`;
+                let visualFinalCom = isComercialAtrasado ? `<span style="color: #ef4444; font-weight: 700;">⚠️ ${formatarDataVisivel(camp.finalPreenchimento)}</span>` : `<span style="color: #d97706;">${formatarDataVisivel(camp.finalPreenchimento)}</span>`;
+                let visualPrazoMkt = isMktAtrasado ? `<span style="color: #ef4444; font-weight: 700;">🚨 ${formatarDataVisivel(camp.prazoMkt)}</span>` : `<span style="color: #334155;">${formatarDataVisivel(camp.prazoMkt)}</span>`;
 
                 const id = camp.id;
                 const tr = document.createElement('tr');
@@ -1089,7 +1241,7 @@
                 <td><strong>${textoMes}</strong></td>
                 <td>${textoCampanha}</td>
                 <td>${camp.lojas}</td>
-                <td style="color: #2c3e50;">${textoVigencia}</td>
+                <td style="color: #334155;">${textoVigencia}</td>
                 <td style="font-size: 13px;">${visualInicioCom}</td>
                 <td style="font-size: 13px;">${visualFinalCom}</td>
                 <td style="font-size: 13px;">${visualPrazoMkt}</td>
