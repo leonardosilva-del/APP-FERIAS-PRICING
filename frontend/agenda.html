@@ -88,7 +88,6 @@
         html.dark-theme .comment-bubble { background: #334155; color: #f8fafc; }
         /* Fim Modo Dark */
 
-
         * {
             margin: 0;
             padding: 0;
@@ -223,7 +222,7 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* MODAIS REUTILIZÁVEIS */
+        /* MODAIS REUTILIZÁVEIS E BOTÕES PADRONIZADOS */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -254,9 +253,11 @@
             position: relative;
         }
 
+        /* Ajuste reforçado para evitar esmagamento em telas menores */
         .modal-content.large {
             max-width: 550px;
             max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header-close {
@@ -277,6 +278,7 @@
             color: var(--text-900);
             font-size: 1.5rem;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .modal-content label {
@@ -330,27 +332,39 @@
             accent-color: var(--brand-primary); width: 14px; height: 14px;
         }
 
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 12px;
-            border: none;
+        /* Padronização Universal de Botões do Modal para não amassar */
+        .btn-save, .btn-cancel {
+            padding: 12px 15px;
             border-radius: var(--radius-md);
-            cursor: pointer;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            cursor: pointer;
             transition: all 0.2s;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            flex-shrink: 0;
+            min-height: 44px; /* Garante que nunca fiquem muito finos */
         }
-
+        
         .btn-save { background-color: var(--brand-primary); color: white; }
         .btn-save:hover { background-color: var(--brand-primary-hover); }
         .btn-cancel { background-color: var(--bg-swimlane); color: var(--text-600); border: 1px solid var(--border-light); }
         .btn-cancel:hover { background-color: var(--border-light); color: var(--text-900); }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+            flex-shrink: 0; /* Impede que a área dos botões amasse */
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
 
         /* DETALHES E COMENTÁRIOS DA TAREFA */
         .task-detail-info {
@@ -360,6 +374,7 @@
             font-size: 0.9rem;
             color: var(--text-600);
             border: 1px solid var(--border-light);
+            flex-shrink: 0;
         }
         
         .task-detail-info strong { color: var(--text-900); }
@@ -800,7 +815,7 @@
             <input type="text" id="demanda-titulo" placeholder="Ex: Análise de Preços">
 
             <label>Descrição/Resumo da Atividade (Opcional):</label>
-            <textarea id="demanda-descricao" placeholder="Descreva brevemente o que deve ser feito nesta demanda..." style="height: 70px;"></textarea>
+            <textarea id="demanda-descricao" placeholder="Descreva brevemente o que deve ser feito nesta demanda..." style="height: 70px; flex-shrink: 0;"></textarea>
 
             <label>Responsável</label>
             <select id="demanda-colaborador">
@@ -815,7 +830,7 @@
             </select>
 
             <!-- OPÇÃO DE TAREFA FIXA -->
-            <div style="margin-top: 10px; margin-bottom: 5px; padding: 12px; background: rgba(99, 102, 241, 0.05); border: 1px dashed var(--brand-primary); border-radius: 8px;">
+            <div style="margin-top: 10px; margin-bottom: 5px; padding: 12px; background: rgba(99, 102, 241, 0.05); border: 1px dashed var(--brand-primary); border-radius: 8px; flex-shrink: 0;">
                 <label class="custom-checkbox" style="margin-bottom: 0;">
                     <input type="checkbox" id="chk-demanda-fixa" onchange="window.toggleDiasFixos()">
                     <span class="checkmark"></span>
@@ -866,25 +881,28 @@
             </div>
 
             <!-- NOVA ÁREA DE DESCRIÇÃO -->
-            <div style="margin-top: 5px;">
+            <div style="margin-top: 15px; flex-shrink: 0;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-600); margin-bottom: 6px;">📝 Descrição / Resumo da Atividade:</label>
-                <textarea id="detalhe-descricao" placeholder="Escreva um resumo da atividade a ser realizada..." style="height: 65px; margin-bottom: 6px;"></textarea>
-                <button class="btn-secondary" onclick="window.salvarDescricaoFirebase()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">💾 Salvar Descrição</button>
+                <textarea id="detalhe-descricao" placeholder="Escreva um resumo da atividade a ser realizada..." style="height: 80px; margin-bottom: 8px; width: 100%; box-sizing: border-box; flex-shrink: 0;"></textarea>
+                <button class="btn-save" onclick="window.salvarDescricaoFirebase()" style="padding: 8px 16px; font-size: 0.85rem; width: 100%; background-color: var(--bg-swimlane); color: var(--brand-primary); border: 1px solid var(--brand-primary); min-height: 40px;">💾 Salvar Descrição</button>
             </div>
 
-            <h3 style="font-size: 1rem; color: var(--text-900); margin-top: 10px; margin-bottom: 5px;">Comentários e Histórico</h3>
+            <h3 style="font-size: 1rem; color: var(--text-900); margin-top: 20px; margin-bottom: 5px;">Comentários e Histórico</h3>
             <div id="comentarios-lista" class="comments-section">
                 <!-- Comentários injetados aqui -->
             </div>
 
-            <div style="margin-top: 10px;">
-                <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="height: 55px; margin-bottom: 10px;"></textarea>
+            <div style="margin-top: 15px; flex-shrink: 0;">
+                <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="height: 60px; margin-bottom: 10px; width: 100%; box-sizing: border-box; flex-shrink: 0;"></textarea>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 0; margin-bottom: 15px;">
                 <button class="btn-save" id="btnSalvarComentario" style="width: 100%;">Enviar Comentário</button>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn-cancel" style="flex:1;" onclick="window.fecharModalDetalhe()">Fechar Aba</button>
-                <button id="btnExcluirTarefa" class="btn-cancel" style="flex:1; color: var(--status-danger); border-color: var(--status-danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
+            <div class="modal-buttons" style="margin-top: 10px;">
+                <button class="btn-cancel" onclick="window.fecharModalDetalhe()">Fechar Aba</button>
+                <button id="btnExcluirTarefa" class="btn-cancel" style="color: var(--status-danger); border-color: var(--status-danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
             </div>
         </div>
     </div>
@@ -1390,18 +1408,62 @@
                 const task = tarefas[taskId];
                 
                 if (task.status === "Pendente" && task.data < hojeStr) {
-                    updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
-                    updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
-                    updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
                     
-                    task.data = hojeStr; 
-                    houveAtualizacao = true;
+                    // Procura se HOJE já existe uma tarefa com o mesmo título e responsável
+                    let duplicateId = null;
+                    for (let id in tarefas) {
+                        let t = tarefas[id];
+                        if (t.data === hojeStr && t.titulo === task.titulo && t.colaboradorEmail === task.colaboradorEmail && id !== taskId) {
+                            duplicateId = id;
+                            break;
+                        }
+                    }
+
+                    if (duplicateId) {
+                        const dupTask = tarefas[duplicateId];
+                        
+                        // Verifica qual das duas tarefas tem conteúdo (Comentários ou Descrição)
+                        const oldHasData = (task.comentarios && Object.keys(task.comentarios).length > 0) || (task.descricao && task.descricao.trim() !== '');
+                        const newHasData = (dupTask.comentarios && Object.keys(dupTask.comentarios).length > 0) || (dupTask.descricao && dupTask.descricao.trim() !== '');
+
+                        if (!newHasData) {
+                            // A tarefa que já está em HOJE está vazia. Apagamos ela e rolamos a antiga (com dados) para hoje.
+                            updates['agenda_tarefas/' + duplicateId] = null;
+                            
+                            updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
+                            updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                            updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
+                            
+                            task.data = hojeStr; 
+                            houveAtualizacao = true;
+                        } else if (!oldHasData) {
+                            // A tarefa atrasada está totalmente vazia. Podemos excluí-la para não duplicar, mantendo a de hoje intacta.
+                            updates['agenda_tarefas/' + taskId] = null;
+                            houveAtualizacao = true;
+                        } else {
+                            // Ambas têm dados (ex: comentários diferentes). Rolamos a antiga para não perder nada.
+                            updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
+                            updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                            updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
+                            
+                            task.data = hojeStr; 
+                            houveAtualizacao = true;
+                        }
+                    } else {
+                        // Sem duplicações, rola a tarefa normalmente para hoje
+                        updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
+                        updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                        updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
+                        
+                        task.data = hojeStr; 
+                        houveAtualizacao = true;
+                    }
                 }
             });
 
-            if (houveAtualizacao) {
+            if (Object.keys(updates).length > 0) {
                 update(ref(db), updates).then(() => {
-                    window.showToast("Tarefas pendentes rolaram para hoje!", "info");
+                    window.showToast("Organizando rotinas pendentes...", "info");
                 });
             }
         }
