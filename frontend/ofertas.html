@@ -468,7 +468,7 @@
         <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1">
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                 </path>
             </svg>
         </button>
@@ -478,9 +478,9 @@
         <div class="header-top">
             <div style="display: flex; align-items: center; gap: 18px;">
                 <a href="/"
-                    style="text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
-                    onmouseover="this.style.backgroundColor='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#64748b'; this.style.borderColor='transparent';"
+                    style="text-decoration: none; color: #475569; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
+                    onmouseover="this.style.backgroundColor='#f1f5f9'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#475569'; this.style.borderColor='transparent';"
                     title="Voltar ao Menu Principal">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -585,7 +585,7 @@
     </div>
 
     <!-- Modais -->
-    <!-- Modal Base de Listas (Totalmente Reformulado) -->
+    <!-- Modal Base de Listas -->
     <div id="modalListas" class="modal-overlay" style="display: none;">
         <div class="modal-content extra-large" style="background-color: #f4f7f6;">
             
@@ -855,7 +855,7 @@
             }, 3000);
         };
 
-        // --- SISTEMA DE LISTAS (NOVO ESTILO CORPORATIVO) ---
+        // --- SISTEMA DE LISTAS (NOVO ESTILO CORPORATIVO - OPÇÃO B E-MAIL) ---
         onValue(listasRef, (snapshot) => {
             const grid = document.getElementById('grid-listas');
             grid.innerHTML = '';
@@ -904,6 +904,14 @@
             btnUpload.disabled = true;
             btnUpload.innerHTML = "Aguarde...";
 
+            // LISTA DE DESTINATÁRIOS (OPÇÃO B - AUTONOMIA TOTAL)
+            const listaEmailsEquipe = [
+                "jorge.leite@atacadaodiaadia.com.br",
+                "comercial@atacadaodiaadia.com.br",
+                "pricing@atacadaodiaadia.com.br",
+                // Adicione novos e-mails separados por vírgula aqui
+            ];
+
             push(listasRef, {
                 nome: nome,
                 regiao: regiao,
@@ -917,18 +925,19 @@
                 btnUpload.disabled = false;
                 btnUpload.innerHTML = "📥 Salvar Planilha";
                 
-                // DISPARO DE E-MAIL (Ativado!)
+                // DISPARO DE E-MAIL
                 const templateParams = { 
                     campanha_nome: nome, 
                     campanha_regiao: regiao, 
-                    link_acesso: link 
+                    link_acesso: link,
+                    to_email: listaEmailsEquipe.join(", ")
                 };
                 
                 emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
                     .then(function(res) { 
-                        console.log('Email enviado com sucesso!'); 
+                        console.log('E-mail de notificação enviado com sucesso para a equipe!'); 
                     }, function(err) { 
-                        console.error('Erro envio email', err); 
+                        console.error('Erro ao enviar e-mail:', err); 
                     });
                 
             });
