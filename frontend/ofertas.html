@@ -258,7 +258,7 @@
         .textarea-inline[readonly] { background-color: transparent; cursor: pointer; color: #64748b; border-color: transparent; }
         .textarea-inline[readonly]:focus { border-color: #cbd5e1; background-color: #fff; }
 
-        /* Cores das Etapas e Status (Tons mais modernos e limpos) */
+        /* Cores das Etapas e Status */
         .status-select.preenchimento-ofertas { background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; }
         .status-select.diagramacao { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         .status-select.aprovacao-comercial { background-color: #dcfce7; color: #047857; border-color: #a7f3d0; }
@@ -271,7 +271,7 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
+        /* --- ESTILO DOS MODAIS GLOBAIS --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
@@ -299,7 +299,6 @@
         }
         .modal-header-close:hover { color: #0f172a; }
 
-        /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
         .modal-content label { 
             font-size: 13px; 
             color: #475569; 
@@ -332,7 +331,6 @@
         .modal-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
         .modal-buttons button { flex: none; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
         
-        /* Botões Clean do Modal */
         .btn-save { background-color: #10b981; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .btn-save:hover { background-color: #059669; }
         .btn-cancel { background-color: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
@@ -375,7 +373,7 @@
             flex-direction: column;
         }
         .corp-group label {
-            margin-top: 0; /* Override modal default */
+            margin-top: 0; 
         }
         .btn-corp-primary {
             background: #26417E;
@@ -387,7 +385,7 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
-            height: 42px; /* Alinha com os inputs */
+            height: 42px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -987,7 +985,7 @@
         window.fecharModalEmails = function() { document.getElementById('modalEmails').style.display = 'none'; }
 
 
-        // --- SISTEMA DE LISTAS (EXCEL) ---
+        // --- SISTEMA DE LISTAS COM AUTO-EXCLUSÃO EM 20 DIAS ---
         onValue(listasRef, (snapshot) => {
             const grid = document.getElementById('grid-listas');
             grid.innerHTML = '';
@@ -997,11 +995,38 @@
                 return;
             }
 
-            const arquivos = [];
-            snapshot.forEach(child => { arquivos.push({ id: child.key, ...child.val() }); });
+            const arquivosValidos = [];
+            const agora = Date.now();
+            const vinteDiasEmMs = 20 * 24 * 60 * 60 * 1000;
+
+            snapshot.forEach(child => { 
+                const arq = { id: child.key, ...child.val() }; 
+                
+                // --- LÓGICA DE EXPIRAÇÃO DE 20 DIAS ---
+                let tempoCriacao = arq.timestampCriacao;
+                
+                // Se for um arquivo antigo que não tinha timestamp, converte a string
+                if (!tempoCriacao && arq.dataCriacao) {
+                    const p = arq.dataCriacao.split('/');
+                    if (p.length === 3) tempoCriacao = new Date(p[2], p[1] - 1, p[0]).getTime();
+                }
+
+                if (tempoCriacao && (agora - tempoCriacao > vinteDiasEmMs)) {
+                    // Se passou de 20 dias, deleta silenciosamente do banco e NÃO renderiza na tela
+                    remove(ref(db, `base_listas_excel/${arq.id}`));
+                } else {
+                    // Ainda é válido, adiciona para mostrar na tela
+                    arquivosValidos.push(arq); 
+                }
+            });
             
-            arquivos.reverse().forEach(arq => {
-                // Apenas o Gestor pode DELETAR o arquivo
+            if (arquivosValidos.length === 0) {
+                 grid.innerHTML = '<p style="text-align: center; color: #94a3b8; margin: 20px 0; font-size: 14px;">Nenhuma lista disponível no momento.</p>';
+                 return;
+            }
+
+            arquivosValidos.reverse().forEach(arq => {
+                // Apenas o Gestor pode DELETAR o arquivo manualmente
                 let btnDel = (perfilUsuario === "Gestor") ? `<button class="btn-del-corp" onclick="window.deletarLista('${arq.id}')" title="Excluir Planilha">🗑️</button>` : '';
                 
                 grid.innerHTML += `
@@ -1040,6 +1065,7 @@
                 regiao: regiao,
                 urlArquivo: link,
                 dataCriacao: new Date().toLocaleDateString('pt-BR'),
+                timestampCriacao: Date.now(), // <-- Novo campo para auto-exclusão em 20 dias
                 criadoPor: auth.currentUser.displayName || "Colaborador"
             }).then(() => {
                 showToast("Planilha salva com sucesso!", "success");
@@ -1216,7 +1242,7 @@
                 if (camp.etapa === 'preenchimento-ofertas') { countEtapas['Preenchimento']++; }
                 else if (camp.etapa === 'diagramacao') { countEtapas['Diagramação']++; }
                 else if (camp.etapa === 'aprovacao-comercial') { countEtapas['Aprovação Com.']++; }
-                else if (camp.etapa === 'correção-pricing') { countEtapas['Correção Pricing']++; }
+                else if (camp.etapa === 'correcao-pricing') { countEtapas['Correção Pricing']++; }
                 else if (camp.etapa === 'validacao-final-marketing') { countEtapas['Valid. Final MKT']++; }
 
                 let resp = camp.responsavel || 'Pricing';
