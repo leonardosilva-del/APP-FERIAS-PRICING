@@ -157,7 +157,8 @@
         .btn-add,
         .btn-dash,
         .btn-historico,
-        .btn-listas {
+        .btn-listas,
+        .btn-emails {
             color: white;
             padding: 10px 20px;
             border: none;
@@ -177,9 +178,12 @@
         .btn-historico { background-color: #8e44ad; color: #fff; display: none; padding: 12px 25px; font-size: 15px; }
         .btn-historico:hover { background-color: #732d91; }
 
-        /* NOVO BOTÃO: BASE DE LISTAS */
+        /* BOTOES DE LISTAS E EMAILS */
         .btn-listas { background-color: #6366f1; color: white; }
         .btn-listas:hover { background-color: #4f46e5; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        .btn-emails { background-color: #10b981; color: white; display: none; }
+        .btn-emails:hover { background-color: #059669; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
         /* MENU DROPDOWN IMPORTAR/EXPORTAR */
         .dropdown { position: relative; display: inline-block; display: none; }
@@ -283,6 +287,18 @@
         
         .modal-content h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem; font-weight: 600; text-align: center; }
         
+        .modal-header-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        .modal-header-close:hover { color: #0f172a; }
+
         /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
         .modal-content label { 
             font-size: 13px; 
@@ -478,9 +494,9 @@
         <div class="header-top">
             <div style="display: flex; align-items: center; gap: 18px;">
                 <a href="/"
-                    style="text-decoration: none; color: #475569; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
-                    onmouseover="this.style.backgroundColor='#f1f5f9'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#475569'; this.style.borderColor='transparent';"
+                    style="text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
+                    onmouseover="this.style.backgroundColor='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#64748b'; this.style.borderColor='transparent';"
                     title="Voltar ao Menu Principal">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -509,8 +525,11 @@
                     </div>
                 </div>
                 
-                <!-- NOVO BOTÃO: BASE DE LISTAS -->
+                <!-- BOTÃO BASE DE LISTAS -->
                 <button id="btn-listas" class="btn-listas" onclick="abrirModalListas()">📂 Base de Listas</button>
+                
+                <!-- BOTÃO E-MAILS (GESTOR APENAS) -->
+                <button id="btn-gerenciar-emails" class="btn-emails" onclick="abrirModalEmails()">📧 E-mails Notificados</button>
 
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="processarCSV(event)">
             </div>
@@ -585,7 +604,7 @@
     </div>
 
     <!-- Modais -->
-    <!-- Modal Base de Listas -->
+    <!-- Modal Base de Listas (Totalmente Reformulado) -->
     <div id="modalListas" class="modal-overlay" style="display: none;">
         <div class="modal-content extra-large" style="background-color: #f4f7f6;">
             
@@ -593,7 +612,7 @@
                 <h2 style="margin: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
                     📂 Base de Listas (Excel)
                 </h2>
-                <button class="btn-cancel" onclick="fecharModalListas()" style="padding: 8px 16px;">✕ Fechar</button>
+                <button class="modal-header-close" onclick="fecharModalListas()">×</button>
             </div>
             
             <!-- Área de Upload de Links (Todos podem enviar) -->
@@ -637,7 +656,7 @@
                     Planilhas Disponíveis
                 </h3>
                 
-                <div id="grid-listas" style="display: flex; flex-direction: column; min-height: 100px;">
+                <div id="grid-listas" style="display: flex; flex-direction: column; min-height: 100px; max-height: 250px; overflow-y: auto;">
                     <!-- JS Injeta os itens aqui -->
                 </div>
             </div>
@@ -645,9 +664,28 @@
         </div>
     </div>
 
+    <!-- Modal Gerenciar E-mails -->
+    <div id="modalEmails" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-header-close" onclick="fecharModalEmails()">×</button>
+            <h2>📧 Gerenciar Notificações</h2>
+            <p style="font-size: 13px; color: #64748b; margin-top: -10px; margin-bottom: 15px; text-align: center;">E-mails que serão avisados quando uma nova Planilha for enviada para a Base de Listas.</p>
+
+            <div style="display: flex; gap: 10px;">
+                <input type="email" id="novo-email-notificacao" placeholder="Ex: joao@atacadaodiaadia.com.br" style="flex: 1;">
+                <button class="btn-save" onclick="adicionarEmailNotificacao()" style="padding: 0 15px;">Adicionar</button>
+            </div>
+
+            <div id="lista-emails-cadastrados" style="margin-top: 15px; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- emails renderizados aqui -->
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Nova Campanha -->
     <div id="modalNovo" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <button class="modal-header-close" onclick="fecharModalNova()">×</button>
             <h2>Cadastrar Nova Campanha</h2>
 
             <label>Mês de Referência:</label>
@@ -699,6 +737,7 @@
     <!-- Modal Editar -->
     <div id="modalEditar" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <button class="modal-header-close" onclick="fecharModalEditar()">×</button>
             <h2>Editar Campanha</h2>
 
             <label>Mês de Referência:</label>
@@ -754,6 +793,7 @@
     <!-- MODAL DE HISTÓRICO DE AUDITORIA -->
     <div id="modalHistorico" class="modal-overlay" style="display: none;">
         <div class="modal-content large">
+            <button class="modal-header-close" onclick="fecharModalHistorico()">×</button>
             <h2>🕒 Histórico de Alterações</h2>
             <div style="overflow-y: auto; max-height: 400px; padding-right: 10px; margin-top: 15px;">
                 <ul id="lista-historico" class="history-list">
@@ -774,13 +814,15 @@
 
         const tabelaRef = ref(db, 'campanhas_oficiais_v3');
         const historicoRef = ref(db, 'historico_auditoria_v3');
-        const listasRef = ref(db, 'base_listas_excel'); // Node para os links
+        const listasRef = ref(db, 'base_listas_excel'); 
+        const emailsConfigRef = ref(db, 'configuracoes_sistema/emails_notificacao_planilhas'); 
 
         const corpoTabela = document.getElementById('corpo-tabela');
         let usuarioLogado = false;
         let perfilUsuario = "Colaborador";
         let dadosAtuais = null;
         let idSendoEditado = null;
+        let listaEmailsDisparo = []; // Guarda os emails lidos do Firebase para envio
 
         let filtroMesAtual = "todos";
         let filtroCampanhaAtual = "todas";
@@ -814,10 +856,12 @@
                     document.getElementById('btn-nova-campanha').style.display = 'inline-block';
                     document.getElementById('btn-historico-dash').style.display = 'inline-block';
                     document.getElementById('menu-import-export').style.display = 'inline-block';
+                    document.getElementById('btn-gerenciar-emails').style.display = 'inline-block';
                 } else {
                     document.getElementById('btn-nova-campanha').style.display = 'none';
                     document.getElementById('btn-historico-dash').style.display = 'none';
                     document.getElementById('menu-import-export').style.display = 'none';
+                    document.getElementById('btn-gerenciar-emails').style.display = 'none';
                 }
 
                 renderizarTabela(dadosAtuais);
@@ -855,7 +899,64 @@
             }, 3000);
         };
 
-        // --- SISTEMA DE LISTAS (NOVO ESTILO CORPORATIVO - OPÇÃO B E-MAIL) ---
+        // --- SISTEMA DE GESTÃO DE E-MAILS DE NOTIFICAÇÃO (OPÇÃO B DINÂMICA) ---
+        onValue(emailsConfigRef, (snapshot) => {
+            listaEmailsDisparo = [];
+            const listaDiv = document.getElementById('lista-emails-cadastrados');
+            if (listaDiv) listaDiv.innerHTML = '';
+
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    const id = child.key;
+                    const emailInfo = child.val().email;
+                    listaEmailsDisparo.push(emailInfo);
+
+                    if (listaDiv) {
+                        listaDiv.innerHTML += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <span style="font-size: 14px; color: #1e293b; font-weight: 500;">✉️ ${emailInfo}</span>
+                                <button onclick="window.removerEmailNotificacao('${id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding: 4px;" title="Remover">🗑️</button>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                if (listaDiv) listaDiv.innerHTML = '<p style="color:#64748b; font-size: 14px; text-align: center;">Nenhum e-mail cadastrado. A equipe não receberá avisos.</p>';
+            }
+        });
+
+        window.adicionarEmailNotificacao = function() {
+            const input = document.getElementById('novo-email-notificacao');
+            const email = input.value.trim().toLowerCase();
+            
+            if (!email || !email.includes('@')) {
+                showToast("Digite um e-mail válido.", "warning");
+                return;
+            }
+            if (listaEmailsDisparo.includes(email)) {
+                showToast("Este e-mail já está na lista.", "info");
+                return;
+            }
+
+            push(emailsConfigRef, { email: email }).then(() => {
+                input.value = '';
+                showToast("E-mail adicionado!", "success");
+            }).catch(err => {
+                showToast("Erro ao adicionar: " + err.message, "error");
+            });
+        };
+
+        window.removerEmailNotificacao = function(id) {
+            remove(ref(db, `configuracoes_sistema/emails_notificacao_planilhas/${id}`)).then(() => {
+                showToast("E-mail removido!", "success");
+            });
+        };
+
+        window.abrirModalEmails = function() { document.getElementById('modalEmails').style.display = 'flex'; }
+        window.fecharModalEmails = function() { document.getElementById('modalEmails').style.display = 'none'; }
+
+
+        // --- SISTEMA DE LISTAS (EXCEL) ---
         onValue(listasRef, (snapshot) => {
             const grid = document.getElementById('grid-listas');
             grid.innerHTML = '';
@@ -893,7 +994,6 @@
         });
 
         window.salvarLinkLista = function() {
-            // Qualquer usuário logado pode inserir um link novo
             const nome = document.getElementById('nome-lista').value;
             const regiao = document.getElementById('regiao-lista').value;
             const link = document.getElementById('link-lista').value;
@@ -903,14 +1003,6 @@
             const btnUpload = document.getElementById('btn-upload-lista');
             btnUpload.disabled = true;
             btnUpload.innerHTML = "Aguarde...";
-
-            // LISTA DE DESTINATÁRIOS (OPÇÃO B - AUTONOMIA TOTAL)
-            const listaEmailsEquipe = [
-                "jorge.leite@atacadaodiaadia.com.br",
-                "comercial@atacadaodiaadia.com.br",
-                "pricing@atacadaodiaadia.com.br",
-                // Adicione novos e-mails separados por vírgula aqui
-            ];
 
             push(listasRef, {
                 nome: nome,
@@ -925,26 +1017,27 @@
                 btnUpload.disabled = false;
                 btnUpload.innerHTML = "📥 Salvar Planilha";
                 
-                // DISPARO DE E-MAIL
-                const templateParams = { 
-                    campanha_nome: nome, 
-                    campanha_regiao: regiao, 
-                    link_acesso: link,
-                    to_email: listaEmailsEquipe.join(", ")
-                };
-                
-                emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
-                    .then(function(res) { 
-                        console.log('E-mail de notificação enviado com sucesso para a equipe!'); 
-                    }, function(err) { 
-                        console.error('Erro ao enviar e-mail:', err); 
-                    });
-                
+                // DISPARO DE E-MAIL DINÂMICO PARA A LISTA CADASTRADA NO FIREBASE
+                if (listaEmailsDisparo.length > 0) {
+                    const templateParams = { 
+                        campanha_nome: nome, 
+                        campanha_regiao: regiao, 
+                        link_acesso: link,
+                        to_email: listaEmailsDisparo.join(", ") // Passando a string exata lida do firebase
+                    };
+                    
+                    emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
+                        .then(function(res) { 
+                            console.log('E-mail enviado via API com sucesso!'); 
+                        }, function(err) { 
+                            console.error('Erro envio email API', err); 
+                        });
+                }
             });
         };
 
         window.deletarLista = function(id) {
-            if(perfilUsuario !== "Gestor") return; // Lixeira só para gestor
+            if(perfilUsuario !== "Gestor") return; 
             if(confirm("Tem certeza que deseja apagar este link?")) {
                 remove(ref(db, `base_listas_excel/${id}`)).then(() => {
                     showToast("Planilha removida!", "success");
