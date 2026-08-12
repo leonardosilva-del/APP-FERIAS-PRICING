@@ -1263,18 +1263,19 @@
 
         function agendarProcessamento() {
             if (loadedFixas && loadedTarefas && loadedUsuarios) {
-                // Na primeira vez, processa imediatamente sem debounce
+                // 1. Renderiza a grid imediatamente (sem debounce) para garantir que a tela nunca fique vazia
+                renderizarGridSafe();
+
+                // 2. Na primeira vez, processa a auto-manutenção (rollover/fixas) imediatamente sem debounce
                 if (primeiroProcessamento) {
                     primeiroProcessamento = false;
                     clearTimeout(debounceTimer);
-                    processarTudo();
+                    // Colocamos num setTimeout curto para permitir que a UI (grid) seja desenhada antes de travar a thread
+                    setTimeout(() => processarTudo(), 50);
                     return;
                 }
 
-                // Renderiza a grid imediatamente (sem debounce) para não deixar a tela vazia
-                renderizarGridSafe();
-
-                // Debounce apenas para a lógica de processamento pesado (rollover, fixas)
+                // 3. Debounce para a lógica de processamento pesado quando não for a primeira vez
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     processarTudo();
@@ -1301,10 +1302,15 @@
             // Une todas as atualizações em um único push para não enlouquecer o Firebase
             let totalUpdates = { ...updatesPendentes, ...updatesFixas };
 
-            if (Object.keys(totalUpdates).length > 0) {
-                update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
+            try {
+                if (Object.keys(totalUpdates).length > 0) {
+                    update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
+                }
+            } catch(err) {
+                console.error("Erro síncrono no update do Firebase:", err);
             }
 
+            // Re-renderiza caso as funções acima tenham feito modificações locais (ex: novas rotinas fixas injetadas na lista)
             renderizarGridSafe();
             
             if(idTarefaDetalhe) {
