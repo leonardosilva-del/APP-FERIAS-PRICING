@@ -975,7 +975,7 @@
                 <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 013-3h4a3 3 0 013 3v1">
                         </path>
                     </svg>
                 </button>
@@ -1064,11 +1064,12 @@
         window.abrirDetalhesTarefa = function (taskId) {
             idTarefaDetalhe = taskId;
             const task = listaTarefasGlobal[taskId];
+            if(!task) return;
             
-            document.getElementById('detalhe-titulo').textContent = task.titulo;
-            document.getElementById('detalhe-responsavel').textContent = task.colaboradorEmail;
-            document.getElementById('detalhe-criador').textContent = task.criadoPor;
-            document.getElementById('detalhe-status').textContent = task.status;
+            document.getElementById('detalhe-titulo').textContent = task.titulo || '';
+            document.getElementById('detalhe-responsavel').textContent = task.colaboradorEmail || '';
+            document.getElementById('detalhe-criador').textContent = task.criadoPor || '';
+            document.getElementById('detalhe-status').textContent = task.status || '';
             document.getElementById('detalhe-descricao').value = task.descricao || '';
             
             document.getElementById('novo-comentario').value = '';
@@ -1096,7 +1097,7 @@
             
             Object.keys(listaTarefasGlobal).forEach(taskId => {
                 let t = listaTarefasGlobal[taskId];
-                if (t.idFixaRef === id && t.status === "Pendente") {
+                if (t && t.idFixaRef === id && t.status === "Pendente") {
                     updates['agenda_tarefas/' + taskId] = null; 
                 }
             });
@@ -1112,6 +1113,7 @@
             if(!idTarefaDetalhe) return;
             
             const task = listaTarefasGlobal[idTarefaDetalhe];
+            if(!task) return;
             
             if (task.idFixaRef) {
                 const deletarSerieCompleta = confirm("⚠️ ATENÇÃO: Esta é uma tarefa de ROTINA FIXA.\n\n[ OK ] - Para excluir TODA A SÉRIE (essa e as futuras).\n[ CANCELAR ] - Para excluir APENAS a tarefa de hoje.");
@@ -1121,7 +1123,7 @@
                     window.fecharModalDetalhe();
                     return;
                 } else {
-                    if(confirm("Tem certeza que deseja excluir APENAS A OCORRÊNCIA DESTE DIA?")) {
+                    if(confirm("Tem certeza que deseja excluir APENAS A OCORRência DESTE DIA?")) {
                         let updates = {};
                         updates['agenda_tarefas/' + idTarefaDetalhe] = null;
                         if (task.dataReferencia) {
@@ -1165,8 +1167,14 @@
         }
 
         function formataDataISO(data) {
-            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
-            return (new Date(data - tzOffset)).toISOString().split('T')[0];
+            try {
+                if (!data || isNaN(new Date(data).getTime())) return new Date().toISOString().split('T')[0];
+                const d = new Date(data);
+                const tzOffset = d.getTimezoneOffset() * 60000;
+                return (new Date(d.getTime() - tzOffset)).toISOString().split('T')[0];
+            } catch(e) {
+                return new Date().toISOString().split('T')[0];
+            }
         }
 
         // ==========================================
@@ -1218,56 +1226,98 @@
 
                         if (perfilUsuario === "Gestor" || u.email === usuarioAtual.email) {
                             const option = document.createElement('option');
-                            option.value = u.email;
-                            option.textContent = u.nome || u.email;
+                            option.value = u.email || 'sem-email';
+                            option.textContent = u.nome || u.email || 'Sem Nome';
                             selectColab.appendChild(option);
                         }
                     });
                 }
-                if(loadedTarefas) renderizarGrid();
+                if(loadedTarefas) renderizarGridSafe();
             });
         }
 
         // ==========================================
         // FIREBASE CRUD: TAREFAS E FIXAS
         // ==========================================
-        let fixasSuprimidasGlobal = {};
+        let debounceTimer;
 
         function carregarBasesDeDados() {
             onValue(ref(db, 'agenda_fixas'), (snapshot) => {
                 listaFixasGlobal = snapshot.exists() ? snapshot.val() : {};
                 loadedFixas = true;
                 renderizarFixasUI();
-                if (loadedTarefas) processarTudo();
+                agendarProcessamento();
             });
 
             onValue(ref(db, 'agenda_tarefas'), (snapshot) => {
                 listaTarefasGlobal = snapshot.exists() ? snapshot.val() : {};
                 loadedTarefas = true;
-                if (loadedFixas) processarTudo();
+                agendarProcessamento();
             });
         }
 
+        // Timer de estabilização (Evita a condição de corrida)
+        function agendarProcessamento() {
+            if (loadedFixas && loadedTarefas) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    processarTudo();
+                }, 400); // Aguarda 400ms para o Firebase assentar as atualizações
+            }
+        }
+
         function processarTudo() {
-            verificarEAtualizarPendentes(listaTarefasGlobal);
-            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
-            renderizarGrid();
-            if(idTarefaDetalhe) renderizarComentarios(idTarefaDetalhe);
+            let updatesPendentes = {};
+            let updatesFixas = {};
+
+            try { 
+                updatesPendentes = verificarEAtualizarPendentes(listaTarefasGlobal) || {}; 
+            } catch(e) { 
+                console.error("Erro processando pendentes:", e); 
+            }
+            
+            try { 
+                updatesFixas = verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal) || {}; 
+            } catch(e) { 
+                console.error("Erro processando fixas:", e); 
+            }
+            
+            // Une todas as atualizações em um único push para não enlouquecer o Firebase
+            let totalUpdates = { ...updatesPendentes, ...updatesFixas };
+
+            if (Object.keys(totalUpdates).length > 0) {
+                update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
+            }
+
+            renderizarGridSafe();
+            
+            if(idTarefaDetalhe) {
+                try { renderizarComentarios(idTarefaDetalhe); } catch(e) {}
+            }
             
             if (!rolagemInicialFeita) {
                 rolarParaHoje();
                 rolagemInicialFeita = true;
             }
         }
+        
+        function renderizarGridSafe() {
+            try {
+                renderizarGrid();
+            } catch(e) {
+                console.error("Erro crítico ao renderizar a grid da agenda:", e);
+                document.getElementById('board-grid-content').innerHTML = `<div style="padding: 30px; color: #ef4444; width: 100%;">Falha ao construir o calendário. Uma tarefa pode conter dados inválidos. Verifique o console.</div>`;
+            }
+        }
 
         // ==========================================
-        // LÓGICA DE DEMANDAS FIXAS (INSTANCIAÇÃO)
+        // LÓGICA DE DEMANDAS FIXAS E AUTO-LIMPEZA
         // ==========================================
         function verificarEInstanciarFixas(fixas, tarefas) {
-            if (!fixas || Object.keys(fixas).length === 0) return;
+            if (!fixas || Object.keys(fixas).length === 0) return {};
             
             let novasTarefas = {};
-            let precisaAtualizar = false;
+            let apagarDuplicadas = {};
 
             const datasAtuais = [];
             for (let i = 0; i < 6; i++) {
@@ -1279,55 +1329,82 @@
                 });
             }
 
+            // LIMPEZA AUTOMÁTICA DE DUPLICAÇÕES (O "Auto-Heal")
+            let mapaInstancias = {};
+            Object.keys(tarefas).forEach(taskId => {
+                const t = tarefas[taskId];
+                if (t && t.idFixaRef && t.dataReferencia) {
+                    const chave = t.idFixaRef + "_" + t.dataReferencia;
+                    if (!mapaInstancias[chave]) mapaInstancias[chave] = [];
+                    mapaInstancias[chave].push(taskId);
+                }
+            });
+
+            Object.keys(mapaInstancias).forEach(chave => {
+                const ids = mapaInstancias[chave];
+                if (ids.length > 1) {
+                    let idParaManter = ids[0];
+                    for (let i = 1; i < ids.length; i++) {
+                        const id = ids[i];
+                        const t = tarefas[id];
+                        const hasData = (t.comentarios && Object.keys(t.comentarios).length > 0) || (typeof t.descricao === 'string' && t.descricao.trim() !== '');
+                        
+                        if (hasData) {
+                            apagarDuplicadas['agenda_tarefas/' + idParaManter] = null;
+                            delete tarefas[idParaManter];
+                            idParaManter = id; 
+                        } else {
+                            apagarDuplicadas['agenda_tarefas/' + id] = null;
+                            delete tarefas[id];
+                        }
+                    }
+                }
+            });
+
+            // GERAÇÃO DE NOVAS TAREFAS
             Object.keys(fixas).forEach(idFixa => {
                 const fixa = fixas[idFixa];
+                if (!fixa) return;
                 
                 const fixaDataCriacao = fixa.criadoEm ? formataDataISO(new Date(fixa.criadoEm)) : "2000-01-01";
                 
                 datasAtuais.forEach(dataObj => {
-                    if (fixa.dias && fixa.dias.includes(dataObj.diaSemana) && dataObj.iso >= fixaDataCriacao) {
+                    if (fixa.dias && Array.isArray(fixa.dias) && fixa.dias.includes(dataObj.diaSemana) && dataObj.iso >= fixaDataCriacao) {
                         
                         if (fixa.suprimidas && fixa.suprimidas[dataObj.iso]) return;
 
                         let jaExiste = false;
                         Object.values(tarefas).forEach(t => {
-                            if (t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) {
-                                jaExiste = true;
-                            }
+                            if (t && t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) jaExiste = true;
                         });
                         
                         Object.values(novasTarefas).forEach(nt => {
-                            if (nt.idFixaRef === idFixa && nt.dataReferencia === dataObj.iso) {
-                                jaExiste = true;
-                            }
+                            if (nt && nt.idFixaRef === idFixa && nt.dataReferencia === dataObj.iso) jaExiste = true;
                         });
 
                         if (!jaExiste) {
                             const newTaskId = push(ref(db, 'agenda_tarefas')).key;
                             const nova = {
-                                titulo: fixa.titulo,
+                                titulo: fixa.titulo || 'Sem Título',
                                 descricao: fixa.descricao || '',
-                                colaboradorEmail: fixa.colaboradorEmail,
+                                colaboradorEmail: fixa.colaboradorEmail || 'sem-email',
                                 criadoPor: 'Sistema (Rotina Fixa)',
                                 data: dataObj.iso,
                                 dataReferencia: dataObj.iso,
                                 idFixaRef: idFixa,
-                                tipo: fixa.tipo,
+                                tipo: fixa.tipo || 'Rotina',
                                 status: "Pendente",
                                 criadoEm: new Date().toISOString(),
                                 ordem: Date.now() 
                             };
                             novasTarefas['agenda_tarefas/' + newTaskId] = nova;
-                            tarefas[newTaskId] = nova; // Trava contra dupla criação na mesma sessão
-                            precisaAtualizar = true;
+                            tarefas[newTaskId] = nova; // Trava local para evitar a condição de corrida
                         }
                     }
                 });
             });
 
-            if (precisaAtualizar) {
-                update(ref(db), novasTarefas).catch(err => console.error("Erro na instância de fixas: ", err));
-            }
+            return { ...novasTarefas, ...apagarDuplicadas };
         }
 
         function renderizarFixasUI() {
@@ -1338,13 +1415,13 @@
             let count = 0;
             Object.keys(listaFixasGlobal).forEach(id => {
                 const f = listaFixasGlobal[id];
-                if (perfilUsuario === 'Gestor' || f.colaboradorEmail === usuarioAtual.email) {
+                if (f && (perfilUsuario === 'Gestor' || f.colaboradorEmail === usuarioAtual.email)) {
                     count++;
-                    const diasNomes = f.dias.map(d => diasDaSemana[d].substring(0,3)).join(', ');
+                    const diasNomes = (f.dias && Array.isArray(f.dias)) ? f.dias.map(d => diasDaSemana[d].substring(0,3)).join(', ') : '';
                     listaDiv.innerHTML += `
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; margin-bottom:6px; border:1px solid #e2e8f0;">
                             <div>
-                                <strong style="color:var(--text-900); font-size:0.9rem;">${f.titulo}</strong><br>
+                                <strong style="color:var(--text-900); font-size:0.9rem;">${f.titulo || 'Sem título'}</strong><br>
                                 <span style="color:var(--brand-primary); font-weight:600; font-size:0.75rem;">${diasNomes}</span>
                             </div>
                             <button onclick="window.excluirFixa('${id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem;" title="Excluir Rotina Fixa">🗑️</button>
@@ -1424,22 +1501,19 @@
         // ==========================================
         function verificarEAtualizarPendentes(tarefas) {
             const hojeStr = formataDataISO(new Date());
-            let houveAtualizacao = false;
             let updates = {};
 
             Object.keys(tarefas).forEach(taskId => {
                 const task = tarefas[taskId];
-                
-                // CORREÇÃO: Prevenção contra crash caso a tarefa tenha sido apagada no loop anterior
                 if (!task) return; 
                 
-                if (task.status === "Pendente" && task.data < hojeStr) {
+                if (task.status === "Pendente" && task.data && task.data < hojeStr) {
                     
                     let duplicateId = null;
                     for (let id in tarefas) {
                         let t = tarefas[id];
-                        if (!t) continue; // Prevenção contra crash
-                        if (t.data === hojeStr && t.titulo === task.titulo && t.colaboradorEmail === task.colaboradorEmail && id !== taskId) {
+                        if (!t) continue; 
+                        if (t.data === hojeStr && t.titulo && t.titulo === task.titulo && t.colaboradorEmail === task.colaboradorEmail && id !== taskId) {
                             duplicateId = id;
                             break;
                         }
@@ -1447,46 +1521,38 @@
 
                     if (duplicateId) {
                         const dupTask = tarefas[duplicateId];
-                        
-                        const oldHasData = (task.comentarios && Object.keys(task.comentarios).length > 0) || (task.descricao && task.descricao.trim() !== '');
-                        const newHasData = (dupTask.comentarios && Object.keys(dupTask.comentarios).length > 0) || (dupTask.descricao && dupTask.descricao.trim() !== '');
+                        const oldDesc = typeof task.descricao === 'string' ? task.descricao.trim() : '';
+                        const oldHasData = (task.comentarios && Object.keys(task.comentarios).length > 0) || oldDesc !== '';
+                        const newDesc = typeof dupTask.descricao === 'string' ? dupTask.descricao.trim() : '';
+                        const newHasData = (dupTask.comentarios && Object.keys(dupTask.comentarios).length > 0) || newDesc !== '';
 
                         if (!newHasData) {
                             updates['agenda_tarefas/' + duplicateId] = null;
-                            delete tarefas[duplicateId]; 
+                            tarefas[duplicateId] = null; 
                             
                             updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
-                            updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                            updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data || '';
                             updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
-                            
                             task.data = hojeStr; 
-                            houveAtualizacao = true;
                         } else if (!oldHasData) {
                             updates['agenda_tarefas/' + taskId] = null;
-                            delete tarefas[taskId]; 
-                            houveAtualizacao = true;
+                            tarefas[taskId] = null; 
                         } else {
                             updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
-                            updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                            updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data || '';
                             updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
-                            
                             task.data = hojeStr; 
-                            houveAtualizacao = true;
                         }
                     } else {
                         updates['agenda_tarefas/' + taskId + '/data'] = hojeStr;
-                        updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data;
+                        updates['agenda_tarefas/' + taskId + '/transferidaDe'] = task.data || '';
                         updates['agenda_tarefas/' + taskId + '/transferidaEm'] = new Date().toISOString();
-                        
                         task.data = hojeStr; 
-                        houveAtualizacao = true;
                     }
                 }
             });
 
-            if (Object.keys(updates).length > 0) {
-                update(ref(db), updates).then(() => {});
-            }
+            return updates;
         }
 
         // ==========================================
@@ -1547,26 +1613,27 @@
 
             usuariosExibicao.forEach((colab) => {
                 let fotoUrl = colab.foto || 'https://via.placeholder.com/40';
+                let emailLimpo = (colab.email || "sem-email").replace(/[^a-zA-Z0-9]/g, '');
 
                 let rowHTML = `
                 <div class="user-cell">
                     <img src="${fotoUrl}" class="user-avatar-circle" alt="Foto">
                     <div class="user-info">
-                        <span class="user-name" title="${colab.nome}">${colab.nome ? colab.nome.split(' ')[0] : colab.email}</span>
+                        <span class="user-name" title="${colab.nome || ''}">${colab.nome ? colab.nome.split(' ')[0] : (colab.email || 'Usuário')}</span>
                         <span class="user-role">${colab.perfil || 'Colaborador'}</span>
                     </div>
                 </div>`;
 
                 datasDaSemanaISO.forEach(dataLoopStr => {
                     let bgStyle = (dataLoopStr === hojeISO) ? 'background: rgba(99, 102, 241, 0.02);' : '';
-                    let uidUnicoLane = `lane-${colab.email.replace(/[^a-zA-Z0-9]/g, '')}-${dataLoopStr}`;
+                    let uidUnicoLane = `lane-${emailLimpo}-${dataLoopStr}`;
                     
                     rowHTML += `<div class="day-cell-wrapper" style="${bgStyle}">`;
-                    rowHTML += `<div class="task-lane sortable-lane" id="${uidUnicoLane}" data-email="${colab.email}" data-date="${dataLoopStr}">`;
+                    rowHTML += `<div class="task-lane sortable-lane" id="${uidUnicoLane}" data-email="${colab.email || ''}" data-date="${dataLoopStr}">`;
 
                     let tarefasColuna = Object.keys(listaTarefasGlobal)
                         .map(key => ({ id: key, ...listaTarefasGlobal[key] }))
-                        .filter(t => t.colaboradorEmail === colab.email && t.data === dataLoopStr)
+                        .filter(t => t && t.colaboradorEmail === colab.email && t.data === dataLoopStr)
                         .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
                     tarefasColuna.forEach(task => {
@@ -1581,15 +1648,15 @@
                         rowHTML += `
                         <div class="task-card ${classPriority} ${isDoneClass}" data-id="${task.id}" onclick="window.abrirDetalhesTarefa('${task.id}')">
                             <div class="task-header">
-                                <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo}</span></div>
+                                <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo || 'Rotina'}</span></div>
                                 ${commentsBadge}
                             </div>
-                            <h4 class="task-title">${task.titulo}</h4>
+                            <h4 class="task-title">${task.titulo || 'Sem título'}</h4>
                             <div class="task-footer">
                                 <label class="custom-checkbox" onclick="event.stopPropagation()">
                                     <input type="checkbox" data-id="${task.id}" class="task-updater" ${isChecked}>
                                     <span class="checkmark"></span>
-                                    <span class="status-text">${task.status}</span>
+                                    <span class="status-text">${task.status || 'Pendente'}</span>
                                 </label>
                             </div>
                         </div>`;
@@ -1597,7 +1664,7 @@
 
                     rowHTML += `</div>`; 
 
-                    if (perfilUsuario === "Gestor" || colab.email === usuarioAtual.email) {
+                    if (perfilUsuario === "Gestor" || (colab.email && usuarioAtual && colab.email === usuarioAtual.email)) {
                         rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem;"><button class="add-task-btn" style="width: 100%;" onclick="window.abrirModalDemanda('${dataLoopStr}')">+ Adicionar</button></div>`;
                     } else {
                         rowHTML += `<div style="padding: 0 0.75rem 0.75rem 0.75rem;"></div>`;
@@ -1637,7 +1704,7 @@
         function iniciarDragAndDrop() {
             const lanes = document.querySelectorAll('.sortable-lane');
             lanes.forEach(lane => {
-                const isMyLane = perfilUsuario === "Gestor" || lane.getAttribute('data-email') === usuarioAtual.email;
+                const isMyLane = perfilUsuario === "Gestor" || (usuarioAtual && lane.getAttribute('data-email') === usuarioAtual.email);
                 
                 if(isMyLane) {
                     const sortableInstance = new Sortable(lane, {
@@ -1673,18 +1740,15 @@
 
         document.getElementById('btn-prev-week').addEventListener('click', () => { 
             dataInicioSemana.setDate(dataInicioSemana.getDate() - 7); 
-            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
-            renderizarGrid(); 
+            agendarProcessamento();
         });
         document.getElementById('btn-next-week').addEventListener('click', () => { 
             dataInicioSemana.setDate(dataInicioSemana.getDate() + 7); 
-            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
-            renderizarGrid(); 
+            agendarProcessamento();
         });
         document.getElementById('btn-today').addEventListener('click', () => { 
             dataInicioSemana = getStartOfWeek(new Date()); 
-            verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal);
-            renderizarGrid(); 
+            agendarProcessamento();
             rolarParaHoje(); 
         });
 
@@ -1736,16 +1800,17 @@
 
             const comentariosArray = Object.values(task.comentarios);
             comentariosArray.forEach(c => {
+                if (!c) return;
                 const isMe = c.autorEmail === usuarioAtual.email;
                 const extraClass = isMe ? 'is-me' : 'is-other';
                 
                 listaDiv.innerHTML += `
                     <div class="comment-bubble ${extraClass}">
                         <div class="comment-meta">
-                            <span>${c.autor}</span>
-                            <span>${c.dataHora}</span>
+                            <span>${c.autor || 'Usuário'}</span>
+                            <span>${c.dataHora || ''}</span>
                         </div>
-                        <div>${c.texto}</div>
+                        <div>${c.texto || ''}</div>
                     </div>
                 `;
             });
