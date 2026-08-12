@@ -1259,12 +1259,26 @@
         }
 
         // Timer de estabilização (Evita a condição de corrida)
+        let primeiroProcessamento = true;
+
         function agendarProcessamento() {
             if (loadedFixas && loadedTarefas && loadedUsuarios) {
+                // Na primeira vez, processa imediatamente sem debounce
+                if (primeiroProcessamento) {
+                    primeiroProcessamento = false;
+                    clearTimeout(debounceTimer);
+                    processarTudo();
+                    return;
+                }
+
+                // Renderiza a grid imediatamente (sem debounce) para não deixar a tela vazia
+                renderizarGridSafe();
+
+                // Debounce apenas para a lógica de processamento pesado (rollover, fixas)
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     processarTudo();
-                }, 400); // Aguarda 400ms para o Firebase assentar as atualizações
+                }, 400);
             }
         }
 
