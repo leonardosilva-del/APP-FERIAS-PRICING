@@ -258,7 +258,7 @@
         .textarea-inline[readonly] { background-color: transparent; cursor: pointer; color: #64748b; border-color: transparent; }
         .textarea-inline[readonly]:focus { border-color: #cbd5e1; background-color: #fff; }
 
-        /* Cores das Etapas e Status (Tons mais modernos e limpos) */
+        /* Cores das Etapas e Status */
         .status-select.preenchimento-ofertas { background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; }
         .status-select.diagramacao { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         .status-select.aprovacao-comercial { background-color: #dcfce7; color: #047857; border-color: #a7f3d0; }
@@ -271,7 +271,7 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
+        /* --- ESTILO DOS MODAIS GLOBAIS --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
@@ -299,7 +299,6 @@
         }
         .modal-header-close:hover { color: #0f172a; }
 
-        /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
         .modal-content label { 
             font-size: 13px; 
             color: #475569; 
@@ -332,7 +331,6 @@
         .modal-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
         .modal-buttons button { flex: none; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
         
-        /* Botões Clean do Modal */
         .btn-save { background-color: #10b981; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .btn-save:hover { background-color: #059669; }
         .btn-cancel { background-color: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
@@ -387,7 +385,7 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
-            height: 42px; /* Alinha com os inputs */
+            height: 42px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -673,7 +671,11 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label style="font-size: 0.8rem; color: #475569;">Cole um ou vários e-mails (separados por vírgula):</label>
                 <textarea id="novo-email-notificacao" placeholder="Ex: joao@atacadaodiaadia.com.br, maria@atacadaodiaadia.com.br" style="height: 80px; resize: vertical;"></textarea>
-                <button class="btn-save" onclick="adicionarEmailNotificacao()" style="width: 100%;">➕ Adicionar E-mail(s)</button>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-save" onclick="adicionarEmailNotificacao()" style="flex: 2;">➕ Adicionar E-mail(s)</button>
+                    <button class="btn-cancel" onclick="window.excluirTodosEmails()" style="flex: 1; color: #ef4444; border-color: #fecaca; background-color: #fef2f2;">🗑️ Excluir Todos</button>
+                </div>
             </div>
 
             <div id="lista-emails-cadastrados" style="margin-top: 15px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
@@ -986,6 +988,20 @@
             });
         };
 
+        window.excluirTodosEmails = function() {
+            if(listaEmailsDisparo.length === 0) {
+                showToast("A lista já está vazia.", "info");
+                return;
+            }
+            if(confirm("⚠️ ATENÇÃO: Tem certeza que deseja APAGAR TODOS os " + listaEmailsDisparo.length + " e-mails cadastrados de uma vez?")) {
+                remove(ref(db, 'configuracoes_sistema/emails_notificacao_planilhas')).then(() => {
+                    showToast("Todos os e-mails foram removidos!", "success");
+                }).catch(err => {
+                    showToast("Erro ao remover: " + err.message, "error");
+                });
+            }
+        };
+
         window.abrirModalEmails = function() { document.getElementById('modalEmails').style.display = 'flex'; }
         window.fecharModalEmails = function() { document.getElementById('modalEmails').style.display = 'none'; }
 
@@ -1075,13 +1091,24 @@
                 btnUpload.disabled = false;
                 btnUpload.innerHTML = "📥 Salvar Planilha";
                 
-                // DISPARO DE E-MAIL DINÂMICO PARA A LISTA CADASTRADA NO FIREBASE
+                // DISPARO DE E-MAIL DINÂMICO PARA A LISTA
                 if (listaEmailsDisparo.length > 0) {
+                    
+                    // 1. Limpador inteligente: Remove espaços invisíveis e e-mails vazios
+                    const emailsLimpos = listaEmailsDisparo
+                        .map(email => email.trim())
+                        .filter(email => email !== "");
+                    
+                    // 2. Junta os e-mails apenas com vírgula (sem espaço), padrão exigido por algumas APIs
+                    const stringDestinatarios = emailsLimpos.join(",");
+                    
+                    console.log("Tentando enviar para:", stringDestinatarios);
+
                     const templateParams = { 
                         campanha_nome: nome, 
                         campanha_regiao: regiao, 
                         link_acesso: link,
-                        to_email: listaEmailsDisparo.join(", ") 
+                        to_email: stringDestinatarios
                     };
                     
                     emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
@@ -1090,7 +1117,7 @@
                             window.showToast("E-mails de notificação enviados com sucesso!", "info");
                         }, function(err) { 
                             console.error('Erro envio email API', err); 
-                            window.showToast("Planilha salva, mas houve falha ao notificar a equipe (Veja o F12).", "warning");
+                            window.showToast("Planilha salva, mas falha ao notificar a equipe (Erro 422).", "warning");
                         });
                 } else {
                     window.showToast("Nenhum e-mail cadastrado para notificação.", "info");
