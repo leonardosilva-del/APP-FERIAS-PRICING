@@ -258,7 +258,7 @@
         .textarea-inline[readonly] { background-color: transparent; cursor: pointer; color: #64748b; border-color: transparent; }
         .textarea-inline[readonly]:focus { border-color: #cbd5e1; background-color: #fff; }
 
-        /* Cores das Etapas e Status */
+        /* Cores das Etapas e Status (Tons mais modernos e limpos) */
         .status-select.preenchimento-ofertas { background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; }
         .status-select.diagramacao { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         .status-select.aprovacao-comercial { background-color: #dcfce7; color: #047857; border-color: #a7f3d0; }
@@ -271,7 +271,7 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* --- ESTILO DOS MODAIS GLOBAIS --- */
+        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
@@ -299,6 +299,7 @@
         }
         .modal-header-close:hover { color: #0f172a; }
 
+        /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
         .modal-content label { 
             font-size: 13px; 
             color: #475569; 
@@ -331,6 +332,7 @@
         .modal-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
         .modal-buttons button { flex: none; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
         
+        /* Botões Clean do Modal */
         .btn-save { background-color: #10b981; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .btn-save:hover { background-color: #059669; }
         .btn-cancel { background-color: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
@@ -385,7 +387,7 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
-            height: 42px;
+            height: 42px; /* Alinha com os inputs */
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -826,6 +828,7 @@
         let dadosAtuais = null;
         let idSendoEditado = null;
         let listaEmailsDisparo = []; // Guarda os emails lidos do Firebase para envio
+        let listasGlobaisValidas = []; // Guarda as listas processadas sem depender do fluxo de usuário
 
         let filtroMesAtual = "todos";
         let filtroCampanhaAtual = "todas";
@@ -854,18 +857,20 @@
                 // TODOS podem enviar os links e criar campanhas
                 document.getElementById('area-upload-listas').style.display = 'block';
                 document.getElementById('btn-nova-campanha').style.display = 'inline-block';
-                document.getElementById('btn-gerenciar-emails').style.display = 'inline-flex';
 
                 // Apenas Gestor vê botões de configuração pesada
                 if (perfilUsuario === "Gestor") {
                     document.getElementById('btn-historico-dash').style.display = 'inline-block';
                     document.getElementById('menu-import-export').style.display = 'inline-block';
+                    document.getElementById('btn-gerenciar-emails').style.display = 'inline-flex';
                 } else {
                     document.getElementById('btn-historico-dash').style.display = 'none';
                     document.getElementById('menu-import-export').style.display = 'none';
+                    document.getElementById('btn-gerenciar-emails').style.display = 'none';
                 }
 
                 renderizarTabela(dadosAtuais);
+                if (window.renderizarGridListas) window.renderizarGridListas();
             });
         });
 
@@ -985,48 +990,44 @@
         window.fecharModalEmails = function() { document.getElementById('modalEmails').style.display = 'none'; }
 
 
-        // --- SISTEMA DE LISTAS COM AUTO-EXCLUSÃO EM 20 DIAS ---
+        // --- SISTEMA DE LISTAS COM AUTO-EXCLUSÃO EM 20 DIAS E BOTÃO DE DELETE ---
         onValue(listasRef, (snapshot) => {
-            const grid = document.getElementById('grid-listas');
-            grid.innerHTML = '';
-            
-            if (!snapshot.exists()) {
-                grid.innerHTML = '<p style="text-align: center; color: #94a3b8; margin: 20px 0; font-size: 14px;">Nenhuma lista disponível no momento.</p>';
-                return;
-            }
-
-            const arquivosValidos = [];
+            listasGlobaisValidas = [];
             const agora = Date.now();
             const vinteDiasEmMs = 20 * 24 * 60 * 60 * 1000;
 
-            snapshot.forEach(child => { 
-                const arq = { id: child.key, ...child.val() }; 
-                
-                // --- LÓGICA DE EXPIRAÇÃO DE 20 DIAS ---
-                let tempoCriacao = arq.timestampCriacao;
-                
-                // Se for um arquivo antigo que não tinha timestamp, converte a string
-                if (!tempoCriacao && arq.dataCriacao) {
-                    const p = arq.dataCriacao.split('/');
-                    if (p.length === 3) tempoCriacao = new Date(p[2], p[1] - 1, p[0]).getTime();
-                }
+            if (snapshot.exists()) {
+                snapshot.forEach(child => { 
+                    const arq = { id: child.key, ...child.val() }; 
+                    
+                    let tempoCriacao = arq.timestampCriacao;
+                    if (!tempoCriacao && arq.dataCriacao) {
+                        const p = arq.dataCriacao.split('/');
+                        if (p.length === 3) tempoCriacao = new Date(p[2], p[1] - 1, p[0]).getTime();
+                    }
 
-                if (tempoCriacao && (agora - tempoCriacao > vinteDiasEmMs)) {
-                    // Se passou de 20 dias, deleta silenciosamente do banco e NÃO renderiza na tela
-                    remove(ref(db, `base_listas_excel/${arq.id}`));
-                } else {
-                    // Ainda é válido, adiciona para mostrar na tela
-                    arquivosValidos.push(arq); 
-                }
-            });
+                    if (tempoCriacao && (agora - tempoCriacao > vinteDiasEmMs)) {
+                        remove(ref(db, `base_listas_excel/${arq.id}`));
+                    } else {
+                        listasGlobaisValidas.push(arq); 
+                    }
+                });
+            }
+            if (window.renderizarGridListas) window.renderizarGridListas();
+        });
+
+        window.renderizarGridListas = function() {
+            const grid = document.getElementById('grid-listas');
+            if (!grid) return;
+            grid.innerHTML = '';
             
-            if (arquivosValidos.length === 0) {
+            if (listasGlobaisValidas.length === 0) {
                  grid.innerHTML = '<p style="text-align: center; color: #94a3b8; margin: 20px 0; font-size: 14px;">Nenhuma lista disponível no momento.</p>';
                  return;
             }
 
-            arquivosValidos.reverse().forEach(arq => {
-                // Apenas o Gestor pode DELETAR o arquivo manualmente
+            [...listasGlobaisValidas].reverse().forEach(arq => {
+                // A lixeira aparece independentemente do timing agora, porque essa função será chamada novamente quando o perfil for validado.
                 let btnDel = (perfilUsuario === "Gestor") ? `<button class="btn-del-corp" onclick="window.deletarLista('${arq.id}')" title="Excluir Planilha">🗑️</button>` : '';
                 
                 grid.innerHTML += `
@@ -1047,7 +1048,7 @@
                     </div>
                 `;
             });
-        });
+        };
 
         window.salvarLinkLista = function() {
             const nome = document.getElementById('nome-lista').value;
@@ -1080,15 +1081,19 @@
                         campanha_nome: nome, 
                         campanha_regiao: regiao, 
                         link_acesso: link,
-                        to_email: listaEmailsDisparo.join(", ") // Passando a string exata lida do firebase
+                        to_email: listaEmailsDisparo.join(", ") 
                     };
                     
                     emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
                         .then(function(res) { 
                             console.log('E-mail enviado via API com sucesso!'); 
+                            window.showToast("E-mails de notificação enviados com sucesso!", "info");
                         }, function(err) { 
                             console.error('Erro envio email API', err); 
+                            window.showToast("Planilha salva, mas houve falha ao notificar a equipe (Veja o F12).", "warning");
                         });
+                } else {
+                    window.showToast("Nenhum e-mail cadastrado para notificação.", "info");
                 }
             });
         };
