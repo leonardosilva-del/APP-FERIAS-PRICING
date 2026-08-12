@@ -1018,6 +1018,7 @@
 
         let loadedFixas = false;
         let loadedTarefas = false;
+        let loadedUsuarios = false;
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -1232,7 +1233,8 @@
                         }
                     });
                 }
-                if(loadedTarefas) renderizarGridSafe();
+                loadedUsuarios = true;
+                agendarProcessamento();
             });
         }
 
@@ -1258,7 +1260,7 @@
 
         // Timer de estabilização (Evita a condição de corrida)
         function agendarProcessamento() {
-            if (loadedFixas && loadedTarefas) {
+            if (loadedFixas && loadedTarefas && loadedUsuarios) {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     processarTudo();
