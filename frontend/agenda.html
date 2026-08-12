@@ -903,22 +903,22 @@
             </div>
 
             <!-- NOVA ÁREA DE DESCRIÇÃO -->
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 5px;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-600); margin-bottom: 6px;">📝 Descrição / Resumo da Atividade:</label>
                 <textarea id="detalhe-descricao" placeholder="Escreva um resumo da atividade a ser realizada..." style="min-height: 80px; margin-bottom: 8px; width: 100%; box-sizing: border-box;"></textarea>
                 <button class="btn-secondary" onclick="window.salvarDescricaoFirebase()" style="width: 100%;">💾 Salvar Descrição</button>
             </div>
 
-            <h3 style="font-size: 1rem; color: var(--text-900); margin-top: 20px; margin-bottom: 5px;">Comentários e Histórico</h3>
+            <h3 style="font-size: 1rem; color: var(--text-900); margin-top: 10px; margin-bottom: 5px;">Comentários e Histórico</h3>
             <div id="comentarios-lista" class="comments-section">
                 <!-- Comentários injetados aqui -->
             </div>
 
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 5px;">
                 <textarea id="novo-comentario" placeholder="Escreva um comentário ou atualização sobre esta tarefa..." style="min-height: 60px; margin-bottom: 10px; width: 100%; box-sizing: border-box;"></textarea>
             </div>
 
-            <div class="modal-buttons" style="margin-top: 0; margin-bottom: 15px;">
+            <div class="modal-buttons" style="margin-top: 0;">
                 <button class="btn-save" id="btnSalvarComentario" style="width: 100%;">Enviar Comentário</button>
             </div>
 
@@ -975,7 +975,7 @@
                 <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 013-3h4a3 3 0 013 3v1">
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                         </path>
                     </svg>
                 </button>
@@ -1295,6 +1295,12 @@
                                 jaExiste = true;
                             }
                         });
+                        
+                        Object.values(novasTarefas).forEach(nt => {
+                            if (nt.idFixaRef === idFixa && nt.dataReferencia === dataObj.iso) {
+                                jaExiste = true;
+                            }
+                        });
 
                         if (!jaExiste) {
                             const newTaskId = push(ref(db, 'agenda_tarefas')).key;
@@ -1424,11 +1430,15 @@
             Object.keys(tarefas).forEach(taskId => {
                 const task = tarefas[taskId];
                 
+                // CORREÇÃO: Prevenção contra crash caso a tarefa tenha sido apagada no loop anterior
+                if (!task) return; 
+                
                 if (task.status === "Pendente" && task.data < hojeStr) {
                     
                     let duplicateId = null;
                     for (let id in tarefas) {
                         let t = tarefas[id];
+                        if (!t) continue; // Prevenção contra crash
                         if (t.data === hojeStr && t.titulo === task.titulo && t.colaboradorEmail === task.colaboradorEmail && id !== taskId) {
                             duplicateId = id;
                             break;
