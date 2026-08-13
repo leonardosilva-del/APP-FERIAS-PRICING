@@ -365,6 +365,7 @@
             gap: 16px;
             margin-bottom: 16px;
             flex-wrap: wrap;
+            align-items: flex-end;
         }
         .corp-group {
             flex: 1;
@@ -372,9 +373,8 @@
             display: flex;
             flex-direction: column;
         }
-        .corp-group label {
-            margin-top: 0; 
-        }
+        .corp-group label { margin-top: 0; }
+        
         .btn-corp-primary {
             background: #26417E;
             color: white;
@@ -455,6 +455,22 @@
             justify-content: center;
         }
         .btn-del-corp:hover { background: #fee2e2; border-color: #fca5a5; }
+
+        /* ESTILOS NOVOS: ABAS, CLUSTERS E SELEÇÃO DE LOJAS */
+        .tabs-container { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+        .tab-btn { flex: 1; background: none; border: none; padding: 12px; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.2s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab-btn:hover { color: #26417E; background: #f8fafc; }
+        .tab-btn.active { color: #26417E; border-bottom-color: #26417E; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: slideIn 0.3s forwards; }
+        
+        .store-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; max-height: 180px; overflow-y: auto; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; }
+        .custom-checkbox-store { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; cursor: pointer; }
+        .custom-checkbox-store input { width: 16px; height: 16px; accent-color: #26417E; cursor: pointer; }
+        
+        .chip-cluster { background: #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; transition: 0.2s; white-space: nowrap; }
+        .chip-cluster:hover { background: #cbd5e1; }
+        .chip-cluster.selected { background: #26417E; color: white; border-color: #1e3362; }
 
         /* NOTIFICAÇÕES TOAST */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
@@ -599,7 +615,7 @@
     </div>
 
     <!-- Modais -->
-    <!-- Modal Base de Listas (Totalmente Reformulado) -->
+    <!-- Modal Base de Listas -->
     <div id="modalListas" class="modal-overlay" style="display: none; z-index: 1000;">
         <div class="modal-content extra-large" style="background-color: #f4f7f6;">
             
@@ -608,12 +624,12 @@
                     📂 Base de Listas (Excel)
                 </h2>
                 <div style="display: flex; gap: 10px;">
-                    <button id="btn-gerenciar-emails" class="btn-corp-primary" onclick="abrirModalEmails()" style="display: none; background: #10b981; border: none; color: white;">📧 E-mails Notificados</button>
+                    <button id="btn-gerenciar-emails" class="btn-corp-primary" onclick="abrirModalEmails()" style="display: none; background: #8b5cf6; border: none; color: white;">⚙️ Lojas & Clusters</button>
                     <button class="btn-cancel" onclick="fecharModalListas()" style="padding: 8px 16px; min-height: 42px;">✕ Fechar</button>
                 </div>
             </div>
             
-            <!-- Área de Upload de Links (Todos podem enviar) -->
+            <!-- Área de Upload de Links Inteligente -->
             <div id="area-upload-listas" class="corp-panel" style="display: none;">
                 <h3>
                     <svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
@@ -626,23 +642,32 @@
                         <input type="text" id="nome-lista" placeholder="Ex: Fim de Semana das Carnes">
                     </div>
                     <div class="corp-group" style="flex: 1;">
-                        <label>Região</label>
-                        <select id="regiao-lista">
-                            <option value="Todas as Lojas">Todas as Lojas</option>
-                            <option value="DF e GO">DF e GO</option>
-                            <option value="BA">BA (LEM)</option>
-                            <option value="TO">TO (Gurupi)</option>
-                        </select>
+                        <label>Região / Público Alvo (Texto livre)</label>
+                        <input type="text" id="regiao-lista" placeholder="Ex: Todas as Lojas, DF e GO...">
                     </div>
                 </div>
                 
+                <!-- SELEÇÃO INTELIGENTE DE DESTINATÁRIOS -->
+                <div class="corp-group" style="margin-bottom: 16px;">
+                    <label>Selecione quem vai receber a notificação por e-mail:</label>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px;" id="botoes-clusters-upload">
+                        <!-- Injetado via JS -->
+                        <span style="font-size: 13px; color: #94a3b8;">Carregando clusters...</span>
+                    </div>
+
+                    <div class="store-checkbox-grid" id="grid-checkboxes-lojas-upload">
+                        <!-- Injetado via JS -->
+                    </div>
+                </div>
+
                 <div class="corp-row" style="align-items: flex-end; margin-bottom: 0;">
                     <div class="corp-group" style="flex: 1;">
                         <label>Link da Planilha (Drive/OneDrive)</label>
                         <input type="url" id="link-lista" placeholder="Cole o link de compartilhamento aqui" required>
                     </div>
                     <button class="btn-corp-primary" onclick="salvarLinkLista()" id="btn-upload-lista">
-                        📥 Salvar Planilha
+                        📥 Salvar e Notificar
                     </button>
                 </div>
             </div>
@@ -662,27 +687,58 @@
         </div>
     </div>
 
-    <!-- Modal Gerenciar E-mails -->
+    <!-- Novo Modal Gerenciar Lojas e Clusters -->
     <div id="modalEmails" class="modal-overlay" style="display: none; z-index: 1050;">
-        <div class="modal-content">
-            <h2>📧 Gerenciar Notificações</h2>
-            <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px; text-align: center;">E-mails que serão avisados quando uma nova Planilha for enviada.</p>
+        <div class="modal-content large">
+            <h2>⚙️ Lojas & Clusters</h2>
+            
+            <div class="tabs-container">
+                <button class="tab-btn active" id="btn-tab-lojas" onclick="window.switchTab('lojas')">🏬 Gerenciar Lojas</button>
+                <button class="tab-btn" id="btn-tab-clusters" onclick="window.switchTab('clusters')">🏷️ Criar Clusters</button>
+            </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <label style="font-size: 0.8rem; color: #475569;">Cole um ou vários e-mails (separados por vírgula):</label>
-                <textarea id="novo-email-notificacao" placeholder="Ex: joao@atacadaodiaadia.com.br, maria@atacadaodiaadia.com.br" style="height: 80px; resize: vertical;"></textarea>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-save" onclick="adicionarEmailNotificacao()" style="flex: 2;">➕ Adicionar E-mail(s)</button>
-                    <button class="btn-cancel" onclick="window.excluirTodosEmails()" style="flex: 1; color: #ef4444; border-color: #fecaca; background-color: #fef2f2;">🗑️ Excluir Todos</button>
+            <!-- ABA 1: LOJAS -->
+            <div id="tab-lojas" class="tab-content active">
+                <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px;">Cadastre as lojas e vincule o e-mail do gerente. (Use vírgula para múltiplos e-mails).</p>
+
+                <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label>Nome / Código da Loja</label>
+                        <input type="text" id="nova-loja-nome" placeholder="Ex: Loja 1001 - SIA">
+                    </div>
+                    <div style="flex: 2;">
+                        <label>E-mail(s) da Gerência</label>
+                        <input type="text" id="nova-loja-emails" placeholder="Ex: joao@atacadao..., maria@...">
+                    </div>
+                    <button class="btn-save" onclick="window.adicionarLoja()">➕ Add</button>
+                </div>
+
+                <div id="lista-lojas-cadastradas" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
+                    <!-- Lojas renderizadas aqui -->
                 </div>
             </div>
 
-            <div id="lista-emails-cadastrados" style="margin-top: 15px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
-                <!-- emails renderizados aqui -->
+            <!-- ABA 2: CLUSTERS -->
+            <div id="tab-clusters" class="tab-content">
+                <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px;">Crie grupos (clusters) para selecionar rapidamente várias lojas na hora do envio.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                    <label>Nome do Cluster</label>
+                    <input type="text" id="novo-cluster-nome" placeholder="Ex: Cluster DF Entorno">
+                    
+                    <label>Selecione as Lojas deste Cluster:</label>
+                    <div class="store-checkbox-grid" id="grid-checkboxes-criacao-cluster" style="max-height: 120px;">
+                        <!-- Checkboxes injetados via JS -->
+                    </div>
+
+                    <button class="btn-save" onclick="window.adicionarCluster()" style="width: 100%;">🏷️ Salvar Cluster</button>
+                </div>
+
+                <div id="lista-clusters-cadastrados" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
+                    <!-- Clusters renderizados aqui -->
+                </div>
             </div>
 
-            <!-- Botão Fechar claro no rodapé -->
             <div class="modal-buttons" style="margin-top: 15px;">
                 <button class="btn-cancel" onclick="fecharModalEmails()" style="width: 100%;">Fechar Janela</button>
             </div>
@@ -822,15 +878,20 @@
         const tabelaRef = ref(db, 'campanhas_oficiais_v3');
         const historicoRef = ref(db, 'historico_auditoria_v3');
         const listasRef = ref(db, 'base_listas_excel'); 
-        const emailsConfigRef = ref(db, 'configuracoes_sistema/emails_notificacao_planilhas'); 
+        
+        // NOVAS REFERÊNCIAS PARA LOJAS E CLUSTERS
+        const lojasRef = ref(db, 'configuracoes_sistema/lojas'); 
+        const clustersRef = ref(db, 'configuracoes_sistema/clusters'); 
 
         const corpoTabela = document.getElementById('corpo-tabela');
         let usuarioLogado = false;
         let perfilUsuario = "Colaborador";
         let dadosAtuais = null;
         let idSendoEditado = null;
-        let listaEmailsDisparo = []; // Guarda os emails lidos do Firebase para envio
-        let listasGlobaisValidas = []; // Guarda as listas processadas sem depender do fluxo de usuário
+        
+        let listasGlobaisValidas = []; 
+        let globLojas = {};
+        let globClusters = {};
 
         let filtroMesAtual = "todos";
         let filtroCampanhaAtual = "todas";
@@ -877,21 +938,15 @@
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "/";
-            });
+            signOut(auth).then(() => { window.location.href = "/"; });
         });
 
         window.enviarParaMake = function (dadosCampanha) {
             const webhookUrl = "https://hook.us2.make.com/q4gat8dg77pd8m8tm651ffqg1k7yqboy";
-
             fetch(webhookUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dadosCampanha)
-            }).catch(err => console.error("Erro silencioso ao avisar a agenda:", err));
+            }).catch(err => console.error("Erro silencioso:", err));
         };
 
         window.showToast = function (message, type = 'info') {
@@ -900,110 +955,206 @@
             toast.className = `toast ${type}`;
             toast.innerText = message;
             container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'fadeOut 0.3s forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
         };
 
-        // --- SISTEMA DE GESTÃO DE E-MAILS DE NOTIFICAÇÃO (OPÇÃO B DINÂMICA) ---
-        onValue(emailsConfigRef, (snapshot) => {
-            listaEmailsDisparo = [];
-            const listaDiv = document.getElementById('lista-emails-cadastrados');
-            if (listaDiv) listaDiv.innerHTML = '';
-
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    const id = child.key;
-                    const emailInfo = child.val().email;
-                    listaEmailsDisparo.push(emailInfo);
-
-                    if (listaDiv) {
-                        listaDiv.innerHTML += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1;">
-                                <span style="font-size: 14px; color: #1e293b; font-weight: 500;">✉️ ${emailInfo}</span>
-                                <button onclick="window.removerEmailNotificacao('${id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding: 4px;" title="Remover">🗑️</button>
-                            </div>
-                        `;
-                    }
-                });
-            } else {
-                if (listaDiv) listaDiv.innerHTML = '<p style="color:#64748b; font-size: 14px; text-align: center;">Nenhum e-mail cadastrado. A equipe não receberá avisos.</p>';
-            }
+        // ==========================================
+        // NOVO SISTEMA DE LOJAS E CLUSTERS
+        // ==========================================
+        
+        onValue(lojasRef, (snapshot) => {
+            globLojas = snapshot.exists() ? snapshot.val() : {};
+            window.renderizarLojasTab();
+            window.renderizarLojasUpload();
         });
 
-        window.adicionarEmailNotificacao = function() {
-            const input = document.getElementById('novo-email-notificacao');
-            const texto = input.value.trim().toLowerCase();
+        onValue(clustersRef, (snapshot) => {
+            globClusters = snapshot.exists() ? snapshot.val() : {};
+            window.renderizarClustersTab();
+            window.renderizarClustersUpload();
+        });
+
+        // Controle de Abas no Modal
+        window.switchTab = function(tabName) {
+            document.getElementById('btn-tab-lojas').classList.remove('active');
+            document.getElementById('btn-tab-clusters').classList.remove('active');
+            document.getElementById('tab-lojas').classList.remove('active');
+            document.getElementById('tab-clusters').classList.remove('active');
             
-            if (!texto) {
-                showToast("Digite pelo menos um e-mail.", "warning");
+            document.getElementById('btn-tab-' + tabName).classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        };
+
+        // --- ABA LOJAS ---
+        window.renderizarLojasTab = function() {
+            const divLojas = document.getElementById('lista-lojas-cadastradas');
+            const divCheckboxes = document.getElementById('grid-checkboxes-criacao-cluster');
+            if(!divLojas || !divCheckboxes) return;
+
+            divLojas.innerHTML = '';
+            divCheckboxes.innerHTML = '';
+
+            const chaves = Object.keys(globLojas);
+            if(chaves.length === 0) {
+                divLojas.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Nenhuma loja cadastrada.</p>';
                 return;
             }
 
-            // Separa os emails inseridos no textarea (por vírgula, ponto e vírgula ou quebra de linha)
-            const emailsRaw = texto.split(/[,;\n]+/);
-            let adicionados = 0;
-            let invalidos = 0;
-            let duplicados = 0;
+            // Ordenar alfabeticamente pelo nome da loja
+            const arrayLojas = chaves.map(k => ({id: k, ...globLojas[k]})).sort((a,b) => a.nome.localeCompare(b.nome));
 
-            const promises = [];
+            arrayLojas.forEach(loja => {
+                // Linha na listagem (Aba Lojas)
+                divLojas.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1;">
+                        <div style="display:flex; flex-direction:column; gap:3px;">
+                            <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${loja.nome}</span>
+                            <span style="font-size: 12px; color: #64748b;">${loja.emails}</span>
+                        </div>
+                        <button onclick="window.removerLoja('${loja.id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding: 4px;" title="Remover">🗑️</button>
+                    </div>
+                `;
 
-            emailsRaw.forEach(emailRaw => {
-                const email = emailRaw.trim();
-                if (email) {
-                    if (!email.includes('@')) {
-                        invalidos++;
-                    } else if (listaEmailsDisparo.includes(email)) {
-                        duplicados++;
-                    } else {
-                        promises.push(push(emailsConfigRef, { email: email }));
-                        // Otimização para não processar a mesma duplicação no mesmo loop
-                        listaEmailsDisparo.push(email); 
-                        adicionados++;
-                    }
-                }
+                // Checkbox para a Aba Clusters
+                divCheckboxes.innerHTML += `
+                    <label class="custom-checkbox-store">
+                        <input type="checkbox" class="chk-loja-cluster" value="${loja.id}">
+                        ${loja.nome}
+                    </label>
+                `;
             });
+        };
 
-            if (promises.length > 0) {
-                Promise.all(promises).then(() => {
-                    input.value = '';
-                    let msg = `${adicionados} e-mail(s) adicionado(s)!`;
-                    if (duplicados > 0) msg += ` (${duplicados} já existiam).`;
-                    if (invalidos > 0) msg += ` (${invalidos} inválidos).`;
-                    showToast(msg, "success");
-                }).catch(err => {
-                    showToast("Erro ao adicionar: " + err.message, "error");
-                });
-            } else {
-                if (duplicados > 0) showToast("Os e-mails já estão na lista.", "info");
-                else if (invalidos > 0) showToast("E-mails inválidos.", "error");
+        window.adicionarLoja = function() {
+            const nome = document.getElementById('nova-loja-nome').value.trim();
+            const emails = document.getElementById('nova-loja-emails').value.trim();
+
+            if(!nome || !emails) { showToast("Preencha nome e e-mail da loja", "warning"); return; }
+
+            push(lojasRef, { nome: nome, emails: emails }).then(() => {
+                document.getElementById('nova-loja-nome').value = '';
+                document.getElementById('nova-loja-emails').value = '';
+                showToast("Loja adicionada!", "success");
+            }).catch(e => showToast("Erro: " + e.message, "error"));
+        };
+
+        window.removerLoja = function(id) {
+            if(confirm("Tem certeza que deseja remover esta loja?")) {
+                remove(ref(db, `configuracoes_sistema/lojas/${id}`)).then(() => showToast("Loja removida", "success"));
             }
         };
 
-        window.removerEmailNotificacao = function(id) {
-            remove(ref(db, `configuracoes_sistema/emails_notificacao_planilhas/${id}`)).then(() => {
-                showToast("E-mail removido!", "success");
-            });
-        };
+        // --- ABA CLUSTERS ---
+        window.renderizarClustersTab = function() {
+            const divClusters = document.getElementById('lista-clusters-cadastrados');
+            if(!divClusters) return;
+            divClusters.innerHTML = '';
 
-        window.excluirTodosEmails = function() {
-            if(listaEmailsDisparo.length === 0) {
-                showToast("A lista já está vazia.", "info");
+            const chaves = Object.keys(globClusters);
+            if(chaves.length === 0) {
+                divClusters.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Nenhum cluster cadastrado.</p>';
                 return;
             }
-            if(confirm("⚠️ ATENÇÃO: Tem certeza que deseja APAGAR TODOS os " + listaEmailsDisparo.length + " e-mails cadastrados de uma vez?")) {
-                remove(ref(db, 'configuracoes_sistema/emails_notificacao_planilhas')).then(() => {
-                    showToast("Todos os e-mails foram removidos!", "success");
-                }).catch(err => {
-                    showToast("Erro ao remover: " + err.message, "error");
-                });
+
+            chaves.forEach(id => {
+                const c = globClusters[id];
+                const qtdLojas = c.lojasIds ? c.lojasIds.length : 0;
+                
+                divClusters.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1;">
+                        <div style="display:flex; flex-direction:column; gap:3px;">
+                            <span style="font-size: 14px; color: #26417E; font-weight: 600;">🏷️ ${c.nome}</span>
+                            <span style="font-size: 12px; color: #64748b;">${qtdLojas} loja(s) vinculada(s)</span>
+                        </div>
+                        <button onclick="window.removerCluster('${id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding: 4px;" title="Remover Cluster">🗑️</button>
+                    </div>
+                `;
+            });
+        };
+
+        window.adicionarCluster = function() {
+            const nome = document.getElementById('novo-cluster-nome').value.trim();
+            const chks = document.querySelectorAll('.chk-loja-cluster:checked');
+            const idsSelecionados = Array.from(chks).map(cb => cb.value);
+
+            if(!nome) { showToast("Digite um nome para o cluster", "warning"); return; }
+            if(idsSelecionados.length === 0) { showToast("Selecione pelo menos uma loja", "warning"); return; }
+
+            push(clustersRef, { nome: nome, lojasIds: idsSelecionados }).then(() => {
+                document.getElementById('novo-cluster-nome').value = '';
+                chks.forEach(cb => cb.checked = false);
+                showToast("Cluster criado com sucesso!", "success");
+            });
+        };
+
+        window.removerCluster = function(id) {
+            if(confirm("Deseja remover este cluster? As lojas NÃO serão excluídas, apenas o atalho do grupo.")) {
+                remove(ref(db, `configuracoes_sistema/clusters/${id}`)).then(() => showToast("Cluster removido", "success"));
             }
         };
 
         window.abrirModalEmails = function() { document.getElementById('modalEmails').style.display = 'flex'; }
         window.fecharModalEmails = function() { document.getElementById('modalEmails').style.display = 'none'; }
+
+
+        // --- ÁREA DE UPLOAD (SELEÇÃO DE DESTINATÁRIOS) ---
+        window.renderizarLojasUpload = function() {
+            const container = document.getElementById('grid-checkboxes-lojas-upload');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const arrayLojas = Object.keys(globLojas).map(k => ({id: k, ...globLojas[k]})).sort((a,b) => a.nome.localeCompare(b.nome));
+            
+            arrayLojas.forEach(loja => {
+                container.innerHTML += `
+                    <label class="custom-checkbox-store">
+                        <input type="checkbox" class="chk-loja-upload" value="${loja.id}">
+                        ${loja.nome}
+                    </label>
+                `;
+            });
+        };
+
+        window.renderizarClustersUpload = function() {
+            const container = document.getElementById('botoes-clusters-upload');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const chaves = Object.keys(globClusters);
+            if(chaves.length === 0) {
+                container.innerHTML = '<span style="font-size:12px; color:#94a3b8;">Nenhum cluster criado.</span>';
+                return;
+            }
+
+            container.innerHTML += `<button class="chip-cluster" style="background:#fef2f2; color:#ef4444; border-color:#fecaca;" onclick="window.limparSelecaoLojas()">Limpar</button>`;
+            container.innerHTML += `<button class="chip-cluster" style="background:#e0e7ff; color:#4f46e5; border-color:#c7d2fe;" onclick="window.selecionarTodasLojas()">Todas</button>`;
+
+            chaves.forEach(id => {
+                const c = globClusters[id];
+                container.innerHTML += `<button class="chip-cluster" onclick="window.selecionarClusterUpload('${id}')">${c.nome}</button>`;
+            });
+        };
+
+        window.limparSelecaoLojas = function() {
+            document.querySelectorAll('.chk-loja-upload').forEach(cb => cb.checked = false);
+        };
+        
+        window.selecionarTodasLojas = function() {
+            document.querySelectorAll('.chk-loja-upload').forEach(cb => cb.checked = true);
+        };
+
+        window.selecionarClusterUpload = function(clusterId) {
+            const cluster = globClusters[clusterId];
+            if(!cluster || !cluster.lojasIds) return;
+            
+            // Marca as lojas que pertencem a este cluster (sem desmarcar as outras se o usuário quiser somar clusters)
+            const checkboxes = document.querySelectorAll('.chk-loja-upload');
+            checkboxes.forEach(cb => {
+                if(cluster.lojasIds.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+        };
 
 
         // --- SISTEMA DE LISTAS COM AUTO-EXCLUSÃO EM 20 DIAS E BOTÃO DE DELETE ---
@@ -1043,7 +1194,6 @@
             }
 
             [...listasGlobaisValidas].reverse().forEach(arq => {
-                // A lixeira aparece independentemente do timing agora, porque essa função será chamada novamente quando o perfil for validado.
                 let btnDel = (perfilUsuario === "Gestor") ? `<button class="btn-del-corp" onclick="window.deletarLista('${arq.id}')" title="Excluir Planilha">🗑️</button>` : '';
                 
                 grid.innerHTML += `
@@ -1054,7 +1204,7 @@
                                 ${arq.nome}
                             </span>
                             <span class="item-lista-meta">
-                                <strong>Região:</strong> ${arq.regiao} <span style="color:#cbd5e1; margin:0 4px;">|</span> <strong>Data:</strong> ${arq.dataCriacao} por ${arq.criadoPor.split(' ')[0]}
+                                <strong>Público:</strong> ${arq.regiao || 'Geral'} <span style="color:#cbd5e1; margin:0 4px;">|</span> <strong>Data:</strong> ${arq.dataCriacao} por ${arq.criadoPor.split(' ')[0]}
                             </span>
                         </div>
                         <div class="item-lista-acoes">
@@ -1067,9 +1217,9 @@
         };
 
         window.salvarLinkLista = function() {
-            const nome = document.getElementById('nome-lista').value;
-            const regiao = document.getElementById('regiao-lista').value;
-            const link = document.getElementById('link-lista').value;
+            const nome = document.getElementById('nome-lista').value.trim();
+            const regiao = document.getElementById('regiao-lista').value.trim() || 'Todas as Lojas'; // Campo livre
+            const link = document.getElementById('link-lista').value.trim();
 
             if (!nome || !link) { showToast("Preencha o nome da campanha e cole o link.", "error"); return; }
 
@@ -1077,50 +1227,62 @@
             btnUpload.disabled = true;
             btnUpload.innerHTML = "Aguarde...";
 
+            // 1. CAPTURAR LOJAS SELECIONADAS E MONTAR E-MAILS
+            const chksSelecionados = document.querySelectorAll('.chk-loja-upload:checked');
+            let emailsRawArray = [];
+            
+            chksSelecionados.forEach(cb => {
+                const lojaId = cb.value;
+                if(globLojas[lojaId] && globLojas[lojaId].emails) {
+                    emailsRawArray.push(globLojas[lojaId].emails);
+                }
+            });
+
+            // 2. HIGIENIZADOR INTELIGENTE (Anti-Spam / Anti-Duplicação)
+            let todosEmailsString = emailsRawArray.join(',');
+            let listaLimpa = todosEmailsString.split(/[,;]+/)
+                .map(e => e.trim().toLowerCase())
+                .filter(e => e !== "" && e.includes('@')); // Remove vazios e strings inválidas
+                
+            let emailsUnicos = [...new Set(listaLimpa)]; // Remove duplicatas automagicamente
+            let destinatariosFinais = emailsUnicos.join(',');
+
             push(listasRef, {
                 nome: nome,
                 regiao: regiao,
                 urlArquivo: link,
                 dataCriacao: new Date().toLocaleDateString('pt-BR'),
-                timestampCriacao: Date.now(), // <-- Novo campo para auto-exclusão em 20 dias
+                timestampCriacao: Date.now(), 
                 criadoPor: auth.currentUser.displayName || "Colaborador"
             }).then(() => {
                 showToast("Planilha salva com sucesso!", "success");
                 document.getElementById('nome-lista').value = '';
                 document.getElementById('link-lista').value = '';
-                btnUpload.disabled = false;
-                btnUpload.innerHTML = "📥 Salvar Planilha";
+                window.limparSelecaoLojas();
                 
-                // DISPARO DE E-MAIL DINÂMICO PARA A LISTA
-                if (listaEmailsDisparo.length > 0) {
-                    
-                    // 1. Limpador inteligente: Remove espaços invisíveis e e-mails vazios
-                    const emailsLimpos = listaEmailsDisparo
-                        .map(email => email.trim())
-                        .filter(email => email !== "");
-                    
-                    // 2. Junta os e-mails apenas com vírgula (sem espaço), padrão exigido por algumas APIs
-                    const stringDestinatarios = emailsLimpos.join(",");
-                    
-                    console.log("Tentando enviar para:", stringDestinatarios);
+                btnUpload.disabled = false;
+                btnUpload.innerHTML = "📥 Salvar e Notificar";
+                
+                // DISPARO DE E-MAIL DINÂMICO PARA A LISTA PROCESSADA
+                if (emailsUnicos.length > 0) {
+                    console.log("Disparando para " + emailsUnicos.length + " e-mails únicos:", destinatariosFinais);
 
                     const templateParams = { 
                         campanha_nome: nome, 
                         campanha_regiao: regiao, 
                         link_acesso: link,
-                        to_email: stringDestinatarios
+                        to_email: destinatariosFinais
                     };
                     
                     emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
                         .then(function(res) { 
-                            console.log('E-mail enviado via API com sucesso!'); 
-                            window.showToast("E-mails de notificação enviados com sucesso!", "info");
+                            window.showToast(`E-mails enviados para ${emailsUnicos.length} gerentes!`, "info");
                         }, function(err) { 
                             console.error('Erro envio email API', err); 
                             window.showToast("Planilha salva, mas falha ao notificar a equipe (Erro 422).", "warning");
                         });
                 } else {
-                    window.showToast("Nenhum e-mail cadastrado para notificação.", "info");
+                    window.showToast("Nenhuma loja com e-mail válido foi selecionada para envio.", "warning");
                 }
             });
         };
@@ -1274,7 +1436,7 @@
                 if (camp.etapa === 'preenchimento-ofertas') { countEtapas['Preenchimento']++; }
                 else if (camp.etapa === 'diagramacao') { countEtapas['Diagramação']++; }
                 else if (camp.etapa === 'aprovacao-comercial') { countEtapas['Aprovação Com.']++; }
-                else if (camp.etapa === 'correcao-pricing') { countEtapas['Correção Pricing']++; }
+                else if (camp.etapa === 'correção-pricing') { countEtapas['Correção Pricing']++; }
                 else if (camp.etapa === 'validacao-final-marketing') { countEtapas['Valid. Final MKT']++; }
 
                 let resp = camp.responsavel || 'Pricing';
