@@ -1200,6 +1200,11 @@
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
                 carregarUsuarios();
                 carregarBasesDeDados();
+            }).catch((err) => {
+                console.error("Erro ao carregar dados do usuário (possível falta de permissão):", err);
+                document.getElementById('user-role-widget').textContent = perfilUsuario;
+                carregarUsuarios();
+                carregarBasesDeDados();
             });
         });
 
@@ -1285,8 +1290,24 @@
             // Une todas as atualizações em um único push para não enlouquecer o Firebase
             let totalUpdates = { ...updatesPendentes, ...updatesFixas };
 
+            // PREVENÇÃO DE ERRO FIREBASE: Remove paths filhos se o pai já estiver sendo modificado/deletado
+            const paths = Object.keys(totalUpdates);
+            paths.forEach(parentPath => {
+                if (totalUpdates[parentPath] === null || totalUpdates[parentPath] !== undefined) {
+                    paths.forEach(childPath => {
+                        if (parentPath !== childPath && childPath.startsWith(parentPath + '/')) {
+                            delete totalUpdates[childPath];
+                        }
+                    });
+                }
+            });
+
             if (Object.keys(totalUpdates).length > 0) {
-                update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
+                try {
+                    update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
+                } catch (err) {
+                    console.error("Erro síncrono no update do Firebase:", err);
+                }
             }
 
             renderizarGridSafe();
