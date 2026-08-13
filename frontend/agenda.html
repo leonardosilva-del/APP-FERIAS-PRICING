@@ -1018,7 +1018,6 @@
 
         let loadedFixas = false;
         let loadedTarefas = false;
-        let loadedUsuarios = false;
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -1124,7 +1123,7 @@
                     window.fecharModalDetalhe();
                     return;
                 } else {
-                    if(confirm("Tem certeza que deseja excluir APENAS A OCORRência DESTE DIA?")) {
+                    if(confirm("Tem certeza que deseja excluir APENAS A OCORRÊNCIA DESTE DIA?")) {
                         let updates = {};
                         updates['agenda_tarefas/' + idTarefaDetalhe] = null;
                         if (task.dataReferencia) {
@@ -1233,8 +1232,7 @@
                         }
                     });
                 }
-                loadedUsuarios = true;
-                agendarProcessamento();
+                if(loadedTarefas) renderizarGridSafe();
             });
         }
 
@@ -1259,27 +1257,12 @@
         }
 
         // Timer de estabilização (Evita a condição de corrida)
-        let primeiroProcessamento = true;
-
         function agendarProcessamento() {
-            if (loadedFixas && loadedTarefas && loadedUsuarios) {
-                // 1. Renderiza a grid imediatamente (sem debounce) para garantir que a tela nunca fique vazia
-                renderizarGridSafe();
-
-                // 2. Na primeira vez, processa a auto-manutenção (rollover/fixas) imediatamente sem debounce
-                if (primeiroProcessamento) {
-                    primeiroProcessamento = false;
-                    clearTimeout(debounceTimer);
-                    // Colocamos num setTimeout curto para permitir que a UI (grid) seja desenhada antes de travar a thread
-                    setTimeout(() => processarTudo(), 50);
-                    return;
-                }
-
-                // 3. Debounce para a lógica de processamento pesado quando não for a primeira vez
+            if (loadedFixas && loadedTarefas) {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     processarTudo();
-                }, 400);
+                }, 400); // Aguarda 400ms para o Firebase assentar as atualizações
             }
         }
 
@@ -1302,15 +1285,10 @@
             // Une todas as atualizações em um único push para não enlouquecer o Firebase
             let totalUpdates = { ...updatesPendentes, ...updatesFixas };
 
-            try {
-                if (Object.keys(totalUpdates).length > 0) {
-                    update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
-                }
-            } catch(err) {
-                console.error("Erro síncrono no update do Firebase:", err);
+            if (Object.keys(totalUpdates).length > 0) {
+                update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
             }
 
-            // Re-renderiza caso as funções acima tenham feito modificações locais (ex: novas rotinas fixas injetadas na lista)
             renderizarGridSafe();
             
             if(idTarefaDetalhe) {
@@ -1369,9 +1347,13 @@
                     for (let i = 1; i < ids.length; i++) {
                         const id = ids[i];
                         const t = tarefas[id];
-                        const hasData = (t.comentarios && Object.keys(t.comentarios).length > 0) || (typeof t.descricao === 'string' && t.descricao.trim() !== '');
+                        const tManter = tarefas[idParaManter];
                         
-                        if (hasData) {
+                        // Agora o sistema dá prioridade MÁXIMA para tarefas concluídas!
+                        const tHasData = (t.status === "Concluída") || (t.comentarios && Object.keys(t.comentarios).length > 0) || (typeof t.descricao === 'string' && t.descricao.trim() !== '');
+                        const manterHasData = (tManter.status === "Concluída") || (tManter.comentarios && Object.keys(tManter.comentarios).length > 0) || (typeof tManter.descricao === 'string' && tManter.descricao.trim() !== '');
+                        
+                        if (tHasData && !manterHasData) {
                             apagarDuplicadas['agenda_tarefas/' + idParaManter] = null;
                             delete tarefas[idParaManter];
                             idParaManter = id; 
@@ -1544,9 +1526,9 @@
                     if (duplicateId) {
                         const dupTask = tarefas[duplicateId];
                         const oldDesc = typeof task.descricao === 'string' ? task.descricao.trim() : '';
-                        const oldHasData = (task.comentarios && Object.keys(task.comentarios).length > 0) || oldDesc !== '';
+                        const oldHasData = (task.status === "Concluída") || (task.comentarios && Object.keys(task.comentarios).length > 0) || oldDesc !== '';
                         const newDesc = typeof dupTask.descricao === 'string' ? dupTask.descricao.trim() : '';
-                        const newHasData = (dupTask.comentarios && Object.keys(dupTask.comentarios).length > 0) || newDesc !== '';
+                        const newHasData = (dupTask.status === "Concluída") || (dupTask.comentarios && Object.keys(dupTask.comentarios).length > 0) || newDesc !== '';
 
                         if (!newHasData) {
                             updates['agenda_tarefas/' + duplicateId] = null;
@@ -1774,13 +1756,23 @@
             rolarParaHoje(); 
         });
 
+        // AQUI ESTÁ A TRAVA QUE IMPEDE A TAREFA CONCLUÍDA DE VOLTAR PRO PASSADO
         function atualizarStatusFirebase(taskId, novoStatus) {
-            const updateRef = ref(db, 'agenda_tarefas/' + taskId);
-            update(updateRef, {
+            const hojeStr = formataDataISO(new Date());
+            const atualizacoes = {
                 status: novoStatus,
                 atualizadoPor: usuarioAtual.email,
                 atualizadoEm: new Date().toISOString()
-            });
+            };
+
+            // Se for marcada como concluída, "carimba" a data da tarefa para HOJE
+            if (novoStatus === "Concluída") {
+                atualizacoes.data = hojeStr; 
+                atualizacoes.dataConclusao = hojeStr;
+            }
+
+            const updateRef = ref(db, 'agenda_tarefas/' + taskId);
+            update(updateRef, atualizacoes);
         }
 
         // ==========================================
