@@ -1018,6 +1018,7 @@
 
         let loadedFixas = false;
         let loadedTarefas = false;
+        let isProcessing = false; // Guarda contra re-entrada
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -1272,53 +1273,61 @@
         }
 
         function processarTudo() {
-            let updatesPendentes = {};
-            let updatesFixas = {};
+            // Guarda contra re-entrada: se já estamos processando, não reentrar
+            if (isProcessing) return;
+            isProcessing = true;
 
-            try { 
-                updatesPendentes = verificarEAtualizarPendentes(listaTarefasGlobal) || {}; 
-            } catch(e) { 
-                console.error("Erro processando pendentes:", e); 
-            }
-            
-            try { 
-                updatesFixas = verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal) || {}; 
-            } catch(e) { 
-                console.error("Erro processando fixas:", e); 
-            }
-            
-            // Une todas as atualizações em um único push para não enlouquecer o Firebase
-            let totalUpdates = { ...updatesPendentes, ...updatesFixas };
+            try {
+                let updatesPendentes = {};
+                let updatesFixas = {};
 
-            // PREVENÇÃO DE ERRO FIREBASE: Remove paths filhos se o pai já estiver sendo modificado/deletado
-            const paths = Object.keys(totalUpdates);
-            paths.forEach(parentPath => {
-                if (totalUpdates[parentPath] === null || totalUpdates[parentPath] !== undefined) {
-                    paths.forEach(childPath => {
-                        if (parentPath !== childPath && childPath.startsWith(parentPath + '/')) {
-                            delete totalUpdates[childPath];
-                        }
-                    });
+                try { 
+                    updatesPendentes = verificarEAtualizarPendentes(listaTarefasGlobal) || {}; 
+                } catch(e) { 
+                    console.error("Erro processando pendentes:", e); 
                 }
-            });
-
-            if (Object.keys(totalUpdates).length > 0) {
-                try {
-                    update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
-                } catch (err) {
-                    console.error("Erro síncrono no update do Firebase:", err);
+                
+                try { 
+                    updatesFixas = verificarEInstanciarFixas(listaFixasGlobal, listaTarefasGlobal) || {}; 
+                } catch(e) { 
+                    console.error("Erro processando fixas:", e); 
                 }
-            }
+                
+                // Une todas as atualizações em um único push para não enlouquecer o Firebase
+                let totalUpdates = { ...updatesPendentes, ...updatesFixas };
 
-            renderizarGridSafe();
-            
-            if(idTarefaDetalhe) {
-                try { renderizarComentarios(idTarefaDetalhe); } catch(e) {}
-            }
-            
-            if (!rolagemInicialFeita) {
-                rolarParaHoje();
-                rolagemInicialFeita = true;
+                // PREVENÇÃO DE ERRO FIREBASE: Remove paths filhos se o pai já estiver sendo modificado/deletado
+                const paths = Object.keys(totalUpdates);
+                paths.forEach(parentPath => {
+                    if (totalUpdates[parentPath] === null || totalUpdates[parentPath] !== undefined) {
+                        paths.forEach(childPath => {
+                            if (parentPath !== childPath && childPath.startsWith(parentPath + '/')) {
+                                delete totalUpdates[childPath];
+                            }
+                        });
+                    }
+                });
+
+                if (Object.keys(totalUpdates).length > 0) {
+                    try {
+                        update(ref(db), totalUpdates).catch(e => console.error("Erro no update unificado:", e));
+                    } catch (err) {
+                        console.error("Erro síncrono no update do Firebase:", err);
+                    }
+                }
+
+                renderizarGridSafe();
+                
+                if(idTarefaDetalhe) {
+                    try { renderizarComentarios(idTarefaDetalhe); } catch(e) {}
+                }
+                
+                if (!rolagemInicialFeita) {
+                    rolarParaHoje();
+                    rolagemInicialFeita = true;
+                }
+            } finally {
+                isProcessing = false;
             }
         }
         
@@ -1386,7 +1395,7 @@
                 }
             });
 
-            // GERAÇÃO DE NOVAS TAREFAS
+            // GERAÇÃO DE NOVAS TAREFAS (com ID determinístico para impedir duplicação)
             Object.keys(fixas).forEach(idFixa => {
                 const fixa = fixas[idFixa];
                 if (!fixa) return;
@@ -1398,17 +1407,31 @@
                         
                         if (fixa.suprimidas && fixa.suprimidas[dataObj.iso]) return;
 
-                        let jaExiste = false;
-                        Object.values(tarefas).forEach(t => {
-                            if (t && t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) jaExiste = true;
-                        });
+                        // ID DETERMINÍSTICO: garante que a mesma fixa+data gera sempre o mesmo ID
+                        const deterministicId = idFixa + "_" + dataObj.iso.replace(/-/g, '');
+
+                        // Verifica se já existe por ID determinístico OU por idFixaRef+dataReferencia
+                        let jaExiste = !!tarefas[deterministicId];
                         
-                        Object.values(novasTarefas).forEach(nt => {
-                            if (nt && nt.idFixaRef === idFixa && nt.dataReferencia === dataObj.iso) jaExiste = true;
-                        });
+                        if (!jaExiste) {
+                            // Também checa pelo padrão antigo (tarefas criadas com push() aleatório)
+                            for (const taskId in tarefas) {
+                                const t = tarefas[taskId];
+                                if (t && t.idFixaRef === idFixa && t.dataReferencia === dataObj.iso) {
+                                    jaExiste = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (!jaExiste) {
+                            // Também checa nas novas tarefas pendentes de gravação
+                            if (novasTarefas['agenda_tarefas/' + deterministicId]) {
+                                jaExiste = true;
+                            }
+                        }
 
                         if (!jaExiste) {
-                            const newTaskId = push(ref(db, 'agenda_tarefas')).key;
                             const nova = {
                                 titulo: fixa.titulo || 'Sem Título',
                                 descricao: fixa.descricao || '',
@@ -1422,8 +1445,8 @@
                                 criadoEm: new Date().toISOString(),
                                 ordem: Date.now() 
                             };
-                            novasTarefas['agenda_tarefas/' + newTaskId] = nova;
-                            tarefas[newTaskId] = nova; // Trava local para evitar a condição de corrida
+                            novasTarefas['agenda_tarefas/' + deterministicId] = nova;
+                            tarefas[deterministicId] = nova; // Trava local para evitar a condição de corrida
                         }
                     }
                 });
