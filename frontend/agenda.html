@@ -78,7 +78,8 @@
         html.dark-theme .task-card.is-done { background: #0f172a; border-left-color: #059669; }
         html.dark-theme .modal-content input, 
         html.dark-theme .modal-content select, 
-        html.dark-theme .modal-content textarea {
+        html.dark-theme .modal-content textarea,
+        html.dark-theme .select-moderno {
             background-color: #0f172a !important;
             color: #f8fafc !important;
             border-color: #334155 !important;
@@ -512,6 +513,25 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+        }
+
+        /* Select Moderno de Filtro */
+        .select-moderno {
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            background-color: var(--bg-surface);
+            color: var(--text-900);
+            font-size: 0.85rem;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .select-moderno:hover, .select-moderno:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
         .btn {
@@ -952,6 +972,16 @@
         </div>
 
         <div class="topbar-actions">
+            
+            <!-- NOVO FILTRO DE COLABORADORES (Visível apenas para Gestor) -->
+            <div id="container-filtro-equipe" style="display: none; align-items: center; gap: 8px;">
+                <span style="font-size: 1.1rem; color: var(--text-400);" title="Filtrar por Colaborador">👥</span>
+                <select id="filtro-colaborador" onchange="window.aplicarFiltroColaborador()" class="select-moderno">
+                    <option value="todos">Toda a Equipe</option>
+                    <!-- Opções geradas via JS -->
+                </select>
+            </div>
+
             <!-- Botão de Nova Demanda visível para TODOS -->
             <button class="btn btn-primary-top" id="btnAbrirModal" onclick="window.abrirModalDemanda()" style="display: inline-flex;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1019,6 +1049,7 @@
         let loadedFixas = false;
         let loadedTarefas = false;
         let isProcessing = false; // Guarda contra re-entrada
+        let filtroColaboradorAtual = "todos"; // NOVO: Variável de controle do filtro
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -1160,6 +1191,12 @@
             document.getElementById('container-dias-fixos').style.display = isFixa ? 'flex' : 'none';
         }
 
+        // Função chamada quando o usuário altera o dropdown de filtro no topo
+        window.aplicarFiltroColaborador = function() {
+            filtroColaboradorAtual = document.getElementById('filtro-colaborador').value;
+            renderizarGridSafe();
+        }
+
         function getStartOfWeek(data) {
             const d = new Date(data);
             const diaSemana = d.getDay();
@@ -1199,6 +1236,12 @@
                 }
 
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
+                
+                // Mostrar o filtro apenas se for gestor
+                if (perfilUsuario === "Gestor") {
+                    document.getElementById('container-filtro-equipe').style.display = 'flex';
+                }
+
                 carregarUsuarios();
                 carregarBasesDeDados();
             }).catch((err) => {
@@ -1220,8 +1263,13 @@
             const usuariosRef = ref(db, 'usuarios');
             onValue(usuariosRef, (snapshot) => {
                 listaUsuariosGlobal = [];
+                
                 const selectColab = document.getElementById('demanda-colaborador');
                 selectColab.innerHTML = '';
+                
+                const selectFiltro = document.getElementById('filtro-colaborador');
+                const valFiltroAtual = selectFiltro.value;
+                selectFiltro.innerHTML = '<option value="todos">Toda a Equipe</option>';
 
                 if (snapshot.exists()) {
                     const data = snapshot.val();
@@ -1230,14 +1278,29 @@
                         u.uid = uid;
                         listaUsuariosGlobal.push(u);
 
+                        // Popula o select do modal de tarefas
                         if (perfilUsuario === "Gestor" || u.email === usuarioAtual.email) {
                             const option = document.createElement('option');
                             option.value = u.email || 'sem-email';
                             option.textContent = u.nome || u.email || 'Sem Nome';
                             selectColab.appendChild(option);
                         }
+
+                        // Popula o select do Filtro na Topbar
+                        if (perfilUsuario === "Gestor") {
+                            const optionFiltro = document.createElement('option');
+                            optionFiltro.value = u.email || 'sem-email';
+                            optionFiltro.textContent = u.nome ? u.nome.split(' ')[0] : (u.email || 'Usuário');
+                            selectFiltro.appendChild(optionFiltro);
+                        }
                     });
                 }
+                
+                // Restaura o valor do filtro caso o Firebase recarregue em tempo real
+                if (perfilUsuario === "Gestor") {
+                    selectFiltro.value = valFiltroAtual;
+                }
+
                 if(loadedTarefas) renderizarGridSafe();
             });
         }
@@ -1621,7 +1684,12 @@
 
             let usuariosExibicao = [];
             if (perfilUsuario === "Gestor") {
-                usuariosExibicao = listaUsuariosGlobal;
+                // SE O FILTRO ESTIVER ATIVO, MOSTRA SÓ QUEM FOI SELECIONADO
+                if (filtroColaboradorAtual === "todos") {
+                    usuariosExibicao = listaUsuariosGlobal;
+                } else {
+                    usuariosExibicao = listaUsuariosGlobal.filter(u => u.email === filtroColaboradorAtual);
+                }
             } else {
                 usuariosExibicao = listaUsuariosGlobal.filter(u => u.email === usuarioAtual.email);
                 if (usuariosExibicao.length === 0 && usuarioAtual) {
