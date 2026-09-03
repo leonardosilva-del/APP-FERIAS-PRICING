@@ -64,6 +64,16 @@
         html.dark-theme .back-btn { background-color: rgba(30, 41, 59, 0.5); color: #cbd5e1; }
         html.dark-theme .back-btn:hover { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
         html.dark-theme .info .phone { background-color: rgba(5, 150, 105, 0.15); color: #34d399; }
+        
+        /* Ajuste do Destaque para Modo Dark */
+        html.dark-theme .destaque-plantao {
+            background-color: rgba(38, 65, 126, 0.1); 
+            border-left: 4px solid #3b82f6; 
+        }
+        html.dark-theme .badge-plantao {
+            color: #e0e7ff;
+            background-color: rgba(59, 130, 246, 0.2);
+        }
         /* Fim Modo Dark */
 
         * {
@@ -494,6 +504,9 @@
             font-weight: 600;
             margin-bottom: 0.25rem;
             color: var(--text-main);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .info .phone {
@@ -546,6 +559,26 @@
         /* Ocultar elementos na hora de gerar o PDF */
         body.gerando-pdf .no-print {
             display: none !important;
+        }
+
+        /* --- ESTILOS DO DESTAQUE --- */
+        .destaque-plantao {
+            background-color: #f8fafc;
+            border-left: 4px solid #26417E; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-plantao {
+            font-size: 10px;
+            font-weight: 700;
+            color: #26417E;
+            background-color: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
     </style>
@@ -925,11 +958,31 @@
                 return;
             }
 
+            // Ordenar por data
             arrayEscalas.sort((a, b) => {
                 const dtA = parseFormatData(a.dataInicio || a.data);
                 const dtB = parseFormatData(b.dataInicio || b.data);
                 if (!dtA) return 1; if (!dtB) return -1;
                 return dtA - dtB;
+            });
+
+            // Encontrar qual é o próximo plantão (A data mais próxima a partir de hoje)
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            let idProximoPlantao = null;
+            let menorDiferenca = Infinity;
+
+            arrayEscalas.forEach(escala => {
+                // Compara pela data FIM do plantão para garantir que um plantão em andamento ainda fique destacado
+                const dtFim = parseFormatData(escala.dataFim || escala.dataInicio || escala.data);
+                if (dtFim && dtFim >= hoje) {
+                    const diferenca = dtFim - hoje;
+                    if (diferenca < menorDiferenca) {
+                        menorDiferenca = diferenca;
+                        idProximoPlantao = escala.id;
+                    }
+                }
             });
 
             arrayEscalas.forEach(escala => {
@@ -977,15 +1030,20 @@
                 </div>`;
                 }
 
+                // Verifica se este é o próximo plantão para adicionar as classes de destaque
+                const isDestaque = (escala.id === idProximoPlantao);
+                const classCard = isDestaque ? "escala-card destaque-plantao" : "escala-card";
+                const badgeDestaque = isDestaque ? `<span class="badge-plantao">Próximo Plantão</span>` : "";
+
                 const card = document.createElement('div');
-                card.className = 'escala-card';
+                card.className = classCard;
                 card.innerHTML = `
                 <div class="date-badge">
                     <div class="day">${diasTexto}</div>
                     <div class="month">${mesTexto}</div>
                 </div>
                 <div class="info">
-                    <h3>${escala.nome}</h3>
+                    <h3>${escala.nome} ${badgeDestaque}</h3>
                     ${telefoneHTML}
                     <p class="year">${anoTexto}</p>
                 </div>
