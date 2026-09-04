@@ -1440,7 +1440,7 @@
                 if (camp.etapa === 'preenchimento-ofertas') { countEtapas['Preenchimento']++; }
                 else if (camp.etapa === 'diagramacao') { countEtapas['Diagramação']++; }
                 else if (camp.etapa === 'aprovacao-comercial') { countEtapas['Aprovação Com.']++; }
-                else if (camp.etapa === 'correcao-pricing') { countEtapas['Correção Pricing']++; }
+                else if (camp.etapa === 'correção-pricing') { countEtapas['Correção Pricing']++; }
                 else if (camp.etapa === 'validacao-final-marketing') { countEtapas['Valid. Final MKT']++; }
 
                 let resp = camp.responsavel || 'Pricing';
@@ -1822,6 +1822,35 @@
         function fecharModalEditar() { document.getElementById('modalEditar').style.display = 'none'; }
         function abrirModalHistorico() { document.getElementById('modalHistorico').style.display = 'flex'; }
         function fecharModalHistorico() { document.getElementById('modalHistorico').style.display = 'none'; }
+
+        // ==========================================
+        // EVENT LISTENERS GLOBAIS (UX MODAIS)
+        // ==========================================
+        
+        // Fechar modais ao clicar no fundo escuro
+        window.addEventListener('click', function(event) {
+            const modais = ['modalListas', 'modalEmails', 'modalNovo', 'modalEditar', 'modalHistorico'];
+            modais.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                // Se o clique for exatamente no fundo escuro e não dentro da caixa branca
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // Fechar modais ao pressionar a tecla ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                const modais = ['modalListas', 'modalEmails', 'modalNovo', 'modalEditar', 'modalHistorico'];
+                modais.forEach(modalId => {
+                    const modal = document.getElementById(modalId);
+                    if (modal && modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+        });
     </script>
 
 </body>
