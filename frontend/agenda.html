@@ -1216,6 +1216,39 @@
         }
 
         // ==========================================
+        // EVENT LISTENERS GLOBAIS (MODAIS)
+        // ==========================================
+        
+        // Fechar modais ao clicar no fundo escuro
+        window.addEventListener('click', function(event) {
+            const modalDemanda = document.getElementById('modalDemanda');
+            const modalDetalhe = document.getElementById('modalDetalhe');
+            
+            // Se o clique for exatamente no fundo escuro e não dentro da caixa branca
+            if (event.target === modalDemanda) {
+                window.fecharModalDemanda();
+            }
+            if (event.target === modalDetalhe) {
+                window.fecharModalDetalhe();
+            }
+        });
+
+        // Fechar modais ao pressionar a tecla ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                const modalDemanda = document.getElementById('modalDemanda');
+                const modalDetalhe = document.getElementById('modalDetalhe');
+                
+                if (modalDemanda.style.display === 'flex') {
+                    window.fecharModalDemanda();
+                }
+                if (modalDetalhe.style.display === 'flex') {
+                    window.fecharModalDetalhe();
+                }
+            }
+        });
+
+        // ==========================================
         // VERIFICAÇÃO DE AUTENTICAÇÃO E PERFIL
         // ==========================================
         onAuthStateChanged(auth, (user) => {
