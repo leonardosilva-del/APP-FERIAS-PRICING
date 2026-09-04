@@ -112,9 +112,9 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
-        /* TELA DE LOGIN */
+        /* TELA DE LOGIN - Oculta por padrão até o Firebase verificar o estado */
         #login-section {
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -571,10 +571,13 @@
         const loginSection = document.getElementById('login-section');
         const appSection = document.getElementById('app-section');
 
+        // Flag para saber se é a primeira verificação do Firebase
+        let primeiraVerificacao = true;
+
         // 1. Ouvinte: Fica de olho se a pessoa logou ou deslogou
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Usuário está LOGADO
+                // Usuário está LOGADO — mostra o app direto, sem flash de login
                 loginSection.style.display = 'none';
                 appSection.style.display = 'flex';
 
@@ -614,9 +617,15 @@
                 });
 
             } else {
-                // Usuário está DESLOGADO
+                // Usuário está DESLOGADO — mostra a tela de login
                 loginSection.style.display = 'flex';
                 appSection.style.display = 'none';
+            }
+
+            // Na primeira verificação, remove o estado de carregamento
+            if (primeiraVerificacao) {
+                primeiraVerificacao = false;
+                document.body.classList.add('auth-ready');
             }
         });
 
