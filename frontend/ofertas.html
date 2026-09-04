@@ -643,7 +643,8 @@
                 <div class="corp-row">
                     <div class="corp-group" style="flex: 2;">
                         <label>Nome da Campanha</label>
-                        <input type="text" id="nome-lista" placeholder="Ex: Fim de Semana das Carnes">
+                        <!-- AQUI ESTÁ A TRAVA AUTOMÁTICA QUE CONVERTE BARRAS EM PONTOS -->
+                        <input type="text" id="nome-lista" placeholder="Ex: Fim de Semana das Carnes" oninput="this.value = this.value.replace(/[\/\\]/g, '.')">
                     </div>
                     <div class="corp-group" style="flex: 1;">
                         <label>Região / Público Alvo (Texto livre)</label>
@@ -1221,7 +1222,10 @@
         };
 
         window.salvarLinkLista = function() {
-            const nome = document.getElementById('nome-lista').value.trim();
+            // HIGIENIZAÇÃO SEGURA NO BACKEND DO NOME DA CAMPANHA (NENHUMA BARRA ENTRA NO BANCO)
+            const nomeRaw = document.getElementById('nome-lista').value.trim();
+            const nome = nomeRaw.replace(/[\/\\]/g, '.');
+
             const regiao = document.getElementById('regiao-lista').value.trim() || 'Todas as Lojas'; // Campo livre
             const link = document.getElementById('link-lista').value.trim();
 
