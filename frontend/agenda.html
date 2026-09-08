@@ -1049,7 +1049,7 @@
         let loadedFixas = false;
         let loadedTarefas = false;
         let isProcessing = false; // Guarda contra re-entrada
-        let filtroColaboradorAtual = "todos"; // NOVO: Variável de controle do filtro
+        let filtroColaboradorAtual = localStorage.getItem('agenda-filtro-colaborador') || "todos"; // Restaura do localStorage
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -1194,6 +1194,7 @@
         // Função chamada quando o usuário altera o dropdown de filtro no topo
         window.aplicarFiltroColaborador = function() {
             filtroColaboradorAtual = document.getElementById('filtro-colaborador').value;
+            localStorage.setItem('agenda-filtro-colaborador', filtroColaboradorAtual);
             renderizarGridSafe();
         }
 
@@ -1329,9 +1330,19 @@
                     });
                 }
                 
-                // Restaura o valor do filtro caso o Firebase recarregue em tempo real
+                // Restaura o valor do filtro: prioriza o localStorage para persistência entre sessões
                 if (perfilUsuario === "Gestor") {
-                    selectFiltro.value = valFiltroAtual;
+                    const filtroSalvo = localStorage.getItem('agenda-filtro-colaborador') || valFiltroAtual;
+                    // Verifica se o valor salvo ainda existe como opção (usuário pode ter sido removido)
+                    const opcaoExiste = Array.from(selectFiltro.options).some(opt => opt.value === filtroSalvo);
+                    if (opcaoExiste) {
+                        selectFiltro.value = filtroSalvo;
+                        filtroColaboradorAtual = filtroSalvo;
+                    } else {
+                        selectFiltro.value = 'todos';
+                        filtroColaboradorAtual = 'todos';
+                        localStorage.setItem('agenda-filtro-colaborador', 'todos');
+                    }
                 }
 
                 if(loadedTarefas) renderizarGridSafe();
