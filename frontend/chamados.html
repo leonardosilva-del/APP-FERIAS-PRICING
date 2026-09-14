@@ -161,7 +161,7 @@
             </div>
 
             <div id="box-alerta-timer" style="display: none; background: #fffbeb; color: #b45309; padding: 10px; border-radius: 6px; border: 1px dashed #f59e0b; font-size: 0.8rem; margin-top: 5px;">
-                ⏱️ <strong>Atenção:</strong> Ao aprovar esta venda pontual, o Pricing será alertado para derrubar o preço automaticamente 1 hora após a conclusão.
+                ⏱️ <strong>Atenção:</strong> Ao aprovar esta venda pontual, o Pricing será alertado para derrubar o preço automaticamente <strong id="texto-alerta-timer-dinamico">60</strong> <strong>minutos</strong> após a conclusão.
             </div>
 
             <div id="box-analise" style="display: none;">
@@ -187,16 +187,30 @@
         </div>
     </div>
 
-    <!-- MODAL GESTÃO BASE DE PRODUTOS -->
-    <div id="modalBase" class="modal-overlay">
+    <!-- MODAL GESTÃO BASE DE PRODUTOS / CONFIGURAÇÕES -->
+    <div id="modalConfig" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-header-close" onclick="fecharModais()">×</button>
-            <h2>⚙️ Base de Produtos</h2>
-            <p style="font-size: 0.85rem; color: var(--text-600);">Suba uma planilha Excel (.xlsx) ou .CSV contendo as colunas <strong>SEQPRODUTO</strong> e <strong>DESCPRODUTO</strong>.</p>
-            <input type="file" id="file-upload" accept=".xlsx, .xls, .csv" style="margin-top: 10px; font-size: 0.9rem;">
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModais()">Fechar</button>
-                <button class="btn-primary" onclick="processarPlanilha()" style="flex: 1; justify-content: center;">Upload e Atualizar</button>
+            <h2>⚙️ Configurações do Sistema</h2>
+            
+            <!-- SEÇÃO TIMER -->
+            <div style="margin-top: 10px;">
+                <h3 style="font-size: 1rem; color: var(--text-900); display: flex; align-items: center; gap: 5px;">⏱️ Timer da Venda Pontual</h3>
+                <p style="font-size: 0.85rem; color: var(--text-600); margin-bottom: 5px;">Defina o tempo padrão (em minutos) para o alerta de derrubar preço.</p>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="config-timer-min" placeholder="Ex: 60" value="60">
+                    <button class="btn-primary" onclick="salvarTempoTimer()" style="white-space: nowrap;">Salvar Tempo</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border-light); margin: 15px 0;">
+
+            <!-- SEÇÃO BASE PRODUTOS -->
+            <div>
+                <h3 style="font-size: 1rem; color: var(--text-900); display: flex; align-items: center; gap: 5px;">📦 Atualizar Base de Produtos</h3>
+                <p style="font-size: 0.85rem; color: var(--text-600);">Suba uma planilha Excel (.xlsx) ou .CSV contendo as colunas <strong>SEQPRODUTO</strong> e <strong>DESCPRODUTO</strong>.</p>
+                <input type="file" id="file-upload" accept=".xlsx, .xls, .csv" style="margin-top: 10px; font-size: 0.9rem;">
+                <button class="btn-primary" onclick="processarPlanilha()" style="width: 100%; justify-content: center; margin-top: 10px; background: #3b82f6;">Upload e Atualizar</button>
             </div>
         </div>
     </div>
@@ -222,8 +236,7 @@
                 <select id="resposta-status">
                     <option value="Aberto">Aberto (Na Fila)</option>
                     <option value="Em Análise">Em Análise</option>
-                    <!-- Novo status para segurar o card na fila -->
-                    <option value="Aprovado">Aprovado (Mantém na Fila / Timer)</option>
+                    <option value="Aprovado">Aprovado (Mantém na Fila / Inicia Timer)</option>
                     <option value="Concluído">Concluído / Derrubado (Sai da Fila)</option>
                     <option value="Negado">Negado (Sai da Fila)</option>
                 </select>
@@ -243,7 +256,7 @@
             <div class="modal-buttons" id="botoes-detalhe">
                 <button class="btn-cancel" onclick="fecharModais()" style="width: 100%;">Fechar Janela</button>
                 <!-- Botão que finaliza o timer e já dá Concluído no chamado -->
-                <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none; flex: 2;">✅ Preço Derrubado (Finalizar Chamado)</button>
+                <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none; flex: 2;">✅ Preço Derrubado (Finalizar)</button>
             </div>
         </div>
     </div>
@@ -258,7 +271,8 @@
             <div class="logo">🎧 Suporte Comercial</div>
         </div>
         <div class="topbar-actions">
-            <button class="btn-config" id="btn-config-base" onclick="document.getElementById('modalBase').style.display='flex'">⚙️ Base Produtos</button>
+            <!-- Botão Configuração atualizado -->
+            <button class="btn-config" id="btn-config-base" onclick="document.getElementById('modalConfig').style.display='flex'">⚙️ Configurações</button>
             <button class="btn-primary" onclick="abrirModalChamado()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Novo Chamado
@@ -319,6 +333,7 @@
         let chamadosGlobais = {};
         let arrayChamadosAtuais = []; 
         let idChamadoAtivo = null;
+        let timerPadraoMinutos = 60; // Tempo padrão inicial
 
         window.showToast = function (msg, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -355,12 +370,34 @@
                     document.getElementById('subtitulo-painel').innerText = "Fila geral de atendimento do Comercial.";
                 }
 
+                carregarConfiguracoesTimer();
                 carregarBaseProdutos();
                 carregarChamados();
             });
         });
 
-        // 1. GESTÃO BASE
+        // 1. CARREGAR CONFIGURAÇÕES DO FIREBASE
+        function carregarConfiguracoesTimer() {
+            onValue(ref(db, 'configuracoes_sistema/timer_venda_pontual'), (snapshot) => { 
+                if (snapshot.exists()) {
+                    timerPadraoMinutos = parseInt(snapshot.val());
+                    document.getElementById('config-timer-min').value = timerPadraoMinutos;
+                    document.getElementById('texto-alerta-timer-dinamico').innerText = timerPadraoMinutos;
+                }
+            });
+        }
+
+        window.salvarTempoTimer = function() {
+            const min = parseInt(document.getElementById('config-timer-min').value);
+            if (isNaN(min) || min <= 0) {
+                showToast("Insira um tempo válido em minutos.", "error"); return;
+            }
+            set(ref(db, 'configuracoes_sistema/timer_venda_pontual'), min).then(() => {
+                showToast("Tempo padrão atualizado com sucesso!");
+            }).catch(e => showToast("Erro: " + e.message, "error"));
+        }
+
+        // 2. GESTÃO BASE
         function carregarBaseProdutos() {
             onValue(ref(db, 'base_produtos'), (snapshot) => { baseProdutos = snapshot.exists() ? snapshot.val() : {}; });
         }
@@ -489,7 +526,7 @@
                     arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
                 }
 
-                arrayChamadosAtuais.sort((a,b) => b.dataCriacao - a.dataCriacao); // Mais novos primeiro
+                arrayChamadosAtuais.sort((a,b) => b.dataCriacao - a.dataCriacao);
                 aplicarFiltros();
             });
         }
@@ -501,7 +538,6 @@
             const hojeLocal = new Date().toLocaleDateString('pt-BR');
 
             let filtrados = arrayChamadosAtuais.filter(c => {
-                // A grande mágica: "Aprovado" não é "Concluído", então ele NÃO some do filtro "pendentes"
                 if (statusFiltro === "pendentes" && (c.status === "Concluído" || c.status === "Negado")) return false;
                 if (statusFiltro === "concluidos" && (c.status !== "Concluído" && c.status !== "Negado")) return false;
                 if (dataFiltro === "hoje" && !c.dataFormatada.startsWith(hojeLocal)) return false;
@@ -534,7 +570,6 @@
                 if(c.status === "Negado") badgeClass = "negado";
                 
                 let htmlAlertaTimer = '';
-                // O Timer roda se existir uma data de expiração E não estiver resolvido (o status estará como "Aprovado")
                 if (c.timerExpiraEm && !c.timerResolvido && perfilUsuario === "Gestor") {
                     if (agora > c.timerExpiraEm) {
                         htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
@@ -603,7 +638,6 @@
                 document.getElementById('resposta-status').value = c.status;
                 document.getElementById('resposta-texto').value = c.respostaTexto || '';
                 
-                // Mostrar o botão de parar o timer apenas se estiver expirando (Status Aprovado)
                 if(c.timerExpiraEm && !c.timerResolvido) btnDerrubar.style.display = 'block';
             } else {
                 if(c.respostaTexto) {
@@ -622,11 +656,11 @@
 
             let updates = { status: status, respostaTexto: texto, respondidoEm: Date.now() };
 
-            // Se mudou para Aprovado (Timer) pela primeira vez
+            // USA O TEMPO VARIÁVEL DEFINIDO NAS CONFIGURAÇÕES
             if(c.tipo.includes("3") && status === "Aprovado" && !c.timerExpiraEm) {
-                updates.timerExpiraEm = Date.now() + 3600000;
+                updates.timerExpiraEm = Date.now() + (timerPadraoMinutos * 60 * 1000);
                 updates.timerResolvido = false;
-                showToast("Venda aprovada! O timer de 1h começou.", "success");
+                showToast(`Venda aprovada! O timer de ${timerPadraoMinutos} min começou.`, "success");
             } else {
                 showToast("Resposta salva com sucesso!");
             }
@@ -641,7 +675,7 @@
                     timerResolvido: true, 
                     precoDerrubadoEm: Date.now(), 
                     precoDerrubadoPor: dadosUsuario.nome || auth.currentUser.email,
-                    status: "Concluído" // Automagicamente finaliza o chamado e joga pro arquivo morto!
+                    status: "Concluído"
                 }).then(() => { showToast("Preço derrubado e chamado concluído!", "success"); fecharModais(); });
             }
         }
