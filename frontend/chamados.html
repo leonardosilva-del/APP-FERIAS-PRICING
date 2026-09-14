@@ -150,9 +150,15 @@
             </select>
 
             <!-- CAMPOS DINÂMICOS -->
-            <div id="box-quantidade" style="display: none;">
-                <label>Quantidade da Venda <span style="color: #ef4444;">*</span></label>
-                <input type="number" id="chamado-quantidade" placeholder="Ex: 150">
+            <div id="box-valores" style="display: none; gap: 10px; margin-top: 5px;">
+                <div id="box-preco" style="flex: 1; display: none;">
+                    <label>Preço da Oferta (R$) <span style="color: #ef4444;">*</span></label>
+                    <input type="number" step="0.01" id="chamado-preco" placeholder="Ex: 19.90">
+                </div>
+                <div id="box-quantidade" style="flex: 1; display: none;">
+                    <label>Qtd. da Venda <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="chamado-quantidade" placeholder="Ex: 150">
+                </div>
             </div>
 
             <div id="box-justificativa" style="display: none;">
@@ -255,7 +261,6 @@
 
             <div class="modal-buttons" id="botoes-detalhe">
                 <button class="btn-cancel" onclick="fecharModais()" style="width: 100%;">Fechar Janela</button>
-                <!-- Botão que finaliza o timer e já dá Concluído no chamado -->
                 <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none; flex: 2;">✅ Preço Derrubado (Finalizar)</button>
             </div>
         </div>
@@ -305,7 +310,6 @@
             <input type="text" id="filtro-busca" class="filter-input" placeholder="🔍 Buscar ID, Produto, Loja..." style="flex: 1; min-width: 200px;" oninput="aplicarFiltros()">
             
             <select id="filtro-status" class="filter-input" style="width: auto;" onchange="aplicarFiltros()">
-                <!-- O filtro PENDENTES agora engloba: Aberto, Em Análise e Aprovado -->
                 <option value="pendentes">🟠 Status: Ativos / Na Fila (Ocultar Concluídos)</option>
                 <option value="concluidos">✅ Status: Apenas Concluídos / Negados</option>
                 <option value="todos">📋 Status: Mostrar Todos</option>
@@ -333,7 +337,7 @@
         let chamadosGlobais = {};
         let arrayChamadosAtuais = []; 
         let idChamadoAtivo = null;
-        let timerPadraoMinutos = 60; // Tempo padrão inicial
+        let timerPadraoMinutos = 60; 
 
         window.showToast = function (msg, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -445,13 +449,20 @@
         window.alternarCamposDinamicos = function() {
             const tipo = document.getElementById('chamado-tipo').value;
             
-            document.getElementById('box-justificativa').style.display = 'none';
+            document.getElementById('box-valores').style.display = 'none';
+            document.getElementById('box-preco').style.display = 'none';
             document.getElementById('box-quantidade').style.display = 'none';
+            document.getElementById('box-justificativa').style.display = 'none';
             document.getElementById('box-analise').style.display = 'none';
             document.getElementById('box-promocao').style.display = 'none';
             document.getElementById('box-alerta-timer').style.display = 'none';
 
             if(tipo.includes("1") || tipo.includes("2") || tipo.includes("3")) document.getElementById('box-justificativa').style.display = 'block';
+            
+            if(tipo.includes("2") || tipo.includes("3")) {
+                document.getElementById('box-valores').style.display = 'flex';
+                document.getElementById('box-preco').style.display = 'block';
+            }
             if(tipo.includes("3")) {
                 document.getElementById('box-quantidade').style.display = 'block';
                 document.getElementById('box-alerta-timer').style.display = 'block';
@@ -466,6 +477,7 @@
             document.getElementById('chamado-desc').style.background = "var(--bg-body)";
             document.getElementById('chamado-lojas').value = '';
             document.getElementById('chamado-tipo').value = '';
+            document.getElementById('chamado-preco').value = '';
             document.getElementById('chamado-quantidade').value = '';
             document.getElementById('chamado-justificativa').value = '';
             document.getElementById('chamado-analise').value = '';
@@ -486,6 +498,9 @@
                 showToast("Preencha Código Válido, Lojas e Tipo.", "error"); return; 
             }
 
+            if((tipo.includes("2") || tipo.includes("3")) && !document.getElementById('chamado-preco').value) {
+                showToast("O Preço da Oferta é obrigatório.", "error"); return;
+            }
             if(tipo.includes("3") && !document.getElementById('chamado-quantidade').value) {
                 showToast("Quantidade é obrigatória para Venda Pontual.", "error"); return;
             }
@@ -503,6 +518,7 @@
             };
 
             if(tipo.includes("1") || tipo.includes("2") || tipo.includes("3")) payload.justificativa = document.getElementById('chamado-justificativa').value;
+            if(tipo.includes("2") || tipo.includes("3")) payload.preco = document.getElementById('chamado-preco').value;
             if(tipo.includes("3")) payload.quantidade = document.getElementById('chamado-quantidade').value;
             if(tipo.includes("4")) payload.analise = document.getElementById('chamado-analise').value;
             if(tipo.includes("5")) {
@@ -621,6 +637,7 @@
             document.getElementById('detalhe-loja').innerText = c.lojas;
 
             let extras = '';
+            if(c.preco) extras += `<p><strong>Preço da Oferta:</strong> R$ ${c.preco}</p>`;
             if(c.quantidade) extras += `<p><strong>Quantidade da Venda:</strong> ${c.quantidade} un</p>`;
             if(c.justificativa) extras += `<p><strong>Justificativa:</strong> ${c.justificativa}</p>`;
             if(c.analise) extras += `<p><strong>Análise Solicitada:</strong> ${c.analise}</p>`;
