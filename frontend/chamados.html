@@ -88,7 +88,10 @@
         .ticket-prod { font-size: 0.85rem; color: var(--text-600); background: var(--bg-body); padding: 8px; border-radius: 6px; border: 1px dashed var(--border-light); }
         .ticket-meta { font-size: 0.8rem; color: var(--text-400); display: flex; justify-content: space-between; margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px;}
 
+        /* ESTILOS DO CRONÔMETRO AO VIVO */
         .alerta-timer-card { background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-align: center; animation: piscar 2s infinite; }
+        .alerta-timer-running { background: #fffbeb; color: #b45309; border: 1px dashed #f59e0b; padding: 6px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-align: center; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        html.dark-theme .alerta-timer-running { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: #b45309; }
         @keyframes piscar { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
 
         /* MODAIS PADRONIZADOS */
@@ -308,7 +311,7 @@
         let dadosUsuario = {};
         let baseProdutos = {};
         let chamadosGlobais = {};
-        let arrayChamadosAtuais = []; // Guarda a lista completa para o Filtro não precisar ir no banco toda hora
+        let arrayChamadosAtuais = []; 
         let idChamadoAtivo = null;
 
         // UI UTILS
@@ -483,7 +486,7 @@
                 }
 
                 arrayChamadosAtuais.sort((a,b) => b.dataCriacao - a.dataCriacao); // Mais novos primeiro
-                aplicarFiltros(); // Ao invés de desenhar direto, passa pela roleta do Filtro
+                aplicarFiltros();
             });
         }
 
@@ -494,19 +497,13 @@
             const hojeLocal = new Date().toLocaleDateString('pt-BR');
 
             let filtrados = arrayChamadosAtuais.filter(c => {
-                // Filtro de Status
                 if (statusFiltro === "pendentes" && (c.status === "Concluído" || c.status === "Negado")) return false;
                 if (statusFiltro === "concluidos" && (c.status !== "Concluído" && c.status !== "Negado")) return false;
-                
-                // Filtro de Data
                 if (dataFiltro === "hoje" && !c.dataFormatada.startsWith(hojeLocal)) return false;
-
-                // Filtro de Busca (Texto livre)
                 if (busca) {
                     const textoUnico = `${c.id} ${c.produtoCod} ${c.produtoDesc} ${c.lojas} ${c.solicitante}`.toLowerCase();
                     if (!textoUnico.includes(busca)) return false;
                 }
-
                 return true;
             });
 
@@ -536,7 +533,10 @@
                         htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
                     } else {
                         let minFaltando = Math.ceil((c.timerExpiraEm - agora) / 60000);
-                        htmlAlertaTimer = `<div style="background: #fffbeb; color: #b45309; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; text-align: center; margin-top:5px;">Faltam ${minFaltando} min para derrubar preço.</div>`;
+                        htmlAlertaTimer = `<div class="alerta-timer-running">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Faltam ${minFaltando} min para derrubar preço.
+                        </div>`;
                     }
                 }
 
@@ -560,6 +560,13 @@
                 `;
             });
         }
+
+        // MOTORZINHO DE ATUALIZAÇÃO DA TELA (RODA A CADA 10 SEGUNDOS)
+        setInterval(() => {
+            if (arrayChamadosAtuais.length > 0) {
+                aplicarFiltros();
+            }
+        }, 10000);
 
         // 5. DETALHES E RESPOSTA
         window.abrirDetalhes = function(id) {
