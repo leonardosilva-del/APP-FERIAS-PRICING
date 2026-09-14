@@ -12,7 +12,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- SCRIPT DO MODO DARK GLOBAL (Impede a tela de piscar branco) -->
+    <!-- SCRIPT DO MODO DARK GLOBAL -->
     <script>
         if (localStorage.getItem('tema-intranet') === 'dark') {
             document.documentElement.classList.add('dark-theme');
@@ -22,7 +22,6 @@
             const isDark = document.documentElement.classList.contains('dark-theme');
             localStorage.setItem('tema-intranet', isDark ? 'dark' : 'light');
             
-            // Troca o ícone do botão
             const btnIcon = document.getElementById('icon-theme');
             if (btnIcon) {
                 btnIcon.textContent = isDark ? '☀️' : '🌙';
@@ -64,7 +63,8 @@
         html.dark-theme tr:hover td { background: #0f172a; }
         html.dark-theme .role-select { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
         html.dark-theme .role-select.gestor { background-color: rgba(37, 99, 235, 0.1); border-color: #2563eb; color: #60a5fa; }
-        html.dark-theme .role-select.colaborador { background-color: rgba(16, 185, 129, 0.1); border-color: #059669; color: #34d399; }
+        html.dark-theme .role-select.pricing { background-color: rgba(16, 185, 129, 0.1); border-color: #059669; color: #34d399; }
+        html.dark-theme .role-select.comercial { background-color: rgba(234, 88, 12, 0.1); border-color: #ea580c; color: #fb923c; }
         html.dark-theme .role-select.bloqueado { background-color: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #f87171; }
         html.dark-theme .btn-excluir:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; }
         html.dark-theme .filter-toolbar { background: #0f172a; border-color: #334155; }
@@ -106,414 +106,91 @@
             transition: background-color 0.3s ease;
         }
 
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-
-        .spinner {
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-            color: var(--brand-primary);
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; margin-bottom: 15px; color: var(--brand-primary); }
 
         /* --- CONTROLES DO TOPO DIREITO --- */
         .top-controls {
-            position: absolute;
-            top: 24px;
-            right: 32px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 100;
+            position: absolute; top: 24px; right: 32px; display: flex; align-items: center; gap: 15px; z-index: 100;
         }
 
         .btn-theme {
-            background: var(--bg-surface);
-            color: var(--text-900);
-            border: 1px solid var(--border-light);
-            font-size: 1.1rem;
-            padding: 0.5rem 0.7rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: var(--bg-surface); color: var(--text-900); border: 1px solid var(--border-light);
+            font-size: 1.1rem; padding: 0.5rem 0.7rem; border-radius: 50px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center;
         }
-
-        .btn-theme:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
+        .btn-theme:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
         /* --- WIDGET DE PERFIL --- */
         .user-profile-widget {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--bg-surface);
-            padding: 6px 16px 6px 6px;
-            border-radius: 50px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-light);
-            transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 6px 16px 6px 6px;
+            border-radius: 50px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); transition: all 0.2s ease;
         }
-
-        .user-profile-widget:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 2px solid var(--brand-primary);
-            object-fit: cover;
-        }
-
-        .user-info-widget {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .user-name-widget {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-900);
-            line-height: 1.2;
-        }
-
-        .user-role-widget {
-            font-size: 0.7rem;
-            color: var(--text-400);
-            line-height: 1.2;
-        }
-
+        .user-profile-widget:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--brand-primary); object-fit: cover; }
+        .user-info-widget { display: flex; flex-direction: column; justify-content: center; }
+        .user-name-widget { font-size: 0.85rem; font-weight: 600; color: var(--text-900); line-height: 1.2; }
+        .user-role-widget { font-size: 0.7rem; color: var(--text-400); line-height: 1.2; }
         .btn-logout-widget {
-            background: transparent;
-            border: none;
-            color: var(--text-400);
-            padding: 6px;
-            margin-left: 4px;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            background: transparent; border: none; color: var(--text-400); padding: 6px; margin-left: 4px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
-
-        .btn-logout-widget:hover {
-            background: #fee2e2;
-            color: #ef4444;
-        }
+        .btn-logout-widget:hover { background: #fee2e2; color: #ef4444; }
 
         /* Header Principal */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 2rem;
-            display: none; /* Escondido até o Firebase liberar */
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            padding-right: 250px;
-        }
-
-        .header-logo {
-            height: 48px;
-            object-fit: contain;
-        }
-
-        .back-btn {
-            text-decoration: none;
-            color: var(--text-600);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: var(--radius-md);
-            transition: all 0.2s;
-            border: 1px solid var(--border-light);
-            background-color: var(--bg-surface);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .back-btn:hover {
-            color: var(--text-900);
-            border-color: var(--border-hover);
-            box-shadow: var(--shadow-md);
-        }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-900);
-        }
+        .container { max-width: 1100px; margin: 0 auto; width: 100%; padding: 2rem; display: none; }
+        .header { display: flex; align-items: center; margin-bottom: 2rem; gap: 1.5rem; flex-wrap: wrap; padding-right: 250px; }
+        .header-logo { height: 48px; object-fit: contain; }
+        .back-btn { text-decoration: none; color: var(--text-600); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius-md); transition: all 0.2s; border: 1px solid var(--border-light); background-color: var(--bg-surface); box-shadow: var(--shadow-sm); }
+        .back-btn:hover { color: var(--text-900); border-color: var(--border-hover); box-shadow: var(--shadow-md); }
+        h1 { font-size: 2rem; font-weight: 700; color: var(--text-900); }
 
         /* Painel e Tabela */
-        .panel {
-            background: var(--bg-surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
+        .panel { background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); overflow: hidden; transition: all 0.3s ease; }
+        .panel-header { padding: 1.5rem; border-bottom: 1px solid var(--border-light); background: #f8fafc; transition: all 0.3s ease; }
+        .panel-header h2 { font-size: 1.2rem; font-weight: 600; color: var(--text-900); }
+        .panel-header p { font-size: 0.9rem; color: var(--text-600); margin-top: 0.25rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--bg-surface); padding: 1rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--text-600); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-light); transition: all 0.3s ease; }
+        td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; transition: all 0.3s ease; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
 
-        .panel-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-light);
-            background: #f8fafc;
-            transition: all 0.3s ease;
-        }
+        .td-user { display: flex; align-items: center; gap: 12px; }
+        .td-user img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-light); object-fit: cover; }
+        .td-user-info strong { display: block; color: var(--text-900); font-weight: 600; font-size: 0.95rem; }
+        .td-user-info span { color: var(--text-400); font-size: 0.8rem; }
 
-        .panel-header h2 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-900);
-        }
-
-        .panel-header p {
-            font-size: 0.9rem;
-            color: var(--text-600);
-            margin-top: 0.25rem;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background: var(--bg-surface);
-            padding: 1rem 1.5rem;
-            text-align: left;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-600);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-light);
-            transition: all 0.3s ease;
-        }
-
-        td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-light);
-            vertical-align: middle;
-            transition: all 0.3s ease;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: #f8fafc;
-        }
-
-        .td-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .td-user img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid var(--border-light);
-            object-fit: cover;
-        }
-
-        .td-user-info strong {
-            display: block;
-            color: var(--text-900);
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .td-user-info span {
-            color: var(--text-400);
-            font-size: 0.8rem;
-        }
-
-        .role-select {
-            padding: 8px 12px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-light);
-            font-family: inherit;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-            background-color: var(--bg-surface);
-            transition: all 0.2s;
-        }
-
-        .role-select:hover {
-            border-color: var(--border-hover);
-        }
-
-        .role-select:focus {
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
+        /* Cores do Dropdown */
+        .role-select { padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-light); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none; background-color: var(--bg-surface); transition: all 0.2s; }
+        .role-select:hover { border-color: var(--border-hover); }
+        .role-select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
         .role-select.gestor { color: var(--brand-primary); background-color: #eff6ff; border-color: #bfdbfe; }
-        .role-select.colaborador { color: #059669; background-color: #ecfdf5; border-color: #a7f3d0; }
+        .role-select.pricing { color: #059669; background-color: #ecfdf5; border-color: #a7f3d0; }
+        .role-select.comercial { color: #ea580c; background-color: #fff7ed; border-color: #fed7aa; }
         .role-select.bloqueado { color: var(--status-danger); background-color: #fef2f2; border-color: #fecaca; }
 
-        .btn-excluir {
-            background: transparent;
-            border: none;
-            color: var(--text-400);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            font-size: 1.1rem;
-        }
-
-        .btn-excluir:hover {
-            background: #fef2f2;
-            color: var(--status-danger);
-        }
+        .btn-excluir { background: transparent; border: none; color: var(--text-400); cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; font-size: 1.1rem; }
+        .btn-excluir:hover { background: #fef2f2; color: var(--status-danger); }
 
         /* --- BARRA DE FILTROS --- */
-        .filter-toolbar {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-light);
-            background: #f8fafc;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .filter-toolbar .filter-search {
-            flex: 1;
-            min-width: 220px;
-            padding: 8px 14px 8px 36px;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            font-family: inherit;
-            font-size: 0.85rem;
-            outline: none;
-            background: var(--bg-surface);
-            color: var(--text-900);
-            transition: all 0.2s;
-        }
-
-        .filter-toolbar .filter-search:focus {
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .filter-search-wrapper {
-            position: relative;
-            flex: 1;
-            min-width: 220px;
-        }
-
-        .filter-search-wrapper .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-400);
-            pointer-events: none;
-            font-size: 0.9rem;
-        }
-
-        .filter-divider {
-            width: 1px;
-            height: 28px;
-            background: var(--border-light);
-        }
-
-        .col-toggles-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-400);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-        }
-
-        .col-toggle-btn {
-            padding: 5px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--border-light);
-            background: var(--bg-surface);
-            color: var(--text-400);
-            font-family: inherit;
-            font-size: 0.78rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .col-toggle-btn:hover {
-            border-color: var(--border-hover);
-            color: var(--text-900);
-        }
-
-        .col-toggle-btn.active {
-            background: rgba(37, 99, 235, 0.08);
-            color: var(--brand-primary);
-            border-color: rgba(37, 99, 235, 0.3);
-            font-weight: 600;
-        }
+        .filter-toolbar { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); background: #f8fafc; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; transition: all 0.3s ease; }
+        .filter-toolbar .filter-search { flex: 1; min-width: 220px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-family: inherit; font-size: 0.85rem; outline: none; background: var(--bg-surface); color: var(--text-900); transition: all 0.2s; }
+        .filter-toolbar .filter-search:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .filter-search-wrapper { position: relative; flex: 1; min-width: 220px; }
+        .filter-search-wrapper .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-400); pointer-events: none; font-size: 0.9rem; }
+        .filter-divider { width: 1px; height: 28px; background: var(--border-light); }
+        .col-toggles-label { font-size: 0.75rem; font-weight: 600; color: var(--text-400); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        .col-toggle-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-400); font-family: inherit; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .col-toggle-btn:hover { border-color: var(--border-hover); color: var(--text-900); }
+        .col-toggle-btn.active { background: rgba(37, 99, 235, 0.08); color: var(--brand-primary); border-color: rgba(37, 99, 235, 0.3); font-weight: 600; }
 
         /* Toasts */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .toast {
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            font-size: 14px;
-            box-shadow: var(--shadow-md);
-            animation: slideIn 0.3s forwards;
-            pointer-events: auto;
-        }
-
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; box-shadow: var(--shadow-md); animation: slideIn 0.3s forwards; pointer-events: auto; }
         .toast.success { background-color: var(--status-success); }
         .toast.error { background-color: var(--status-danger); }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 
@@ -531,12 +208,10 @@
 
     <!-- CONTROLES DO TOPO DIREITO -->
     <div class="top-controls" style="display: none;" id="widget-perfil">
-        <!-- BOTÃO DE TEMA (DARK MODE) -->
         <button onclick="toggleDark()" class="btn-theme" title="Alternar Tema Escuro/Claro">
             <span id="icon-theme">🌙</span>
         </button>
 
-        <!-- WIDGET DE PERFIL -->
         <div class="user-profile-widget">
             <img id="user-photo" src="" class="user-avatar" alt="Foto">
             <div class="user-info-widget">
@@ -610,7 +285,6 @@
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
         import { ref, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
-        // Ajusta o ícone inicial com base no tema
         document.addEventListener('DOMContentLoaded', () => {
             const isDark = localStorage.getItem('tema-intranet') === 'dark';
             const btnIcon = document.getElementById('icon-theme');
@@ -619,7 +293,6 @@
 
         let usuarioAtual = null;
 
-        // UI & UTILITÁRIOS
         window.showToast = function (message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -678,10 +351,8 @@
             signOut(auth).then(() => { window.location.href = "/"; });
         });
 
-        // ARMAZENA OS DADOS PARA FILTRAGEM
         let todosOsUsuarios = [];
 
-        // CARREGA TODOS OS USUÁRIOS EM TEMPO REAL
         function carregarListaDeUsuarios() {
             const usuariosRef = ref(db, 'usuarios');
             onValue(usuariosRef, (snapshot) => {
@@ -696,14 +367,11 @@
                     todosOsUsuarios.push({ uid: child.key, ...child.val() });
                 });
 
-                // Ordena por nome
                 todosOsUsuarios.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
-
                 window.filtrarTabela();
             });
         }
 
-        // FILTRA E RENDERIZA A TABELA COM BASE NA BUSCA
         window.filtrarTabela = function() {
             const termo = (document.getElementById('filtro-busca-usuarios').value || '').toLowerCase().trim();
             
@@ -724,7 +392,6 @@
             renderizarTabela(filtrados);
         };
 
-        // TOGGLE DE VISIBILIDADE DAS COLUNAS
         window.toggleColuna = function(btn) {
             btn.classList.toggle('active');
             const colClass = btn.getAttribute('data-col');
@@ -734,7 +401,6 @@
             });
         };
 
-        // RENDERIZA A TABELA DE USUÁRIOS
         function renderizarTabela(usuarios) {
             const tbody = document.getElementById('tabela-usuarios');
             tbody.innerHTML = '';
@@ -744,7 +410,6 @@
                 return;
             }
 
-            // Verificar quais colunas estão visíveis
             const colVisibility = {};
             document.querySelectorAll('.col-toggle-btn').forEach(btn => {
                 colVisibility[btn.getAttribute('data-col')] = btn.classList.contains('active');
@@ -753,17 +418,21 @@
             usuarios.forEach(u => {
                 const foto = u.foto || 'https://via.placeholder.com/40';
                 const dataAcesso = u.criadoEm ? new Date(u.criadoEm).toLocaleDateString('pt-BR') : 'Desconhecida';
-                const perfil = u.perfil || 'Colaborador';
+                
+                // Trata perfil vazio/legado "Colaborador" como "Pricing" para exibição
+                let perfilOriginal = u.perfil || 'Pricing';
+                if(perfilOriginal === 'Colaborador') perfilOriginal = 'Pricing';
+                
                 const cpf = u.cpf || '—';
                 const telefone = u.telefone || '—';
                 
-                // Aplica classe de cor no select baseada no perfil atual
+                // Aplica classe de cor no select baseada no perfil
                 let selectClass = '';
-                if(perfil === 'Gestor') selectClass = 'gestor';
-                else if(perfil === 'Bloqueado') selectClass = 'bloqueado';
-                else selectClass = 'colaborador';
+                if(perfilOriginal === 'Gestor') selectClass = 'gestor';
+                else if(perfilOriginal === 'Comercial') selectClass = 'comercial';
+                else if(perfilOriginal === 'Bloqueado') selectClass = 'bloqueado';
+                else selectClass = 'pricing';
 
-                // Desabilita alteração e exclusão do próprio gestor que está logado
                 const isMe = (u.uid === usuarioAtual.uid);
                 const disabledStr = isMe ? 'disabled title="Você não pode alterar seu próprio nível aqui"' : '';
 
@@ -788,9 +457,10 @@
                         <td class="col-data" ${hideData} style="color: var(--text-600); font-size: 0.9rem;">${dataAcesso}</td>
                         <td class="col-permissao" ${hidePerm}>
                             <select class="role-select ${selectClass}" onchange="window.alterarPerfil('${u.uid}', this.value, this)" ${disabledStr}>
-                                <option value="Colaborador" ${perfil === 'Colaborador' ? 'selected' : ''}>Colaborador</option>
-                                <option value="Gestor" ${perfil === 'Gestor' ? 'selected' : ''}>Gestor (Admin)</option>
-                                <option value="Bloqueado" ${perfil === 'Bloqueado' ? 'selected' : ''}>Bloqueado (Sem Acesso)</option>
+                                <option value="Gestor" ${perfilOriginal === 'Gestor' ? 'selected' : ''}>Gestor (Admin)</option>
+                                <option value="Pricing" ${perfilOriginal === 'Pricing' ? 'selected' : ''}>Pricing (Operacional)</option>
+                                <option value="Comercial" ${perfilOriginal === 'Comercial' ? 'selected' : ''}>Comercial (Comprador)</option>
+                                <option value="Bloqueado" ${perfilOriginal === 'Bloqueado' ? 'selected' : ''}>⛔ Bloqueado</option>
                             </select>
                         </td>
                         <td style="text-align: center;">
@@ -801,7 +471,6 @@
             });
         }
 
-        // FUNÇÃO PARA ATUALIZAR O PERFIL NO BANCO
         window.alterarPerfil = function(uid, novoPerfil, selectElement) {
             update(ref(db, 'usuarios/' + uid), { perfil: novoPerfil }).then(() => {
                 showToast("Perfil atualizado com sucesso!", "success");
@@ -810,7 +479,6 @@
             });
         }
 
-        // FUNÇÃO PARA REMOVER O REGISTRO DO BANCO
         window.removerUsuario = function(uid, nome) {
             if (confirm(`Tem certeza que deseja apagar o registro de ${nome}? Eles perderão o acesso.`)) {
                 remove(ref(db, 'usuarios/' + uid)).then(() => {
@@ -818,8 +486,6 @@
                 });
             }
         }
-
     </script>
 </body>
-
 </html>
