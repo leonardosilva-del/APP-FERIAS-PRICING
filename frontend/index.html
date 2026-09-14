@@ -454,6 +454,12 @@
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes pulseAlert {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
 
@@ -561,10 +567,11 @@
                 <h2>Calendário de Ofertas</h2>
                 <p>Consulte prazos e status das campanhas.</p>
             </a>
-            <a href="aniversarios.html" class="card">
+            <a href="aniversarios.html" class="card" id="card-aniversarios">
                 <div class="icon-container" style="background: rgba(219, 39, 119, 0.1); color: #db2777;">🎂</div>
                 <h2>Aniversariantes</h2>
                 <p>Celebre as datas especiais da equipe.</p>
+                <div id="badge-aniversario" style="display: none; position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: pulseAlert 2s infinite; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">Festa hoje! 🎉</div>
             </a>
             <a href="links.html" class="card links">
                 <div class="icon-container">🔗</div>
@@ -622,6 +629,35 @@
                 primeiraVerificacao = false;
                 document.body.classList.add('auth-ready');
             }
+
+            // VERIFICA SE TEM ANIVERSARIANTE HOJE PARA EXIBIR O BADGE
+            const aniversariantesRef = ref(db, 'aniversariantes');
+            get(aniversariantesRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const hoje = new Date();
+                    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+                    const diaAtual = String(hoje.getDate()).padStart(2, '0');
+                    
+                    let temAniversarianteHoje = false;
+                    
+                    snapshot.forEach((child) => {
+                        const aniv = child.val();
+                        if (aniv.data) {
+                            const partes = aniv.data.split('-');
+                            if (partes.length === 3) {
+                                if (partes[1] === mesAtual && partes[2] === diaAtual) {
+                                    temAniversarianteHoje = true;
+                                }
+                            }
+                        }
+                    });
+
+                    if (temAniversarianteHoje) {
+                        const badge = document.getElementById('badge-aniversario');
+                        if (badge) badge.style.display = 'block';
+                    }
+                }
+            });
         };
 
         // 1. OUVINTE DE LOGIN/LOGOUT
