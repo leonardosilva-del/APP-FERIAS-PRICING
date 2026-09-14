@@ -74,6 +74,10 @@
             color: #e0e7ff;
             background-color: rgba(59, 130, 246, 0.2);
         }
+        html.dark-theme .autocomplete-list { background: #1e293b; border-color: #334155; }
+        html.dark-theme .autocomplete-item { color: #f8fafc; }
+        html.dark-theme .autocomplete-item:hover, html.dark-theme .autocomplete-item.selected { background: #0f172a; }
+        html.dark-theme .autocomplete-item small { color: #64748b; }
         /* Fim Modo Dark */
 
         * {
@@ -581,6 +585,53 @@
             white-space: nowrap;
         }
 
+        /* --- AUTOCOMPLETE DO COLABORADOR --- */
+        .input-autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            transition: background 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: #f1f5f9;
+        }
+
+        .autocomplete-item small {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
     </style>
 </head>
 
@@ -666,7 +717,10 @@
                         </div>
                         <div class="input-box">
                             <label for="nomeColaborador">Colaborador</label>
-                            <input type="text" id="nomeColaborador" placeholder="Ex: João Silva" required>
+                            <div class="input-autocomplete-wrapper">
+                                <input type="text" id="nomeColaborador" placeholder="Ex: João Silva" required autocomplete="off">
+                                <div class="autocomplete-list" id="autocomplete-nomes"></div>
+                            </div>
                         </div>
                         <div class="input-box">
                             <label for="telefoneColaborador">Telefone (Opcional)</label>
@@ -784,6 +838,111 @@
                 window.location.href = "/";
             });
         });
+
+        // --- AUTOCOMPLETE: CARREGA TODOS OS USUÁRIOS CADASTRADOS ---
+        let listaUsuariosCadastrados = [];
+
+        function carregarUsuariosCadastrados() {
+            const usuariosRef = ref(db, 'usuarios');
+            onValue(usuariosRef, (snapshot) => {
+                listaUsuariosCadastrados = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const u = child.val();
+                        if (u.nome) {
+                            listaUsuariosCadastrados.push({
+                                nome: u.nome,
+                                telefone: u.telefone || '',
+                                email: u.email || ''
+                            });
+                        }
+                    });
+                    // Ordena por nome
+                    listaUsuariosCadastrados.sort((a, b) => a.nome.localeCompare(b.nome));
+                }
+            });
+        }
+        carregarUsuariosCadastrados();
+
+        // --- AUTOCOMPLETE: LÓGICA DE BUSCA E SELEÇÃO ---
+        (function() {
+            const inputNome = document.getElementById('nomeColaborador');
+            const inputTelefone = document.getElementById('telefoneColaborador');
+            const listContainer = document.getElementById('autocomplete-nomes');
+            let selectedIndex = -1;
+
+            inputNome.addEventListener('input', function() {
+                const termo = this.value.trim().toLowerCase();
+                listContainer.innerHTML = '';
+                selectedIndex = -1;
+
+                if (termo.length < 1) {
+                    listContainer.classList.remove('show');
+                    return;
+                }
+
+                const matches = listaUsuariosCadastrados.filter(u => u.nome.toLowerCase().includes(termo));
+
+                if (matches.length === 0) {
+                    listContainer.classList.remove('show');
+                    return;
+                }
+
+                matches.forEach((user, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.innerHTML = `<span>${user.nome}</span><small>${user.telefone || user.email || ''}</small>`;
+                    item.addEventListener('mousedown', function(e) {
+                        e.preventDefault(); // Impede o blur de fechar a lista antes do click
+                        inputNome.value = user.nome;
+                        inputTelefone.value = user.telefone || '';
+                        listContainer.classList.remove('show');
+                    });
+                    listContainer.appendChild(item);
+                });
+
+                listContainer.classList.add('show');
+            });
+
+            // Navegação por teclado
+            inputNome.addEventListener('keydown', function(e) {
+                const items = listContainer.querySelectorAll('.autocomplete-item');
+                if (!items.length || !listContainer.classList.contains('show')) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    updateSelection(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, 0);
+                    updateSelection(items);
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    items[selectedIndex].dispatchEvent(new Event('mousedown'));
+                } else if (e.key === 'Escape') {
+                    listContainer.classList.remove('show');
+                }
+            });
+
+            function updateSelection(items) {
+                items.forEach((it, i) => {
+                    it.classList.toggle('selected', i === selectedIndex);
+                    if (i === selectedIndex) it.scrollIntoView({ block: 'nearest' });
+                });
+            }
+
+            inputNome.addEventListener('blur', function() {
+                // Delay para permitir o click no item
+                setTimeout(() => listContainer.classList.remove('show'), 150);
+            });
+
+            inputNome.addEventListener('focus', function() {
+                if (this.value.trim().length >= 1) {
+                    this.dispatchEvent(new Event('input'));
+                }
+            });
+        })();
 
         // --- GERADOR DE MODELO EXCEL ---
         window.gerarModeloExcel = function () {

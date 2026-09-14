@@ -67,6 +67,12 @@
         html.dark-theme .role-select.colaborador { background-color: rgba(16, 185, 129, 0.1); border-color: #059669; color: #34d399; }
         html.dark-theme .role-select.bloqueado { background-color: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #f87171; }
         html.dark-theme .btn-excluir:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        html.dark-theme .filter-toolbar { background: #0f172a; border-color: #334155; }
+        html.dark-theme .filter-toolbar input { background: #1e293b; color: #f8fafc; border-color: #334155; }
+        html.dark-theme .filter-toolbar input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        html.dark-theme .col-toggle-btn { background: #1e293b; color: #94a3b8; border-color: #334155; }
+        html.dark-theme .col-toggle-btn:hover { border-color: #475569; color: #f8fafc; }
+        html.dark-theme .col-toggle-btn.active { background: rgba(37, 99, 235, 0.15); color: #60a5fa; border-color: #2563eb; }
         /* Fim Modo Dark */
 
         * {
@@ -390,6 +396,94 @@
             color: var(--status-danger);
         }
 
+        /* --- BARRA DE FILTROS --- */
+        .filter-toolbar {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            background: #f8fafc;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-toolbar .filter-search {
+            flex: 1;
+            min-width: 220px;
+            padding: 8px 14px 8px 36px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            background: var(--bg-surface);
+            color: var(--text-900);
+            transition: all 0.2s;
+        }
+
+        .filter-toolbar .filter-search:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .filter-search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .filter-search-wrapper .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-400);
+            pointer-events: none;
+            font-size: 0.9rem;
+        }
+
+        .filter-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border-light);
+        }
+
+        .col-toggles-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-400);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .col-toggle-btn {
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-surface);
+            color: var(--text-400);
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .col-toggle-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-900);
+        }
+
+        .col-toggle-btn.active {
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--brand-primary);
+            border-color: rgba(37, 99, 235, 0.3);
+            font-weight: 600;
+        }
+
         /* Toasts */
         #toast-container {
             position: fixed;
@@ -476,18 +570,35 @@
                 <h2>Equipe Cadastrada</h2>
                 <p>Controle os níveis de acesso das pessoas à Intranet Pricing.</p>
             </div>
+
+            <!-- BARRA DE FILTROS E COLUNAS -->
+            <div class="filter-toolbar">
+                <div class="filter-search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="filter-search" id="filtro-busca-usuarios" placeholder="Buscar por nome, e-mail, CPF ou telefone..." oninput="window.filtrarTabela()" autocomplete="off">
+                </div>
+                <div class="filter-divider"></div>
+                <span class="col-toggles-label">Colunas:</span>
+                <button class="col-toggle-btn active" data-col="col-cpf" onclick="window.toggleColuna(this)">CPF</button>
+                <button class="col-toggle-btn active" data-col="col-telefone" onclick="window.toggleColuna(this)">Telefone</button>
+                <button class="col-toggle-btn active" data-col="col-data" onclick="window.toggleColuna(this)">Data Acesso</button>
+                <button class="col-toggle-btn active" data-col="col-permissao" onclick="window.toggleColuna(this)">Permissão</button>
+            </div>
+
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
                             <th>Colaborador</th>
-                            <th>Data de Primeiro Acesso</th>
-                            <th>Nível de Permissão</th>
+                            <th class="col-cpf">CPF</th>
+                            <th class="col-telefone">Telefone</th>
+                            <th class="col-data">Data de Primeiro Acesso</th>
+                            <th class="col-permissao">Nível de Permissão</th>
                             <th style="text-align: center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-usuarios">
-                        <tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-600);">Carregando usuários...</td></tr>
+                        <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-600);">Carregando usuários...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -563,66 +674,126 @@
             signOut(auth).then(() => { window.location.href = "/"; });
         });
 
+        // ARMAZENA OS DADOS PARA FILTRAGEM
+        let todosOsUsuarios = [];
+
         // CARREGA TODOS OS USUÁRIOS EM TEMPO REAL
         function carregarListaDeUsuarios() {
             const usuariosRef = ref(db, 'usuarios');
             onValue(usuariosRef, (snapshot) => {
-                const tbody = document.getElementById('tabela-usuarios');
-                tbody.innerHTML = '';
+                todosOsUsuarios = [];
 
                 if (!snapshot.exists()) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-600);">Nenhum usuário encontrado.</td></tr>';
+                    renderizarTabela([]);
                     return;
                 }
 
-                const usuarios = [];
                 snapshot.forEach(child => {
-                    usuarios.push({ uid: child.key, ...child.val() });
+                    todosOsUsuarios.push({ uid: child.key, ...child.val() });
                 });
 
                 // Ordena por nome
-                usuarios.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+                todosOsUsuarios.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
-                usuarios.forEach(u => {
-                    const foto = u.foto || 'https://via.placeholder.com/40';
-                    const dataAcesso = u.criadoEm ? new Date(u.criadoEm).toLocaleDateString('pt-BR') : 'Desconhecida';
-                    const perfil = u.perfil || 'Colaborador';
-                    
-                    // Aplica classe de cor no select baseada no perfil atual
-                    let selectClass = '';
-                    if(perfil === 'Gestor') selectClass = 'gestor';
-                    else if(perfil === 'Bloqueado') selectClass = 'bloqueado';
-                    else selectClass = 'colaborador';
+                window.filtrarTabela();
+            });
+        }
 
-                    // Desabilita alteração e exclusão do próprio gestor que está logado
-                    const isMe = (u.uid === usuarioAtual.uid);
-                    const disabledStr = isMe ? 'disabled title="Você não pode alterar seu próprio nível aqui"' : '';
+        // FILTRA E RENDERIZA A TABELA COM BASE NA BUSCA
+        window.filtrarTabela = function() {
+            const termo = (document.getElementById('filtro-busca-usuarios').value || '').toLowerCase().trim();
+            
+            if (!termo) {
+                renderizarTabela(todosOsUsuarios);
+                return;
+            }
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>
-                                <div class="td-user">
-                                    <img src="${foto}" alt="Foto">
-                                    <div class="td-user-info">
-                                        <strong>${u.nome || 'Usuário Sem Nome'}</strong>
-                                        <span>${u.email}</span>
-                                    </div>
+            const filtrados = todosOsUsuarios.filter(u => {
+                const nome = (u.nome || '').toLowerCase();
+                const email = (u.email || '').toLowerCase();
+                const cpf = (u.cpf || '').toLowerCase();
+                const telefone = (u.telefone || '').toLowerCase();
+                const perfil = (u.perfil || '').toLowerCase();
+                return nome.includes(termo) || email.includes(termo) || cpf.includes(termo) || telefone.includes(termo) || perfil.includes(termo);
+            });
+
+            renderizarTabela(filtrados);
+        };
+
+        // TOGGLE DE VISIBILIDADE DAS COLUNAS
+        window.toggleColuna = function(btn) {
+            btn.classList.toggle('active');
+            const colClass = btn.getAttribute('data-col');
+            const isVisible = btn.classList.contains('active');
+            document.querySelectorAll('.' + colClass).forEach(el => {
+                el.style.display = isVisible ? '' : 'none';
+            });
+        };
+
+        // RENDERIZA A TABELA DE USUÁRIOS
+        function renderizarTabela(usuarios) {
+            const tbody = document.getElementById('tabela-usuarios');
+            tbody.innerHTML = '';
+
+            if (usuarios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-600);">Nenhum usuário encontrado.</td></tr>';
+                return;
+            }
+
+            // Verificar quais colunas estão visíveis
+            const colVisibility = {};
+            document.querySelectorAll('.col-toggle-btn').forEach(btn => {
+                colVisibility[btn.getAttribute('data-col')] = btn.classList.contains('active');
+            });
+
+            usuarios.forEach(u => {
+                const foto = u.foto || 'https://via.placeholder.com/40';
+                const dataAcesso = u.criadoEm ? new Date(u.criadoEm).toLocaleDateString('pt-BR') : 'Desconhecida';
+                const perfil = u.perfil || 'Colaborador';
+                const cpf = u.cpf || '—';
+                const telefone = u.telefone || '—';
+                
+                // Aplica classe de cor no select baseada no perfil atual
+                let selectClass = '';
+                if(perfil === 'Gestor') selectClass = 'gestor';
+                else if(perfil === 'Bloqueado') selectClass = 'bloqueado';
+                else selectClass = 'colaborador';
+
+                // Desabilita alteração e exclusão do próprio gestor que está logado
+                const isMe = (u.uid === usuarioAtual.uid);
+                const disabledStr = isMe ? 'disabled title="Você não pode alterar seu próprio nível aqui"' : '';
+
+                const hideCpf = colVisibility['col-cpf'] === false ? 'style="display:none;"' : '';
+                const hideTel = colVisibility['col-telefone'] === false ? 'style="display:none;"' : '';
+                const hideData = colVisibility['col-data'] === false ? 'style="display:none;"' : '';
+                const hidePerm = colVisibility['col-permissao'] === false ? 'style="display:none;"' : '';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="td-user">
+                                <img src="${foto}" alt="Foto">
+                                <div class="td-user-info">
+                                    <strong>${u.nome || 'Usuário Sem Nome'}</strong>
+                                    <span>${u.email}</span>
                                 </div>
-                            </td>
-                            <td style="color: var(--text-600); font-size: 0.9rem;">${dataAcesso}</td>
-                            <td>
-                                <select class="role-select ${selectClass}" onchange="window.alterarPerfil('${u.uid}', this.value, this)" ${disabledStr}>
-                                    <option value="Colaborador" ${perfil === 'Colaborador' ? 'selected' : ''}>Colaborador</option>
-                                    <option value="Gestor" ${perfil === 'Gestor' ? 'selected' : ''}>Gestor (Admin)</option>
-                                    <option value="Bloqueado" ${perfil === 'Bloqueado' ? 'selected' : ''}>Bloqueado (Sem Acesso)</option>
-                                </select>
-                            </td>
-                            <td style="text-align: center;">
-                                <button class="btn-excluir" onclick="window.removerUsuario('${u.uid}', '${u.nome}')" ${disabledStr} title="Remover usuário do banco">🗑️</button>
-                            </td>
-                        </tr>
-                    `;
-                });
+                            </div>
+                        </td>
+                        <td class="col-cpf" ${hideCpf} style="color: var(--text-600); font-size: 0.88rem; font-variant-numeric: tabular-nums;">${cpf}</td>
+                        <td class="col-telefone" ${hideTel} style="color: var(--text-600); font-size: 0.88rem;">${telefone}</td>
+                        <td class="col-data" ${hideData} style="color: var(--text-600); font-size: 0.9rem;">${dataAcesso}</td>
+                        <td class="col-permissao" ${hidePerm}>
+                            <select class="role-select ${selectClass}" onchange="window.alterarPerfil('${u.uid}', this.value, this)" ${disabledStr}>
+                                <option value="Colaborador" ${perfil === 'Colaborador' ? 'selected' : ''}>Colaborador</option>
+                                <option value="Gestor" ${perfil === 'Gestor' ? 'selected' : ''}>Gestor (Admin)</option>
+                                <option value="Bloqueado" ${perfil === 'Bloqueado' ? 'selected' : ''}>Bloqueado (Sem Acesso)</option>
+                            </select>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn-excluir" onclick="window.removerUsuario('${u.uid}', '${u.nome}')" ${disabledStr} title="Remover usuário do banco">🗑️</button>
+                        </td>
+                    </tr>
+                `;
             });
         }
 
