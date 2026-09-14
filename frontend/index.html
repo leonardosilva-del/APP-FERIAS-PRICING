@@ -264,7 +264,7 @@
         <div class="header">
             <img src="logo.png" alt="Dia a Dia">
             <h1>Intranet Pricing ;DD</h1>
-            <p>Selecione uma ferramenta abaixo para iniciar.</p>
+            <p id="header-subtitle">Selecione uma ferramenta abaixo para iniciar.</p>
         </div>
 
         <div class="dashboard">
@@ -289,11 +289,12 @@
                 <p>Consulte prazos e status das campanhas.</p>
             </a>
             
-            <!-- CARD: SUPORTE COMERCIAL (Painel de Solicitações) -->
+            <!-- CARD: SUPORTE COMERCIAL COM BADGE DINÂMICO -->
             <a href="chamados.html" class="card" id="card-chamados">
                 <div class="icon-container" style="background: rgba(234, 88, 12, 0.1); color: #ea580c;">🎧</div>
                 <h2>Suporte Comercial</h2>
                 <p>Abra chamados para ajustes de preços e FIFO.</p>
+                <div id="badge-chamados" style="display: none; position: absolute; top: 12px; right: 12px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">0 para derrubar</div>
             </a>
 
             <a href="aniversarios.html" class="card card-pricing" id="card-aniversarios">
@@ -322,7 +323,7 @@
     <script type="module">
         import { auth, provider, db } from "./firebase-config.js";
         import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         document.addEventListener('DOMContentLoaded', () => {
             const isDark = localStorage.getItem('tema-intranet') === 'dark';
@@ -340,7 +341,6 @@
             if (!perfilDoBanco) {
                 perfilDoBanco = (dadosUser.setor === "Comercial") ? "Comercial" : "Pricing";
             }
-            // Compatibilidade com perfil legado 'Colaborador'
             if (perfilDoBanco === "Colaborador") {
                 perfilDoBanco = "Pricing";
             }
@@ -358,28 +358,25 @@
             }
             
             const headerTitle = document.querySelector('.header h1');
-            const headerSubtitle = document.querySelector('.header p');
+            const headerSubtitle = document.getElementById('header-subtitle');
             const pricingCards = document.querySelectorAll('.card-pricing');
             const cardUsuarios = document.getElementById('card-usuarios');
             const cardChamados = document.getElementById('card-chamados');
 
             // HIERARQUIA DE NÍVEIS
             if (perfilDoBanco === "Comercial") {
-                // NÍVEL 3: COMERCIAL (Apenas o painel de solicitações)
                 pricingCards.forEach(c => c.style.display = 'none');
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Portal Comercial ;DD";
-                if (headerSubtitle) headerSubtitle.textContent = "Acesse o painel de solicitações abaixo para enviar e acompanhar chamados ao Pricing.";
+                if (headerSubtitle) headerSubtitle.textContent = "Acesse o painel de solicitações abaixo para enviar e acompanhar chamados.";
             } else if (perfilDoBanco === "Gestor") {
-                // NÍVEL 1: GESTOR (Acesso total + Gestão de Usuários)
                 pricingCards.forEach(c => c.style.display = 'flex');
                 if (cardUsuarios) cardUsuarios.style.display = 'flex';
                 if (cardChamados) cardChamados.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             } else {
-                // NÍVEL 2: PRICING (Equipe Pricing - Todos os cards da rotina, exceto Gestão de Usuários)
                 pricingCards.forEach(c => c.style.display = 'flex');
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
@@ -396,6 +393,9 @@
                 document.body.classList.add('auth-ready');
             }
 
+            // ==========================================
+            // LÓGICA DO BADGE DE ANIVERSÁRIO
+            // ==========================================
             if (perfilDoBanco !== "Comercial") {
                 const aniversariantesRef = ref(db, 'aniversariantes');
                 get(aniversariantesRef).then((snapshot) => {
@@ -403,7 +403,6 @@
                         const hoje = new Date();
                         const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
                         const diaAtual = String(hoje.getDate()).padStart(2, '0');
-                        
                         let temAniversarianteHoje = false;
                         
                         snapshot.forEach((child) => {
@@ -411,9 +410,7 @@
                             if (aniv.data) {
                                 const partes = aniv.data.split('-');
                                 if (partes.length === 3) {
-                                    if (partes[1] === mesAtual && partes[2] === diaAtual) {
-                                        temAniversarianteHoje = true;
-                                    }
+                                    if (partes[1] === mesAtual && partes[2] === diaAtual) temAniversarianteHoje = true;
                                 }
                             }
                         });
@@ -424,6 +421,64 @@
                         }
                     }
                 });
+            }
+
+            // ==========================================
+            // LÓGICA DO BADGE DE SUPORTE COMERCIAL (TIMER)
+            // ==========================================
+            if (perfilDoBanco === "Gestor" || perfilDoBanco === "Pricing") {
+                let chamadosAtivosIndex = [];
+                const chamadosRef = ref(db, 'chamados_comercial');
+                
+                onValue(chamadosRef, (snapshot) => {
+                    chamadosAtivosIndex = [];
+                    if (snapshot.exists()) {
+                        snapshot.forEach(child => {
+                            chamadosAtivosIndex.push(child.val());
+                        });
+                    }
+                    atualizarBadgeChamados();
+                });
+
+                function atualizarBadgeChamados() {
+                    let expirados = 0;
+                    let rodando = 0;
+                    const agora = Date.now();
+                    
+                    chamadosAtivosIndex.forEach(c => {
+                        // Verifica se é Venda Pontual, está Aprovado e o timer ainda não foi resolvido
+                        if (c.tipo && c.tipo.includes("3") && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido) {
+                            if (agora > c.timerExpiraEm) {
+                                expirados++;
+                            } else {
+                                rodando++;
+                            }
+                        }
+                    });
+
+                    const badge = document.getElementById('badge-chamados');
+                    if (badge) {
+                        if (expirados > 0) {
+                            badge.style.background = '#ef4444'; // Vermelho piscando
+                            badge.style.animation = 'pulseAlert 2s infinite';
+                            badge.textContent = `${expirados} para derrubar! ⚠️`;
+                            badge.style.display = 'block';
+                        } else if (rodando > 0) {
+                            badge.style.background = '#f59e0b'; // Amarelo estático
+                            badge.style.animation = 'none';
+                            badge.textContent = `${rodando} timer(s) rodando ⏱️`;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+
+                // Atualiza a notificação na home a cada 10 segundos
+                if (!window.badgeIntervalSet) {
+                    window.badgeIntervalSet = true;
+                    setInterval(atualizarBadgeChamados, 10000);
+                }
             }
         };
 
