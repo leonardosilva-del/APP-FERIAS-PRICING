@@ -6,16 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suporte Comercial - Pricing</title>
 
-    <!-- FAVICON LOCAL -->
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="shortcut icon" type="image/png" href="/favicon.png">
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Biblioteca para ler Excel e CSV direto no navegador -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- SCRIPT DO MODO DARK GLOBAL -->
     <script>
         if (localStorage.getItem('tema-intranet') === 'dark') {
             document.documentElement.classList.add('dark-theme');
@@ -46,30 +41,20 @@
         body { background-color: var(--bg-body); color: var(--text-900); min-height: 100vh; display: flex; flex-direction: column; }
 
         /* TOPBAR E WIDGET DE PERFIL PADRÃO */
-        .topbar {
-            background: var(--bg-surface); padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border-light); z-index: 30; position: sticky; top: 0;
-        }
+        .topbar { background: var(--bg-surface); padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); z-index: 30; position: sticky; top: 0; }
         .topbar-left { display: flex; align-items: center; gap: 1.5rem; }
         .logo { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; color: var(--text-900); }
-        .back-btn {
-            text-decoration: none; color: var(--text-600); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500;
-            padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-light); background-color: var(--bg-body); transition: 0.2s;
-        }
+        .back-btn { text-decoration: none; color: var(--text-600); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-light); background-color: var(--bg-body); transition: 0.2s; }
         .back-btn:hover { background-color: var(--bg-surface); color: var(--text-900); border-color: var(--text-400); }
         
         .topbar-actions { display: flex; gap: 1rem; align-items: center; }
         .btn-theme { background: var(--bg-body); border: 1px solid var(--border-light); padding: 0.4rem; font-size: 1.1rem; border-radius: var(--radius-md); cursor: pointer; color: var(--text-900); transition: 0.2s;}
-        
         .btn-primary { background: var(--brand-primary); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; gap: 5px; align-items: center; transition: 0.2s;}
         .btn-primary:hover { background: var(--brand-primary-hover); transform: translateY(-1px); }
         .btn-config { background: var(--bg-body); color: var(--text-900); border: 1px solid var(--border-light); padding: 0.6rem 1.25rem; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: none; transition: 0.2s; }
         .btn-config:hover { background: var(--border-light); }
 
-        .user-profile-widget {
-            display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 6px 16px 6px 6px;
-            border-radius: 50px; border: 1px solid var(--border-light);
-        }
+        .user-profile-widget { display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 6px 16px 6px 6px; border-radius: 50px; border: 1px solid var(--border-light); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--brand-primary); object-fit: cover; }
         .user-info-widget { display: flex; flex-direction: column; justify-content: center; }
         .user-name-widget { font-size: 0.85rem; font-weight: 600; color: var(--text-900); }
@@ -79,13 +64,15 @@
         
         .workspace { padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
 
+        /* BARRA DE FILTROS */
+        .filters-container { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 5px; flex-wrap: wrap; background: var(--bg-surface); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
+        .filter-input { padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.9rem; background: var(--bg-body); color: var(--text-900); outline: none; transition: 0.2s; }
+        .filter-input:focus { border-color: var(--brand-primary); }
+        html.dark-theme .filter-input { background: #0f172a; border-color: #334155; color: #f8fafc; }
+
         /* GRID DE CHAMADOS */
-        .tickets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-        
-        .ticket-card {
-            background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.5rem;
-            box-shadow: var(--shadow-md); transition: 0.2s; position: relative; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
-        }
+        .tickets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+        .ticket-card { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-md); transition: 0.2s; position: relative; display: flex; flex-direction: column; gap: 10px; cursor: pointer; }
         .ticket-card:hover { transform: translateY(-3px); border-color: var(--brand-primary); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         
         .ticket-header { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -101,7 +88,6 @@
         .ticket-prod { font-size: 0.85rem; color: var(--text-600); background: var(--bg-body); padding: 8px; border-radius: 6px; border: 1px dashed var(--border-light); }
         .ticket-meta { font-size: 0.8rem; color: var(--text-400); display: flex; justify-content: space-between; margin-top: auto; border-top: 1px solid var(--border-light); padding-top: 10px;}
 
-        /* ALERTA TIMER */
         .alerta-timer-card { background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-align: center; animation: piscar 2s infinite; }
         @keyframes piscar { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
 
@@ -111,7 +97,6 @@
         .modal-header-close { position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.5rem; color: var(--text-400); cursor: pointer; transition: 0.2s;}
         .modal-header-close:hover { color: var(--text-900); }
         .modal-content h2 { margin: 0 0 5px 0; font-size: 1.25rem; color: var(--text-900); }
-        
         .modal-content label { font-size: 0.85rem; font-weight: 600; color: var(--text-600); margin-top: 5px; }
         .modal-content input, .modal-content select, .modal-content textarea { padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; width: 100%; font-size: 0.95rem; background: var(--bg-body); color: var(--text-900); outline: none; transition: 0.2s; font-family: inherit;}
         .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1); }
@@ -160,6 +145,11 @@
             </select>
 
             <!-- CAMPOS DINÂMICOS -->
+            <div id="box-quantidade" style="display: none;">
+                <label>Quantidade da Venda <span style="color: #ef4444;">*</span></label>
+                <input type="number" id="chamado-quantidade" placeholder="Ex: 150">
+            </div>
+
             <div id="box-justificativa" style="display: none;">
                 <label>Justificativa / Motivo:</label>
                 <textarea id="chamado-justificativa" rows="3" placeholder="Explique o motivo da solicitação..."></textarea>
@@ -196,11 +186,9 @@
     <div id="modalBase" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-header-close" onclick="fecharModais()">×</button>
-            <h2>⚙️ Base de Produtos (Automática)</h2>
-            <p style="font-size: 0.85rem; color: var(--text-600);">Suba uma planilha Excel (.xlsx) ou .CSV contendo as colunas <strong>SEQPRODUTO</strong> e <strong>DESCPRODUTO</strong> para atualizar a inteligência do sistema.</p>
-            
+            <h2>⚙️ Base de Produtos</h2>
+            <p style="font-size: 0.85rem; color: var(--text-600);">Suba uma planilha Excel (.xlsx) ou .CSV contendo as colunas <strong>SEQPRODUTO</strong> e <strong>DESCPRODUTO</strong>.</p>
             <input type="file" id="file-upload" accept=".xlsx, .xls, .csv" style="margin-top: 10px; font-size: 0.9rem;">
-            
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="fecharModais()">Fechar</button>
                 <button class="btn-primary" onclick="processarPlanilha()" style="flex: 1; justify-content: center;">Upload e Atualizar</button>
@@ -223,7 +211,7 @@
                 </div>
             </div>
 
-            <!-- ÁREA EXCLUSIVA PRICING (RESPOSTA) -->
+            <!-- ÁREA PRICING -->
             <div id="area-resposta-pricing" style="display: none; margin-top: 10px;">
                 <label>Alterar Status:</label>
                 <select id="resposta-status">
@@ -239,7 +227,7 @@
                 <button class="btn-primary" onclick="salvarResposta()" style="width: 100%; justify-content: center; margin-top: 10px;">Salvar Atualização</button>
             </div>
             
-            <!-- VISÃO COMPRADOR DA RESPOSTA -->
+            <!-- VISÃO COMPRADOR -->
             <div id="area-leitura-resposta" style="display: none; margin-top: 10px; background: #e0f2fe; padding: 15px; border-radius: 8px; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.9rem;">
                 <strong>Resposta do Pricing:</strong>
                 <p id="leitura-resposta-texto" style="margin-top: 5px;"></p>
@@ -271,7 +259,6 @@
                 <span id="icon-theme">🌙</span>
             </button>
             
-            <!-- WIDGET DE PERFIL -->
             <div class="user-profile-widget">
                 <img id="user-photo" src="" class="user-avatar" alt="Foto">
                 <div class="user-info-widget">
@@ -279,9 +266,7 @@
                     <span id="user-role-widget" class="user-role-widget">Colaborador</span>
                 </div>
                 <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
             </div>
         </div>
@@ -290,11 +275,26 @@
     <main class="workspace">
         <div style="margin-bottom: 1rem;">
             <h1 style="font-size: 1.8rem; margin-bottom: 5px;">Painel de Solicitações</h1>
-            <p style="color: var(--text-600);" id="subtitulo-painel">Acompanhe seus chamados abertos e concluídos.</p>
+            <p style="color: var(--text-600);" id="subtitulo-painel">Acompanhe seus chamados. O que é concluído sai da fila principal.</p>
+        </div>
+
+        <!-- BARRA DE FILTROS INTELIGENTE -->
+        <div class="filters-container">
+            <input type="text" id="filtro-busca" class="filter-input" placeholder="🔍 Buscar ID, Produto, Loja..." style="flex: 1; min-width: 200px;" oninput="aplicarFiltros()">
+            
+            <select id="filtro-status" class="filter-input" style="width: auto;" onchange="aplicarFiltros()">
+                <option value="pendentes">🟠 Status: Ativos / Na Fila (Ocultar Concluídos)</option>
+                <option value="concluidos">✅ Status: Apenas Concluídos / Negados</option>
+                <option value="todos">📋 Status: Mostrar Todos</option>
+            </select>
+            
+            <select id="filtro-data" class="filter-input" style="width: auto;" onchange="aplicarFiltros()">
+                <option value="todos">📅 Todas as Datas</option>
+                <option value="hoje">📅 Apenas de Hoje</option>
+            </select>
         </div>
         
         <div class="tickets-grid" id="grid-chamados">
-            <!-- Chamados injetados via JS -->
             <p style="color: var(--text-400); grid-column: 1/-1;">Carregando chamados...</p>
         </div>
     </main>
@@ -308,6 +308,7 @@
         let dadosUsuario = {};
         let baseProdutos = {};
         let chamadosGlobais = {};
+        let arrayChamadosAtuais = []; // Guarda a lista completa para o Filtro não precisar ir no banco toda hora
         let idChamadoAtivo = null;
 
         // UI UTILS
@@ -325,36 +326,21 @@
             idChamadoAtivo = null;
         }
 
-        // FECHAR MODAIS AO CLICAR FORA E COM ESCAPE
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal-overlay')) {
-                window.fecharModais();
-            }
-        });
+        window.addEventListener('click', function(e) { if (e.target.classList.contains('modal-overlay')) window.fecharModais(); });
+        window.addEventListener('keydown', function(event) { if (event.key === 'Escape' || event.key === 'Esc') window.fecharModais(); });
 
-        window.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' || event.key === 'Esc') {
-                window.fecharModais();
-            }
-        });
-
-        // LOGOUT
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => { window.location.href = "/"; });
-        });
+        document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "/"; }); });
 
         // AUTH & CARREGAMENTO
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = "/"; return; }
             
-            // Popula o Widget de Perfil
             document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
-            document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : (user.email.split('@')[0] || 'Usuário');
+            document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : (user.email.split('@')[0]);
 
             get(ref(db, 'usuarios/' + user.uid)).then((snap) => {
                 dadosUsuario = snap.val() || {};
                 perfilUsuario = dadosUsuario.perfil || "Colaborador";
-                
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
 
                 if (perfilUsuario === "Gestor") {
@@ -367,17 +353,14 @@
             });
         });
 
-        // 1. GESTÃO BASE DE PRODUTOS (LEITURA EXCEL)
+        // 1. GESTÃO BASE
         function carregarBaseProdutos() {
-            onValue(ref(db, 'base_produtos'), (snapshot) => {
-                baseProdutos = snapshot.exists() ? snapshot.val() : {};
-            });
+            onValue(ref(db, 'base_produtos'), (snapshot) => { baseProdutos = snapshot.exists() ? snapshot.val() : {}; });
         }
 
         window.processarPlanilha = function() {
             const file = document.getElementById('file-upload').files[0];
-            if(!file) { showToast("Selecione um arquivo primeiro.", "error"); return; }
-            
+            if(!file) { showToast("Selecione um arquivo.", "error"); return; }
             const reader = new FileReader();
             reader.onload = function(e) {
                 const data = e.target.result;
@@ -385,40 +368,28 @@
                 const sheetName = workbook.SheetNames[0];
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 
-                let updates = {};
-                let count = 0;
-                
+                let updates = {}; let count = 0;
                 json.forEach(row => {
-                    // Mapeamento inteligente que aceita variações de nome de coluna
                     let cod = row['SEQPRODUTO'] || row['CÓDIGO'] || row['CODIGO'] || row['Código'];
                     let desc = row['DESCPRODUTO'] || row['DESCRIÇÃO'] || row['DESCRICAO'] || row['Produto'];
-                    
-                    if (cod && desc) {
-                        updates[String(cod).trim()] = String(desc).trim();
-                        count++;
-                    }
+                    if (cod && desc) { updates[String(cod).trim()] = String(desc).trim(); count++; }
                 });
                 
                 if(count > 0) {
-                    set(ref(db, 'base_produtos'), updates).then(() => {
-                        showToast(`${count} produtos importados com sucesso!`);
-                        fecharModais();
-                    });
+                    set(ref(db, 'base_produtos'), updates).then(() => { showToast(`${count} produtos importados!`); fecharModais(); });
                 } else {
-                    showToast("Nenhuma coluna válida encontrada (SEQPRODUTO, DESCPRODUTO)", "error");
+                    showToast("Colunas inválidas.", "error");
                 }
             };
             reader.readAsBinaryString(file);
         }
 
-        // 2. BUSCA DO PRODUTO NO FORMULÁRIO
         window.buscarProduto = function() {
             const cod = document.getElementById('chamado-cod').value.trim();
             const descInput = document.getElementById('chamado-desc');
-            
             if (cod.length > 0 && baseProdutos[cod]) {
                 descInput.value = baseProdutos[cod];
-                descInput.style.background = "#dcfce7"; // Fica verdinho
+                descInput.style.background = "#dcfce7";
                 html.dark-theme ? descInput.style.color = "#000" : null;
             } else {
                 descInput.value = cod.length > 0 ? "Produto não encontrado na base" : "";
@@ -427,19 +398,22 @@
             }
         }
 
-        // 3. CAMPOS DINÂMICOS
         window.alternarCamposDinamicos = function() {
             const tipo = document.getElementById('chamado-tipo').value;
             
             document.getElementById('box-justificativa').style.display = 'none';
+            document.getElementById('box-quantidade').style.display = 'none';
             document.getElementById('box-analise').style.display = 'none';
             document.getElementById('box-promocao').style.display = 'none';
             document.getElementById('box-alerta-timer').style.display = 'none';
 
             if(tipo.includes("1") || tipo.includes("2") || tipo.includes("3")) document.getElementById('box-justificativa').style.display = 'block';
+            if(tipo.includes("3")) {
+                document.getElementById('box-quantidade').style.display = 'block';
+                document.getElementById('box-alerta-timer').style.display = 'block';
+            }
             if(tipo.includes("4")) document.getElementById('box-analise').style.display = 'block';
             if(tipo.includes("5")) document.getElementById('box-promocao').style.display = 'flex';
-            if(tipo.includes("3")) document.getElementById('box-alerta-timer').style.display = 'block';
         }
 
         window.abrirModalChamado = function() {
@@ -448,13 +422,13 @@
             document.getElementById('chamado-desc').style.background = "var(--bg-body)";
             document.getElementById('chamado-lojas').value = '';
             document.getElementById('chamado-tipo').value = '';
+            document.getElementById('chamado-quantidade').value = '';
             document.getElementById('chamado-justificativa').value = '';
             document.getElementById('chamado-analise').value = '';
             document.getElementById('chamado-cod-promo').value = '';
             document.getElementById('chamado-data-ini').value = '';
             document.getElementById('chamado-data-fim').value = '';
             alternarCamposDinamicos();
-            
             document.getElementById('modalChamado').style.display = 'flex';
         }
 
@@ -465,8 +439,11 @@
             const tipo = document.getElementById('chamado-tipo').value;
             
             if(!cod || !desc || !lojas || !tipo || desc === "Produto não encontrado na base") { 
-                showToast("Preencha Código Válido, Lojas e Tipo.", "error"); 
-                return; 
+                showToast("Preencha Código Válido, Lojas e Tipo.", "error"); return; 
+            }
+
+            if(tipo.includes("3") && !document.getElementById('chamado-quantidade').value) {
+                showToast("Quantidade é obrigatória para Venda Pontual.", "error"); return;
             }
             
             let payload = {
@@ -481,8 +458,8 @@
                 dataFormatada: new Date().toLocaleString('pt-BR')
             };
 
-            // Coleta os campos dinâmicos baseados no tipo
             if(tipo.includes("1") || tipo.includes("2") || tipo.includes("3")) payload.justificativa = document.getElementById('chamado-justificativa').value;
+            if(tipo.includes("3")) payload.quantidade = document.getElementById('chamado-quantidade').value;
             if(tipo.includes("4")) payload.analise = document.getElementById('chamado-analise').value;
             if(tipo.includes("5")) {
                 payload.codPromo = document.getElementById('chamado-cod-promo').value;
@@ -491,76 +468,100 @@
             }
 
             push(ref(db, 'chamados_comercial'), payload).then(() => {
-                showToast("Chamado aberto com sucesso!");
-                fecharModais();
+                showToast("Chamado aberto com sucesso!"); fecharModais();
             }).catch(e => showToast(e.message, "error"));
         }
 
-        // 4. RENDERIZAÇÃO DOS CHAMADOS E TIMER 
+        // 4. CARREGAMENTO E FILTROS INTELIGENTES
         function carregarChamados() {
             onValue(ref(db, 'chamados_comercial'), (snapshot) => {
-                const grid = document.getElementById('grid-chamados');
-                grid.innerHTML = '';
                 chamadosGlobais = snapshot.exists() ? snapshot.val() : {};
-
-                let chamadosArray = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
+                arrayChamadosAtuais = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
                 
-                // Comprador vê só os dele. Gestor vê tudo.
                 if(perfilUsuario !== "Gestor") {
-                    chamadosArray = chamadosArray.filter(c => c.solicitanteId === auth.currentUser.uid);
+                    arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
                 }
 
-                // Ordena por mais recente primeiro
-                chamadosArray.sort((a,b) => b.dataCriacao - a.dataCriacao);
-
-                if(chamadosArray.length === 0) {
-                    grid.innerHTML = '<p style="color: var(--text-400); grid-column: 1/-1;">Nenhum chamado encontrado.</p>';
-                    return;
-                }
-
-                const agora = Date.now();
-
-                chamadosArray.forEach(c => {
-                    let badgeClass = "aberto";
-                    if(c.status === "Em Análise") badgeClass = "analise";
-                    if(c.status === "Concluído") badgeClass = "concluido";
-                    if(c.status === "Negado") badgeClass = "negado";
-                    
-                    let htmlAlertaTimer = '';
-                    
-                    // LÓGICA DO TIMER DE 1 HORA (Apenas visualização para quem é Gestor)
-                    if (c.tipo.includes("3") && c.status === "Concluído" && c.timerExpiraEm && !c.timerResolvido && perfilUsuario === "Gestor") {
-                        if (agora > c.timerExpiraEm) {
-                            htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
-                        } else {
-                            let minutosFaltando = Math.ceil((c.timerExpiraEm - agora) / 60000);
-                            htmlAlertaTimer = `<div style="background: #fffbeb; color: #b45309; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; text-align: center; margin-top:5px;">Faltam ${minutosFaltando} min para derrubar o preço.</div>`;
-                        }
-                    }
-
-                    grid.innerHTML += `
-                        <div class="ticket-card" onclick="abrirDetalhes('${c.id}')">
-                            <div class="ticket-header">
-                                <span class="badge ${badgeClass}">${c.status}</span>
-                                <span class="ticket-id">#${c.id.substring(c.id.length - 6).toUpperCase()}</span>
-                            </div>
-                            <h3 class="ticket-title">${c.tipo}</h3>
-                            <div class="ticket-prod">
-                                <strong>${c.produtoCod}</strong> - ${c.produtoDesc}<br>
-                                <span style="font-size: 0.75rem; color: var(--text-400);">Lojas: ${c.lojas}</span>
-                            </div>
-                            ${htmlAlertaTimer}
-                            <div class="ticket-meta">
-                                <span>👤 ${c.solicitante.split(' ')[0]}</span>
-                                <span>${c.dataFormatada.split(' ')[0]}</span>
-                            </div>
-                        </div>
-                    `;
-                });
+                arrayChamadosAtuais.sort((a,b) => b.dataCriacao - a.dataCriacao); // Mais novos primeiro
+                aplicarFiltros(); // Ao invés de desenhar direto, passa pela roleta do Filtro
             });
         }
 
-        // 5. DETALHES DO CHAMADO E RESPOSTA
+        window.aplicarFiltros = function() {
+            const busca = document.getElementById('filtro-busca').value.toLowerCase();
+            const statusFiltro = document.getElementById('filtro-status').value;
+            const dataFiltro = document.getElementById('filtro-data').value;
+            const hojeLocal = new Date().toLocaleDateString('pt-BR');
+
+            let filtrados = arrayChamadosAtuais.filter(c => {
+                // Filtro de Status
+                if (statusFiltro === "pendentes" && (c.status === "Concluído" || c.status === "Negado")) return false;
+                if (statusFiltro === "concluidos" && (c.status !== "Concluído" && c.status !== "Negado")) return false;
+                
+                // Filtro de Data
+                if (dataFiltro === "hoje" && !c.dataFormatada.startsWith(hojeLocal)) return false;
+
+                // Filtro de Busca (Texto livre)
+                if (busca) {
+                    const textoUnico = `${c.id} ${c.produtoCod} ${c.produtoDesc} ${c.lojas} ${c.solicitante}`.toLowerCase();
+                    if (!textoUnico.includes(busca)) return false;
+                }
+
+                return true;
+            });
+
+            renderizarGrid(filtrados);
+        }
+
+        function renderizarGrid(lista) {
+            const grid = document.getElementById('grid-chamados');
+            grid.innerHTML = '';
+
+            if(lista.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-400); grid-column: 1/-1; text-align: center; padding: 2rem; border: 1px dashed var(--border-light); border-radius: 12px;">Nenhum chamado encontrado com estes filtros.</p>';
+                return;
+            }
+
+            const agora = Date.now();
+
+            lista.forEach(c => {
+                let badgeClass = "aberto";
+                if(c.status === "Em Análise") badgeClass = "analise";
+                if(c.status === "Concluído") badgeClass = "concluido";
+                if(c.status === "Negado") badgeClass = "negado";
+                
+                let htmlAlertaTimer = '';
+                if (c.tipo.includes("3") && c.status === "Concluído" && c.timerExpiraEm && !c.timerResolvido && perfilUsuario === "Gestor") {
+                    if (agora > c.timerExpiraEm) {
+                        htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
+                    } else {
+                        let minFaltando = Math.ceil((c.timerExpiraEm - agora) / 60000);
+                        htmlAlertaTimer = `<div style="background: #fffbeb; color: #b45309; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; text-align: center; margin-top:5px;">Faltam ${minFaltando} min para derrubar preço.</div>`;
+                    }
+                }
+
+                grid.innerHTML += `
+                    <div class="ticket-card" onclick="abrirDetalhes('${c.id}')">
+                        <div class="ticket-header">
+                            <span class="badge ${badgeClass}">${c.status}</span>
+                            <span class="ticket-id">#${c.id.substring(c.id.length - 6).toUpperCase()}</span>
+                        </div>
+                        <h3 class="ticket-title">${c.tipo}</h3>
+                        <div class="ticket-prod">
+                            <strong>${c.produtoCod}</strong> - ${c.produtoDesc}<br>
+                            <span style="font-size: 0.75rem; color: var(--text-400);">Lojas: ${c.lojas}</span>
+                        </div>
+                        ${htmlAlertaTimer}
+                        <div class="ticket-meta">
+                            <span>👤 ${c.solicitante.split(' ')[0]}</span>
+                            <span>${c.dataFormatada.split(' ')[0]}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 5. DETALHES E RESPOSTA
         window.abrirDetalhes = function(id) {
             idChamadoAtivo = id;
             const c = chamadosGlobais[id];
@@ -570,40 +571,30 @@
             document.getElementById('detalhe-produto').innerText = `${c.produtoCod} - ${c.produtoDesc}`;
             document.getElementById('detalhe-loja').innerText = c.lojas;
 
-            // Renderiza campos extras
             let extras = '';
+            if(c.quantidade) extras += `<p><strong>Quantidade da Venda:</strong> ${c.quantidade} un</p>`;
             if(c.justificativa) extras += `<p><strong>Justificativa:</strong> ${c.justificativa}</p>`;
             if(c.analise) extras += `<p><strong>Análise Solicitada:</strong> ${c.analise}</p>`;
             if(c.codPromo) extras += `<p><strong>Promo:</strong> ${c.codPromo} | <strong>De:</strong> ${c.dataIni} <strong>Até:</strong> ${c.dataFim}</p>`;
             document.getElementById('detalhe-extras').innerHTML = extras;
 
-            // Controle de visão de Resposta
             const areaResposta = document.getElementById('area-resposta-pricing');
             const areaLeitura = document.getElementById('area-leitura-resposta');
             const btnDerrubar = document.getElementById('btn-derrubar-preco');
             
-            areaResposta.style.display = 'none';
-            areaLeitura.style.display = 'none';
-            btnDerrubar.style.display = 'none';
+            areaResposta.style.display = 'none'; areaLeitura.style.display = 'none'; btnDerrubar.style.display = 'none';
 
             if(perfilUsuario === "Gestor") {
-                // Pricing pode responder
                 areaResposta.style.display = 'block';
                 document.getElementById('resposta-status').value = c.status;
                 document.getElementById('resposta-texto').value = c.respostaTexto || '';
-                
-                // Mostrar botão de parar Timer se for tipo 3 e estiver expirado/rodando
-                if(c.tipo.includes("3") && c.status === "Concluído" && !c.timerResolvido) {
-                    btnDerrubar.style.display = 'block';
-                }
+                if(c.tipo.includes("3") && c.status === "Concluído" && !c.timerResolvido) btnDerrubar.style.display = 'block';
             } else {
-                // Comprador só pode ler
                 if(c.respostaTexto) {
                     areaLeitura.style.display = 'block';
                     document.getElementById('leitura-resposta-texto').innerText = c.respostaTexto;
                 }
             }
-
             document.getElementById('modalDetalhe').style.display = 'flex';
         }
 
@@ -613,38 +604,25 @@
             const texto = document.getElementById('resposta-texto').value.trim();
             const c = chamadosGlobais[idChamadoAtivo];
 
-            let updates = {
-                status: status,
-                respostaTexto: texto,
-                respondidoEm: Date.now()
-            };
+            let updates = { status: status, respostaTexto: texto, respondidoEm: Date.now() };
 
-            // INÍCIO DO TIMER DE VENDA PONTUAL (1 HORA = 3600000 ms)
-            // Se for venda pontual (3) E acabou de ser Concluído E ainda não tem timer gerado
             if(c.tipo.includes("3") && status === "Concluído" && !c.timerExpiraEm) {
-                updates.timerExpiraEm = Date.now() + 3600000; // 1 hora no futuro
+                updates.timerExpiraEm = Date.now() + 3600000;
                 updates.timerResolvido = false;
-                showToast("Venda aprovada! O timer de 1h para derrubar a oferta começou.", "success");
+                showToast("Venda aprovada! O timer de 1h começou.", "success");
             } else {
                 showToast("Resposta salva com sucesso!");
             }
 
-            update(ref(db, `chamados_comercial/${idChamadoAtivo}`), updates).then(() => {
-                fecharModais();
-            });
+            update(ref(db, `chamados_comercial/${idChamadoAtivo}`), updates).then(() => { fecharModais(); });
         }
 
         window.confirmarDerrubadaTimer = function() {
             if(!idChamadoAtivo) return;
             if(confirm("Confirma que o preço já foi derrubado no sistema? Isso encerrará o alerta vermelho.")) {
                 update(ref(db, `chamados_comercial/${idChamadoAtivo}`), {
-                    timerResolvido: true,
-                    precoDerrubadoEm: Date.now(),
-                    precoDerrubadoPor: dadosUsuario.nome || auth.currentUser.email
-                }).then(() => {
-                    showToast("Alerta encerrado com sucesso!", "success");
-                    fecharModais();
-                });
+                    timerResolvido: true, precoDerrubadoEm: Date.now(), precoDerrubadoPor: dadosUsuario.nome || auth.currentUser.email
+                }).then(() => { showToast("Alerta encerrado com sucesso!", "success"); fecharModais(); });
             }
         }
     </script>
