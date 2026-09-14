@@ -1267,6 +1267,9 @@
                 if (snapshot.exists()) {
                     const dados = snapshot.val();
                     perfilUsuario = dados.perfil || "Colaborador";
+                    if (dados.nome) {
+                        document.getElementById('user-name-widget').textContent = dados.nome.split(' ')[0];
+                    }
                 }
 
                 document.getElementById('user-role-widget').textContent = perfilUsuario;

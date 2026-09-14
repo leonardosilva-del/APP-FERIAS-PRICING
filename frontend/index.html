@@ -604,6 +604,10 @@
             const perfilDoBanco = dadosUser.perfil || "Colaborador";
             document.getElementById('user-role').textContent = perfilDoBanco;
             
+            if (dadosUser.nome) {
+                document.getElementById('user-name').textContent = dadosUser.nome.split(' ')[0];
+            }
+            
             if(perfilDoBanco === "Gestor") {
                 document.getElementById('card-usuarios').style.display = 'flex';
             } else {

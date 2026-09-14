@@ -645,6 +645,10 @@
                 const snapshot = await get(userRef);
 
                 if (snapshot.exists()) {
+                    const dbNome = snapshot.val().nome;
+                    if (dbNome) {
+                        document.getElementById('user-name-widget').textContent = dbNome.split(' ')[0];
+                    }
                     const perfil = snapshot.val().perfil;
                     
                     // BARREIRA DE SEGURANÇA

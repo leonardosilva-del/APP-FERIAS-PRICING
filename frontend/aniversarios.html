@@ -324,6 +324,9 @@
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
                     perfilUsuario = snapshot.val().perfil || "Colaborador";
+                    if (snapshot.val().nome) {
+                        document.getElementById('user-name-widget').textContent = snapshot.val().nome.split(' ')[0];
+                    }
                 }
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
                 
