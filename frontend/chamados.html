@@ -81,8 +81,10 @@
         .badge { font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 12px; text-transform: uppercase; }
         .badge.aberto { background: #fef3c7; color: #d97706; }
         .badge.analise { background: #e0f2fe; color: #0284c7; }
-        .badge.concluido { background: #dcfce7; color: #16a34a; }
+        .badge.aprovado { background: #dcfce7; color: #16a34a; }
+        .badge.concluido { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;}
         .badge.negado { background: #fee2e2; color: #dc2626; }
+        html.dark-theme .badge.concluido { background: #334155; color: #94a3b8; border-color: #475569;}
 
         .ticket-title { font-size: 1.05rem; font-weight: 700; color: var(--text-900); }
         .ticket-prod { font-size: 0.85rem; color: var(--text-600); background: var(--bg-body); padding: 8px; border-radius: 6px; border: 1px dashed var(--border-light); }
@@ -220,8 +222,10 @@
                 <select id="resposta-status">
                     <option value="Aberto">Aberto (Na Fila)</option>
                     <option value="Em Análise">Em Análise</option>
-                    <option value="Concluído">Concluído / Aprovado</option>
-                    <option value="Negado">Negado</option>
+                    <!-- Novo status para segurar o card na fila -->
+                    <option value="Aprovado">Aprovado (Mantém na Fila / Timer)</option>
+                    <option value="Concluído">Concluído / Derrubado (Sai da Fila)</option>
+                    <option value="Negado">Negado (Sai da Fila)</option>
                 </select>
 
                 <label>Resposta / Comentário do Pricing:</label>
@@ -238,7 +242,8 @@
 
             <div class="modal-buttons" id="botoes-detalhe">
                 <button class="btn-cancel" onclick="fecharModais()" style="width: 100%;">Fechar Janela</button>
-                <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none;">✅ Preço Derrubado (Parar Timer)</button>
+                <!-- Botão que finaliza o timer e já dá Concluído no chamado -->
+                <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none; flex: 2;">✅ Preço Derrubado (Finalizar Chamado)</button>
             </div>
         </div>
     </div>
@@ -278,7 +283,7 @@
     <main class="workspace">
         <div style="margin-bottom: 1rem;">
             <h1 style="font-size: 1.8rem; margin-bottom: 5px;">Painel de Solicitações</h1>
-            <p style="color: var(--text-600);" id="subtitulo-painel">Acompanhe seus chamados. O que é concluído sai da fila principal.</p>
+            <p style="color: var(--text-600);" id="subtitulo-painel">Acompanhe seus chamados. O que é concluído ou negado sai da fila principal.</p>
         </div>
 
         <!-- BARRA DE FILTROS INTELIGENTE -->
@@ -286,6 +291,7 @@
             <input type="text" id="filtro-busca" class="filter-input" placeholder="🔍 Buscar ID, Produto, Loja..." style="flex: 1; min-width: 200px;" oninput="aplicarFiltros()">
             
             <select id="filtro-status" class="filter-input" style="width: auto;" onchange="aplicarFiltros()">
+                <!-- O filtro PENDENTES agora engloba: Aberto, Em Análise e Aprovado -->
                 <option value="pendentes">🟠 Status: Ativos / Na Fila (Ocultar Concluídos)</option>
                 <option value="concluidos">✅ Status: Apenas Concluídos / Negados</option>
                 <option value="todos">📋 Status: Mostrar Todos</option>
@@ -314,7 +320,6 @@
         let arrayChamadosAtuais = []; 
         let idChamadoAtivo = null;
 
-        // UI UTILS
         window.showToast = function (msg, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -331,7 +336,6 @@
 
         window.addEventListener('click', function(e) { if (e.target.classList.contains('modal-overlay')) window.fecharModais(); });
         window.addEventListener('keydown', function(event) { if (event.key === 'Escape' || event.key === 'Esc') window.fecharModais(); });
-
         document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "/"; }); });
 
         // AUTH & CARREGAMENTO
@@ -497,6 +501,7 @@
             const hojeLocal = new Date().toLocaleDateString('pt-BR');
 
             let filtrados = arrayChamadosAtuais.filter(c => {
+                // A grande mágica: "Aprovado" não é "Concluído", então ele NÃO some do filtro "pendentes"
                 if (statusFiltro === "pendentes" && (c.status === "Concluído" || c.status === "Negado")) return false;
                 if (statusFiltro === "concluidos" && (c.status !== "Concluído" && c.status !== "Negado")) return false;
                 if (dataFiltro === "hoje" && !c.dataFormatada.startsWith(hojeLocal)) return false;
@@ -524,11 +529,13 @@
             lista.forEach(c => {
                 let badgeClass = "aberto";
                 if(c.status === "Em Análise") badgeClass = "analise";
+                if(c.status === "Aprovado") badgeClass = "aprovado";
                 if(c.status === "Concluído") badgeClass = "concluido";
                 if(c.status === "Negado") badgeClass = "negado";
                 
                 let htmlAlertaTimer = '';
-                if (c.tipo.includes("3") && c.status === "Concluído" && c.timerExpiraEm && !c.timerResolvido && perfilUsuario === "Gestor") {
+                // O Timer roda se existir uma data de expiração E não estiver resolvido (o status estará como "Aprovado")
+                if (c.timerExpiraEm && !c.timerResolvido && perfilUsuario === "Gestor") {
                     if (agora > c.timerExpiraEm) {
                         htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
                     } else {
@@ -595,7 +602,9 @@
                 areaResposta.style.display = 'block';
                 document.getElementById('resposta-status').value = c.status;
                 document.getElementById('resposta-texto').value = c.respostaTexto || '';
-                if(c.tipo.includes("3") && c.status === "Concluído" && !c.timerResolvido) btnDerrubar.style.display = 'block';
+                
+                // Mostrar o botão de parar o timer apenas se estiver expirando (Status Aprovado)
+                if(c.timerExpiraEm && !c.timerResolvido) btnDerrubar.style.display = 'block';
             } else {
                 if(c.respostaTexto) {
                     areaLeitura.style.display = 'block';
@@ -613,7 +622,8 @@
 
             let updates = { status: status, respostaTexto: texto, respondidoEm: Date.now() };
 
-            if(c.tipo.includes("3") && status === "Concluído" && !c.timerExpiraEm) {
+            // Se mudou para Aprovado (Timer) pela primeira vez
+            if(c.tipo.includes("3") && status === "Aprovado" && !c.timerExpiraEm) {
                 updates.timerExpiraEm = Date.now() + 3600000;
                 updates.timerResolvido = false;
                 showToast("Venda aprovada! O timer de 1h começou.", "success");
@@ -626,10 +636,13 @@
 
         window.confirmarDerrubadaTimer = function() {
             if(!idChamadoAtivo) return;
-            if(confirm("Confirma que o preço já foi derrubado no sistema? Isso encerrará o alerta vermelho.")) {
+            if(confirm("Confirma que o preço já foi derrubado no sistema? Isso moverá o chamado para Concluído.")) {
                 update(ref(db, `chamados_comercial/${idChamadoAtivo}`), {
-                    timerResolvido: true, precoDerrubadoEm: Date.now(), precoDerrubadoPor: dadosUsuario.nome || auth.currentUser.email
-                }).then(() => { showToast("Alerta encerrado com sucesso!", "success"); fecharModais(); });
+                    timerResolvido: true, 
+                    precoDerrubadoEm: Date.now(), 
+                    precoDerrubadoPor: dadosUsuario.nome || auth.currentUser.email,
+                    status: "Concluído" // Automagicamente finaliza o chamado e joga pro arquivo morto!
+                }).then(() => { showToast("Preço derrubado e chamado concluído!", "success"); fecharModais(); });
             }
         }
     </script>
