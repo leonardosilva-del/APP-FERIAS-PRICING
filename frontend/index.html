@@ -451,15 +451,8 @@
         }
 
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -490,6 +483,35 @@
             <input type="email" id="email-input" class="input-login" placeholder="Seu e-mail corporativo">
             <input type="password" id="senha-input" class="input-login" placeholder="Sua senha">
             <button id="btn-login-email" class="btn-email">Entrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PRIMEIRO ACESSO (ONBOARDING OBRIGATÓRIO) -->
+    <div id="modal-primeiro-acesso" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px;">
+        <div style="background: var(--card-bg); width: 100%; max-width: 450px; padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px;">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 5px;">Bem-vindo à Intranet! 🎉</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Complete seu perfil para liberar o acesso.</p>
+            </div>
+            
+            <div>
+                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">Nome Completo</label>
+                <input type="text" id="onboarding-nome" class="input-login" placeholder="Ex: Leonardo Silva">
+            </div>
+            <div>
+                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">CPF</label>
+                <input type="text" id="onboarding-cpf" class="input-login" placeholder="Ex: 000.000.000-00">
+            </div>
+            <div>
+                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">Telefone (WhatsApp)</label>
+                <input type="text" id="onboarding-telefone" class="input-login" placeholder="Ex: (61) 90000-0000">
+            </div>
+            <div>
+                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">Data de Nascimento</label>
+                <input type="date" id="onboarding-nascimento" class="input-login">
+            </div>
+            
+            <button id="btn-salvar-onboarding" class="btn-email" style="margin-top: 10px;" onclick="window.salvarPrimeiroAcesso()">Concluir Cadastro</button>
         </div>
     </div>
 
@@ -561,12 +583,10 @@
 
     <!-- MOTOR DE AUTENTICAÇÃO -->
     <script type="module">
-        // Importando as novas funções de autenticação com email/senha
         import { auth, provider, db } from "./firebase-config.js";
         import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, set, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
-        // Ajusta o ícone inicial na Home com base no tema
         document.addEventListener('DOMContentLoaded', () => {
             const isDark = localStorage.getItem('tema-intranet') === 'dark';
             const btnIcon = document.getElementById('icon-theme');
@@ -575,66 +595,127 @@
 
         const loginSection = document.getElementById('login-section');
         const appSection = document.getElementById('app-section');
+        const modalPrimeiroAcesso = document.getElementById('modal-primeiro-acesso');
 
-        // Flag para saber se é a primeira verificação do Firebase
         let primeiraVerificacao = true;
 
-        // 1. Ouvinte: Fica de olho se a pessoa logou ou deslogou
+        // FUNÇÃO PARA LIBERAR A TELA DEPOIS DE VALIDAR TUDO
+        window.concluirLogin = function(dadosUser) {
+            const perfilDoBanco = dadosUser.perfil || "Colaborador";
+            document.getElementById('user-role').textContent = perfilDoBanco;
+            
+            if(perfilDoBanco === "Gestor") {
+                document.getElementById('card-usuarios').style.display = 'flex';
+            } else {
+                document.getElementById('card-usuarios').style.display = 'none';
+            }
+            
+            loginSection.style.display = 'none';
+            modalPrimeiroAcesso.style.display = 'none';
+            appSection.style.display = 'flex';
+            
+            if (primeiraVerificacao) {
+                primeiraVerificacao = false;
+                document.body.classList.add('auth-ready');
+            }
+        };
+
+        // 1. OUVINTE DE LOGIN/LOGOUT
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Usuário está LOGADO — mostra o app direto, sem flash de login
-                loginSection.style.display = 'none';
-                appSection.style.display = 'flex';
-
-                // Preenche foto e nome com tratamento de erros (caso use E-mail/Senha sem foto no perfil do Google)
                 const avatarPadrao = 'https://ui-avatars.com/api/?background=2563eb&color=fff&name=' + (user.displayName || user.email.charAt(0));
                 document.getElementById('user-photo').src = user.photoURL || avatarPadrao;
                 
                 const nomeExibicao = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
                 document.getElementById('user-name').textContent = nomeExibicao;
 
-                // Busca o perfil real salvo no Banco de Dados
                 const userRef = ref(db, 'usuarios/' + user.uid);
                 get(userRef).then((snapshot) => {
-                    if (!snapshot.exists()) {
-                        // Se for a primeira vez no sistema, cria o perfil como Colaborador
-                        set(userRef, {
-                            nome: user.displayName || nomeExibicao,
-                            email: user.email,
-                            foto: user.photoURL || "",
-                            perfil: "Colaborador",
-                            criadoEm: new Date().toISOString()
-                        });
-                        document.getElementById('user-role').textContent = "Colaborador";
-                        document.getElementById('card-usuarios').style.display = 'none';
-                    } else {
-                        // Se já existir no banco, pega o perfil real (Gestor ou Colaborador)
-                        const perfilDoBanco = snapshot.val().perfil || "Colaborador";
-                        document.getElementById('user-role').textContent = perfilDoBanco;
+                    let dadosUser = snapshot.exists() ? snapshot.val() : {};
+                    
+                    // A MÁGICA ACONTECE AQUI: Faltou alguma coisa? Chama o Modal!
+                    if (!dadosUser.cpf || !dadosUser.telefone || !dadosUser.dataNascimento) {
+                        loginSection.style.display = 'none';
+                        appSection.style.display = 'none';
+                        modalPrimeiroAcesso.style.display = 'flex'; // Prende o usuário na tela de cadastro
                         
-                        // Exibe o card de usuários apenas se for Gestor
-                        if(perfilDoBanco === "Gestor") {
-                            document.getElementById('card-usuarios').style.display = 'flex';
-                        } else {
-                            document.getElementById('card-usuarios').style.display = 'none';
-                        }
+                        document.getElementById('onboarding-nome').value = dadosUser.nome || user.displayName || "";
+                        window.dadosUsuarioPendente = dadosUser; // Guarda o que já existe para não perder
+                    } else {
+                        // Se tem tudo preenchido, vai direto para a home!
+                        window.concluirLogin(dadosUser);
                     }
                 });
 
             } else {
-                // Usuário está DESLOGADO — mostra a tela de login
+                // Usuário DESLOGADO
                 loginSection.style.display = 'flex';
                 appSection.style.display = 'none';
-            }
-
-            // Na primeira verificação, remove o estado de carregamento
-            if (primeiraVerificacao) {
-                primeiraVerificacao = false;
-                document.body.classList.add('auth-ready');
+                modalPrimeiroAcesso.style.display = 'none';
+                
+                if (primeiraVerificacao) {
+                    primeiraVerificacao = false;
+                    document.body.classList.add('auth-ready');
+                }
             }
         });
 
-        // 2A. Ação de Login (GOOGLE)
+        // 2. FUNÇÃO QUE SALVA OS DADOS DO PRIMEIRO ACESSO
+        window.salvarPrimeiroAcesso = function() {
+            const nome = document.getElementById('onboarding-nome').value.trim();
+            const cpf = document.getElementById('onboarding-cpf').value.trim();
+            const tel = document.getElementById('onboarding-telefone').value.trim();
+            const nasc = document.getElementById('onboarding-nascimento').value;
+
+            if(!nome || !cpf || !tel || !nasc) {
+                alert("Por favor, preencha todos os campos para liberar seu acesso.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-salvar-onboarding');
+            btn.textContent = "Salvando...";
+            btn.disabled = true;
+
+            let perfil = window.dadosUsuarioPendente.perfil || "Colaborador";
+            let criadoEm = window.dadosUsuarioPendente.criadoEm || new Date().toISOString();
+            
+            let updates = {};
+            
+            // 2.1 ATUALIZA O PERFIL DO USUÁRIO
+            updates['usuarios/' + auth.currentUser.uid + '/nome'] = nome;
+            updates['usuarios/' + auth.currentUser.uid + '/email'] = auth.currentUser.email;
+            updates['usuarios/' + auth.currentUser.uid + '/foto'] = auth.currentUser.photoURL || "";
+            updates['usuarios/' + auth.currentUser.uid + '/perfil'] = perfil;
+            updates['usuarios/' + auth.currentUser.uid + '/cpf'] = cpf;
+            updates['usuarios/' + auth.currentUser.uid + '/telefone'] = tel;
+            updates['usuarios/' + auth.currentUser.uid + '/dataNascimento'] = nasc;
+            updates['usuarios/' + auth.currentUser.uid + '/criadoEm'] = criadoEm;
+
+            // 2.2 BÔNUS: CADASTRAR O ANIVERSÁRIO AUTOMATICAMENTE!
+            updates['aniversariantes/' + auth.currentUser.uid] = {
+                nome: nome,
+                cargo: "Equipe Pricing", // Cargo padrão genérico
+                data: nasc,
+                foto: auth.currentUser.photoURL || ""
+            };
+
+            // Dispara as duas gravações de uma vez só!
+            update(ref(db), updates).then(() => {
+                window.concluirLogin({
+                    nome: nome,
+                    perfil: perfil,
+                    cpf: cpf,
+                    telefone: tel,
+                    dataNascimento: nasc
+                });
+            }).catch(err => {
+                alert("Erro ao salvar: " + err.message);
+                btn.textContent = "Concluir Cadastro";
+                btn.disabled = false;
+            });
+        };
+
+        // 3A. Ação de Login (GOOGLE)
         document.getElementById('btn-login-google').addEventListener('click', () => {
             signInWithPopup(auth, provider).catch((error) => {
                 console.error("Erro no login com Google:", error);
@@ -642,7 +723,7 @@
             });
         });
 
-        // 2B. Ação de Login (EMAIL E SENHA)
+        // 3B. Ação de Login (EMAIL E SENHA)
         document.getElementById('btn-login-email').addEventListener('click', () => {
             const email = document.getElementById('email-input').value.trim();
             const senha = document.getElementById('senha-input').value.trim();
@@ -657,9 +738,7 @@
             btn.disabled = true;
 
             signInWithEmailAndPassword(auth, email, senha)
-                .then((userCredential) => {
-                    // Logou com sucesso (onAuthStateChanged vai esconder a tela)
-                })
+                .then(() => {}) // OnAuthState vai pegar e verificar os dados
                 .catch((error) => {
                     console.error("Erro no login com email:", error);
                     let msg = "E-mail ou senha inválidos.";
@@ -673,14 +752,13 @@
                 });
         });
 
-        // Evento de "Enter" para facilitar o login no campo de senha
         document.getElementById('senha-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 document.getElementById('btn-login-email').click();
             }
         });
 
-        // 3. Ação de Logout
+        // 4. Ação de Logout
         document.getElementById('btn-logout').addEventListener('click', () => {
             signOut(auth);
         });
