@@ -180,8 +180,17 @@
     <!-- SESSÃO DE LOGIN -->
     <div id="login-section">
         <img src="logo.png" alt="Dia a Dia">
-        <h2>Acesso Restrito</h2>
-        <p>Intranet exclusiva para a equipe de Pricing.</p>
+        <h2>Acesso à Intranet</h2>
+        <p>Selecione seu setor e faça login para acessar o sistema.</p>
+
+        <div style="width: 100%; text-align: left; margin-bottom: 1rem;">
+            <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">Informe seu Setor:</label>
+            <select id="login-setor" class="input-login" style="cursor: pointer; font-weight: 500;">
+                <option value="">Selecione seu setor...</option>
+                <option value="Comercial">🛒 Comercial (Comprador)</option>
+                <option value="Pricing">📊 Pricing</option>
+            </select>
+        </div>
 
         <button id="btn-login-google" class="btn-google">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
@@ -205,6 +214,14 @@
                 <p style="color: var(--text-muted); font-size: 0.95rem;">Complete seu perfil para liberar o acesso.</p>
             </div>
             
+            <div>
+                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">Setor / Área de Atuação</label>
+                <select id="onboarding-setor" class="input-login" style="cursor: pointer; font-weight: 600;">
+                    <option value="" disabled selected>Selecione seu setor...</option>
+                    <option value="Comercial">🛒 Comercial (Comprador)</option>
+                    <option value="Pricing">📊 Pricing</option>
+                </select>
+            </div>
             <div>
                 <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block;">Nome Completo</label>
                 <input type="text" id="onboarding-nome" class="input-login" placeholder="Ex: Leonardo Silva">
@@ -251,48 +268,48 @@
         </div>
 
         <div class="dashboard">
-            <a href="ferias.html" class="card vacation">
+            <a href="ferias.html" class="card vacation card-pricing" id="card-ferias">
                 <div class="icon-container">🌴</div>
                 <h2>Cronograma de Férias</h2>
                 <p>Gerencie e visualize as férias da equipe.</p>
             </a>
-            <a href="escalas.html" class="card shifts">
+            <a href="escalas.html" class="card shifts card-pricing" id="card-escalas">
                 <div class="icon-container">🏥</div>
                 <h2>Escalas de Plantão</h2>
                 <p>Acesse as escalas de plantão atualizadas.</p>
             </a>
-            <a href="agenda.html" class="card agenda">
+            <a href="agenda.html" class="card agenda card-pricing" id="card-agenda">
                 <div class="icon-container">📋</div>
                 <h2>Agenda da Equipe</h2>
                 <p>Gerencie tarefas, rotinas e metas no Kanban.</p>
             </a>
-            <a href="ofertas.html" class="card offers">
+            <a href="ofertas.html" class="card offers card-pricing" id="card-ofertas">
                 <div class="icon-container">🏷️</div>
                 <h2>Calendário de Ofertas</h2>
                 <p>Consulte prazos e status das campanhas.</p>
             </a>
             
-            <!-- NOVO CARD: SUPORTE COMERCIAL -->
-            <a href="chamados.html" class="card">
+            <!-- CARD: SUPORTE COMERCIAL (Painel de Solicitações) -->
+            <a href="chamados.html" class="card" id="card-chamados">
                 <div class="icon-container" style="background: rgba(234, 88, 12, 0.1); color: #ea580c;">🎧</div>
                 <h2>Suporte Comercial</h2>
                 <p>Abra chamados para ajustes de preços e FIFO.</p>
             </a>
 
-            <a href="aniversarios.html" class="card" id="card-aniversarios">
+            <a href="aniversarios.html" class="card card-pricing" id="card-aniversarios">
                 <div class="icon-container" style="background: rgba(219, 39, 119, 0.1); color: #db2777;">🎂</div>
                 <h2>Aniversariantes</h2>
                 <p>Celebre as datas especiais da equipe.</p>
                 <div id="badge-aniversario" style="display: none; position: absolute; top: 12px; right: 12px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: pulseAlert 2s infinite; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">Festa hoje! 🎉</div>
             </a>
             
-            <a href="links.html" class="card links">
+            <a href="links.html" class="card links card-pricing" id="card-links">
                 <div class="icon-container">🔗</div>
                 <h2>Links Essenciais</h2>
                 <p>Acesse rapidamente planilhas e sistemas.</p>
             </a>
             
-            <!-- CARD GESTÃO DE USUÁRIOS (Oculto para Colaborador) -->
+            <!-- CARD GESTÃO DE USUÁRIOS (Exclusivo Nível 1 - Gestor) -->
             <a href="usuarios.html" class="card" id="card-usuarios" style="display: none;">
                 <div class="icon-container" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👥</div>
                 <h2>Gestão de Usuários</h2>
@@ -319,17 +336,55 @@
         let primeiraVerificacao = true;
 
         window.concluirLogin = function(dadosUser) {
-            const perfilDoBanco = dadosUser.perfil || "Colaborador";
+            let perfilDoBanco = dadosUser.perfil;
+            if (!perfilDoBanco) {
+                perfilDoBanco = (dadosUser.setor === "Comercial") ? "Comercial" : "Pricing";
+            }
+            // Compatibilidade com perfil legado 'Colaborador'
+            if (perfilDoBanco === "Colaborador") {
+                perfilDoBanco = "Pricing";
+            }
+
+            if (perfilDoBanco === "Bloqueado") {
+                alert("Acesso Bloqueado: Sua conta está desativada no sistema. Procure a gestão.");
+                signOut(auth);
+                return;
+            }
+
             document.getElementById('user-role').textContent = perfilDoBanco;
             
             if (dadosUser.nome) {
                 document.getElementById('user-name').textContent = dadosUser.nome.split(' ')[0];
             }
             
-            if(perfilDoBanco === "Gestor") {
-                document.getElementById('card-usuarios').style.display = 'flex';
+            const headerTitle = document.querySelector('.header h1');
+            const headerSubtitle = document.querySelector('.header p');
+            const pricingCards = document.querySelectorAll('.card-pricing');
+            const cardUsuarios = document.getElementById('card-usuarios');
+            const cardChamados = document.getElementById('card-chamados');
+
+            // HIERARQUIA DE NÍVEIS
+            if (perfilDoBanco === "Comercial") {
+                // NÍVEL 3: COMERCIAL (Apenas o painel de solicitações)
+                pricingCards.forEach(c => c.style.display = 'none');
+                if (cardUsuarios) cardUsuarios.style.display = 'none';
+                if (cardChamados) cardChamados.style.display = 'flex';
+                if (headerTitle) headerTitle.textContent = "Portal Comercial ;DD";
+                if (headerSubtitle) headerSubtitle.textContent = "Acesse o painel de solicitações abaixo para enviar e acompanhar chamados ao Pricing.";
+            } else if (perfilDoBanco === "Gestor") {
+                // NÍVEL 1: GESTOR (Acesso total + Gestão de Usuários)
+                pricingCards.forEach(c => c.style.display = 'flex');
+                if (cardUsuarios) cardUsuarios.style.display = 'flex';
+                if (cardChamados) cardChamados.style.display = 'flex';
+                if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
+                if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             } else {
-                document.getElementById('card-usuarios').style.display = 'none';
+                // NÍVEL 2: PRICING (Equipe Pricing - Todos os cards da rotina, exceto Gestão de Usuários)
+                pricingCards.forEach(c => c.style.display = 'flex');
+                if (cardUsuarios) cardUsuarios.style.display = 'none';
+                if (cardChamados) cardChamados.style.display = 'flex';
+                if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
+                if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             }
             
             loginSection.style.display = 'none';
@@ -341,33 +396,35 @@
                 document.body.classList.add('auth-ready');
             }
 
-            const aniversariantesRef = ref(db, 'aniversariantes');
-            get(aniversariantesRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    const hoje = new Date();
-                    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
-                    const diaAtual = String(hoje.getDate()).padStart(2, '0');
-                    
-                    let temAniversarianteHoje = false;
-                    
-                    snapshot.forEach((child) => {
-                        const aniv = child.val();
-                        if (aniv.data) {
-                            const partes = aniv.data.split('-');
-                            if (partes.length === 3) {
-                                if (partes[1] === mesAtual && partes[2] === diaAtual) {
-                                    temAniversarianteHoje = true;
+            if (perfilDoBanco !== "Comercial") {
+                const aniversariantesRef = ref(db, 'aniversariantes');
+                get(aniversariantesRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const hoje = new Date();
+                        const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+                        const diaAtual = String(hoje.getDate()).padStart(2, '0');
+                        
+                        let temAniversarianteHoje = false;
+                        
+                        snapshot.forEach((child) => {
+                            const aniv = child.val();
+                            if (aniv.data) {
+                                const partes = aniv.data.split('-');
+                                if (partes.length === 3) {
+                                    if (partes[1] === mesAtual && partes[2] === diaAtual) {
+                                        temAniversarianteHoje = true;
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
 
-                    if (temAniversarianteHoje) {
-                        const badge = document.getElementById('badge-aniversario');
-                        if (badge) badge.style.display = 'block';
+                        if (temAniversarianteHoje) {
+                            const badge = document.getElementById('badge-aniversario');
+                            if (badge) badge.style.display = 'block';
+                        }
                     }
-                }
-            });
+                });
+            }
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -382,12 +439,26 @@
                 get(userRef).then((snapshot) => {
                     let dadosUser = snapshot.exists() ? snapshot.val() : {};
                     
-                    if (!dadosUser.cpf || !dadosUser.telefone || !dadosUser.dataNascimento) {
+                    const setorTelaLogin = document.getElementById('login-setor') ? document.getElementById('login-setor').value : '';
+                    if (setorTelaLogin && !dadosUser.setor) {
+                        dadosUser.setor = setorTelaLogin;
+                    }
+
+                    if (!dadosUser.cpf || !dadosUser.telefone || !dadosUser.dataNascimento || !dadosUser.setor) {
                         loginSection.style.display = 'none';
                         appSection.style.display = 'none';
                         modalPrimeiroAcesso.style.display = 'flex';
                         
                         document.getElementById('onboarding-nome').value = dadosUser.nome || user.displayName || "";
+                        if (dadosUser.setor) {
+                            document.getElementById('onboarding-setor').value = dadosUser.setor;
+                        } else if (setorTelaLogin) {
+                            document.getElementById('onboarding-setor').value = setorTelaLogin;
+                        }
+                        if (dadosUser.cpf) document.getElementById('onboarding-cpf').value = dadosUser.cpf;
+                        if (dadosUser.telefone) document.getElementById('onboarding-telefone').value = dadosUser.telefone;
+                        if (dadosUser.dataNascimento) document.getElementById('onboarding-nascimento').value = dadosUser.dataNascimento;
+
                         window.dadosUsuarioPendente = dadosUser;
                     } else {
                         window.concluirLogin(dadosUser);
@@ -407,13 +478,14 @@
         });
 
         window.salvarPrimeiroAcesso = function() {
+            const setor = document.getElementById('onboarding-setor').value;
             const nome = document.getElementById('onboarding-nome').value.trim();
             const cpf = document.getElementById('onboarding-cpf').value.trim();
             const tel = document.getElementById('onboarding-telefone').value.trim();
             const nasc = document.getElementById('onboarding-nascimento').value;
 
-            if(!nome || !cpf || !tel || !nasc) {
-                alert("Por favor, preencha todos os campos para liberar seu acesso.");
+            if(!setor || !nome || !cpf || !tel || !nasc) {
+                alert("Por favor, preencha todos os campos, incluindo seu setor, para liberar seu acesso.");
                 return;
             }
 
@@ -421,29 +493,35 @@
             btn.textContent = "Salvando...";
             btn.disabled = true;
 
-            let perfil = window.dadosUsuarioPendente.perfil || "Colaborador";
-            let criadoEm = window.dadosUsuarioPendente.criadoEm || new Date().toISOString();
+            let perfil = window.dadosUsuarioPendente && window.dadosUsuarioPendente.perfil;
+            if (perfil !== "Gestor") {
+                perfil = (setor === "Comercial") ? "Comercial" : "Pricing";
+            }
+            let criadoEm = (window.dadosUsuarioPendente && window.dadosUsuarioPendente.criadoEm) || new Date().toISOString();
             
             let updates = {};
             
             updates['usuarios/' + auth.currentUser.uid + '/nome'] = nome;
             updates['usuarios/' + auth.currentUser.uid + '/email'] = auth.currentUser.email;
             updates['usuarios/' + auth.currentUser.uid + '/foto'] = auth.currentUser.photoURL || "";
+            updates['usuarios/' + auth.currentUser.uid + '/setor'] = setor;
             updates['usuarios/' + auth.currentUser.uid + '/perfil'] = perfil;
             updates['usuarios/' + auth.currentUser.uid + '/cpf'] = cpf;
             updates['usuarios/' + auth.currentUser.uid + '/telefone'] = tel;
             updates['usuarios/' + auth.currentUser.uid + '/dataNascimento'] = nasc;
             updates['usuarios/' + auth.currentUser.uid + '/criadoEm'] = criadoEm;
 
-            updates['aniversariantes/' + auth.currentUser.uid] = {
-                nome: nome,
-                cargo: "Equipe Pricing",
-                data: nasc,
-                foto: auth.currentUser.photoURL || ""
-            };
+            if (setor !== "Comercial") {
+                updates['aniversariantes/' + auth.currentUser.uid] = {
+                    nome: nome,
+                    cargo: "Equipe Pricing",
+                    data: nasc,
+                    foto: auth.currentUser.photoURL || ""
+                };
+            }
 
             update(ref(db), updates).then(() => {
-                window.concluirLogin({ nome, perfil, cpf, telefone: tel, dataNascimento: nasc });
+                window.concluirLogin({ nome, perfil, setor, cpf, telefone: tel, dataNascimento: nasc });
             }).catch(err => {
                 alert("Erro ao salvar: " + err.message);
                 btn.textContent = "Concluir Cadastro";
