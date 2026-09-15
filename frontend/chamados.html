@@ -276,7 +276,7 @@
             <div class="logo">🎧 Suporte Comercial</div>
         </div>
         <div class="topbar-actions">
-            <!-- Botão Configuração atualizado -->
+            <!-- Botão Configuração visível para Gestor e Pricing -->
             <button class="btn-config" id="btn-config-base" onclick="document.getElementById('modalConfig').style.display='flex'">⚙️ Configurações</button>
             <button class="btn-primary" onclick="abrirModalChamado()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -369,9 +369,12 @@
                 perfilUsuario = dadosUsuario.perfil || "Colaborador";
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
 
-                if (perfilUsuario === "Gestor") {
+                // Restrição Corrigida: Gestor e Pricing podem ver configurações e fila geral
+                if (perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
                     document.getElementById('btn-config-base').style.display = 'block';
                     document.getElementById('subtitulo-painel').innerText = "Fila geral de atendimento do Comercial.";
+                } else {
+                    document.getElementById('subtitulo-painel').innerText = "Acompanhe seus chamados. O que é concluído ou negado sai da fila principal.";
                 }
 
                 carregarConfiguracoesTimer();
@@ -538,7 +541,8 @@
                 chamadosGlobais = snapshot.exists() ? snapshot.val() : {};
                 arrayChamadosAtuais = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
                 
-                if(perfilUsuario !== "Gestor") {
+                // Restrição Corrigida: Comercial vê só o dele. Gestor e Pricing veem tudo.
+                if(perfilUsuario !== "Gestor" && perfilUsuario !== "Pricing") {
                     arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
                 }
 
@@ -586,7 +590,7 @@
                 if(c.status === "Negado") badgeClass = "negado";
                 
                 let htmlAlertaTimer = '';
-                if (c.timerExpiraEm && !c.timerResolvido && perfilUsuario === "Gestor") {
+                if (c.timerExpiraEm && !c.timerResolvido && (perfilUsuario === "Gestor" || perfilUsuario === "Pricing")) {
                     if (agora > c.timerExpiraEm) {
                         htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
                     } else {
@@ -650,7 +654,8 @@
             
             areaResposta.style.display = 'none'; areaLeitura.style.display = 'none'; btnDerrubar.style.display = 'none';
 
-            if(perfilUsuario === "Gestor") {
+            // Restrição Corrigida: Gestor e Pricing podem responder.
+            if(perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
                 areaResposta.style.display = 'block';
                 document.getElementById('resposta-status').value = c.status;
                 document.getElementById('resposta-texto').value = c.respostaTexto || '';
@@ -673,7 +678,6 @@
 
             let updates = { status: status, respostaTexto: texto, respondidoEm: Date.now() };
 
-            // USA O TEMPO VARIÁVEL DEFINIDO NAS CONFIGURAÇÕES
             if(c.tipo.includes("3") && status === "Aprovado" && !c.timerExpiraEm) {
                 updates.timerExpiraEm = Date.now() + (timerPadraoMinutos * 60 * 1000);
                 updates.timerResolvido = false;
