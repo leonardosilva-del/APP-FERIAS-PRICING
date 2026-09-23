@@ -506,240 +506,21 @@
                 console.error(err);
             });
         };
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // --- App Logic ---
-            const form = document.getElementById("vacationForm");
-            const submitBtn = document.getElementById("submitBtn");
-            const cancelBtn = document.getElementById("cancelBtn");
-            const formTitle = document.getElementById("formTitle");
-            const tableBody = document.getElementById("tableBody");
-            const toggleFormBtn = document.getElementById("toggleFormBtn");
-            const agendarPanel = document.getElementById("agendarPanel");
-
-            const inputInicio = document.getElementById("data_inicio");
-            const inputFim = document.getElementById("data_fim");
-            const inputDias = document.getElementById("dias_ferias");
-            const inputNome = document.getElementById("nome");
-
-            let fetchTimeout;
-            let editIndex = null;
-            let currentVacations = [];
-
-            const calculateDates = async () => {
-                const inicio = inputInicio.value;
-                const fim = inputFim.value;
-                const dias = inputDias.value;
-
-                if (inicio && (fim || dias)) {
-                    try {
-                        const res = await fetch("/api/calculate", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                data_inicio: inicio,
-                                data_fim: fim,
-                                dias_ferias: dias ? parseInt(dias) : 0
-                            })
-                        });
-
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data.data_fim !== fim) inputFim.value = data.data_fim;
-                            if (data.dias_ferias.toString() !== dias) inputDias.value = data.dias_ferias;
-                        }
-                    } catch (err) {
-                        console.error("Erro no cálculo", err);
-                    }
-                }
-            };
-
-            const handleInput = (e) => {
-                if (e.target.id === "dias_ferias" && e.target.value) {
-                    inputFim.value = "";
-                } else if (e.target.id === "data_fim" && e.target.value) {
-                    inputDias.value = "";
-                }
-
-                clearTimeout(fetchTimeout);
-                fetchTimeout = setTimeout(calculateDates, 500);
-            };
-
-            inputInicio.addEventListener("input", handleInput);
-            inputFim.addEventListener("input", handleInput);
-            inputDias.addEventListener("input", handleInput);
-
-            const formatDate = (dateStr) => {
-                if (!dateStr) return "";
-                const parts = dateStr.split("-");
-                if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-                return dateStr;
-            };
-
-            toggleFormBtn.addEventListener("click", () => {
-                if (agendarPanel.style.display === "none") {
-                    agendarPanel.style.display = "block";
-                    toggleFormBtn.innerText = "Fechar Formulário";
-                } else {
-                    agendarPanel.style.display = "none";
-                    toggleFormBtn.innerText = "+ Novo Agendamento";
-                    cancelEdit();
-                }
-            });
-
-            const loadVacations = async () => {
-                try {
-                    const res = await fetch("/api/vacations");
-                    const data = await res.json();
-                    currentVacations = data.data || [];
-
-                    if (currentVacations.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Nenhum registro encontrado.</td></tr>';
-                        return;
-                    }
-
-                    currentVacations.sort((a, b) => {
-                        if (!a["Data de Início"]) return 1;
-                        if (!b["Data de Início"]) return -1;
-                        const dataA = new Date(a["Data de Início"]);
-                        const dataB = new Date(b["Data de Início"]);
-                        return dataA - dataB;
-                    });
-
-                    tableBody.innerHTML = "";
-                    currentVacations.forEach((v) => {
-                        const tr = document.createElement("tr");
-
-                        let badgeClass = 'status-agendado';
-                        if (v.Status === 'Em Férias') badgeClass = 'status-em-ferias';
-                        if (v.Status === 'Finalizada') badgeClass = 'status-finalizada';
-
-                        tr.innerHTML = `
-              <td><strong>${v.Nome}</strong></td>
-              <td>${formatDate(v["Data de Início"])}</td>
-              <td>${formatDate(v["Data de Fim"])}</td>
-              <td>${formatDate(v["Dia de Retorno"])}</td>
-              <td>${v["Dias de Férias"]}</td>
-              <td><span class="status-badge ${badgeClass}">${v.Status}</span></td>
-              ${window.perfilUsuario === 'Gestor' ? `
-              <td class="no-print">
-                <button type="button" class="action-btn" onclick="window.editVacation(${v.id})">Editar</button>
-                <button type="button" class="action-btn danger" onclick="window.deleteVacation(${v.id})">Excluir</button>
-              </td>` : ''}
-            `;
-                        tableBody.appendChild(tr);
-                    });
-                } catch (err) {
-                    console.error(err);
-                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger);">Erro ao carregar dados do servidor.</td></tr>';
-                }
-            };
-            window.loadVacationsGlobal = loadVacations;
-
-            window.editVacation = (id) => {
-                if (window.perfilUsuario !== 'Gestor') return;
-                const v = currentVacations.find(item => item.id === id);
-                if (!v) return;
-                inputNome.value = v.Nome;
-                inputInicio.value = v["Data de Início"];
-                inputFim.value = v["Data de Fim"];
-                inputDias.value = v["Dias de Férias"];
-
-                editIndex = id;
-                formTitle.innerText = "Editar Férias";
-                submitBtn.innerText = "Atualizar Férias";
-                cancelBtn.style.display = "block";
-                agendarPanel.style.display = "block";
-                toggleFormBtn.innerText = "Fechar Formulário";
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-
-            window.deleteVacation = async (id) => {
-                if (window.perfilUsuario !== 'Gestor') return;
-                if (!confirm("Tem certeza que deseja excluir esse registro?")) return;
-
-                try {
-                    const res = await fetch(`/api/vacations/${id}`, { method: "DELETE" });
-                    if (res.ok) {
-                        if (window.showToast) window.showToast("Excluído com sucesso!", "success");
-                        loadVacations();
-                        if (editIndex === id) cancelEdit();
-                    } else {
-                        const err = await res.json();
-                        let msg = err.detail;
-                        if (Array.isArray(msg)) msg = msg.map(e => "Preencha todos os campos corretamente.").join(", ");
-                        if (window.showToast) window.showToast("Erro: " + msg, "error");
-                    }
-                } catch (err) {
-                    if (window.showToast) window.showToast("Erro ao excluir.", "error");
-                }
-            };
-
-            const cancelEdit = () => {
-                editIndex = null;
-                form.reset();
-                formTitle.innerText = "Agendar Férias";
-                submitBtn.innerText = "Salvar Férias";
-                cancelBtn.style.display = "none";
-                agendarPanel.style.display = "none";
-                toggleFormBtn.innerText = "+ Novo Agendamento";
-            };
-
-            cancelBtn.addEventListener("click", cancelEdit);
-
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                if (window.perfilUsuario !== 'Gestor') return;
-
-                submitBtn.disabled = true;
-                const originalText = submitBtn.innerText;
-                submitBtn.innerText = "Salvando...";
-
-                try {
-                    const payload = {
-                        nome: inputNome.value,
-                        data_inicio: inputInicio.value,
-                        data_fim: inputFim.value,
-                        dias_ferias: parseInt(inputDias.value || 0)
-                    };
-
-                    const url = editIndex !== null ? `/api/vacations/${editIndex}` : "/api/vacations";
-                    const method = editIndex !== null ? "PUT" : "POST";
-
-                    const res = await fetch(url, {
-                        method: method,
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (res.ok) {
-                        if (window.showToast) window.showToast(editIndex !== null ? "Férias atualizadas!" : "Férias cadastradas com sucesso!", "success");
-                        cancelEdit();
-                        loadVacations();
-                    } else {
-                        const err = await res.json();
-                        let msg = err.detail;
-                        if (Array.isArray(msg)) msg = msg.map(e => "Preencha todos os campos corretamente.").join(", ");
-                        if (window.showToast) window.showToast("Erro: " + msg, "error");
-                    }
-                } catch (err) {
-                    if (window.showToast) window.showToast("Erro ao conectar com o servidor.", "error");
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = originalText;
-                }
-            });
-        });
     </script>
 
-    <!-- FIREBASE AUTHENTICATION SCRIPT -->
+    <!-- SCRIPT PRINCIPAL INTEGRADO AO FIREBASE -->
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, onValue, push, remove, update, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
+        const feriasRef = ref(db, 'ferias');
         window.perfilUsuario = "Colaborador";
 
+        let editId = null;
+        let currentVacations = [];
+
+        // TOAST NOTIFICATIONS
         window.showToast = function (message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -753,25 +534,333 @@
             }, 3000);
         };
 
+        // CÁLCULOS DE DATA E DIAS
+        function calcularDataFim(inicioStr, dias) {
+            if (!inicioStr || !dias) return "";
+            const [y, m, d] = inicioStr.split("-").map(Number);
+            const dt = new Date(y, m - 1, d);
+            dt.setDate(dt.getDate() + (parseInt(dias) - 1));
+            const ano = dt.getFullYear();
+            const mes = String(dt.getMonth() + 1).padStart(2, '0');
+            const dia = String(dt.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function calcularDias(inicioStr, fimStr) {
+            if (!inicioStr || !fimStr) return 0;
+            const [y1, m1, d1] = inicioStr.split("-").map(Number);
+            const [y2, m2, d2] = fimStr.split("-").map(Number);
+            const dt1 = new Date(y1, m1 - 1, d1);
+            const dt2 = new Date(y2, m2 - 1, d2);
+            const diffTime = dt2 - dt1;
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            return diffDays > 0 ? diffDays : 0;
+        }
+
+        function calcularDiaRetorno(fimStr) {
+            if (!fimStr) return "";
+            const [y, m, d] = fimStr.split("-").map(Number);
+            const dt = new Date(y, m - 1, d);
+            dt.setDate(dt.getDate() + 1);
+            // Pula Sábado (6) e Domingo (0)
+            while (dt.getDay() === 0 || dt.getDay() === 6) {
+                dt.setDate(dt.getDate() + 1);
+            }
+            const ano = dt.getFullYear();
+            const mes = String(dt.getMonth() + 1).padStart(2, '0');
+            const dia = String(dt.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function calcularStatus(inicioStr, fimStr) {
+            if (!inicioStr || !fimStr) return "Agendado";
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const [y1, m1, d1] = inicioStr.split("-").map(Number);
+            const inicio = new Date(y1, m1 - 1, d1);
+
+            const [y2, m2, d2] = fimStr.split("-").map(Number);
+            const fim = new Date(y2, m2 - 1, d2);
+
+            if (hoje < inicio) return "Agendado";
+            if (hoje > fim) return "Finalizada";
+            return "Em Férias";
+        }
+
+        const formatDate = (dateStr) => {
+            if (!dateStr) return "";
+            const parts = dateStr.split("-");
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return dateStr;
+        };
+
+        // BASE INICIAL DE FÉRIAS (Incluindo Edimilton Gualberto)
+        const FERIAS_INICIAIS = [
+            { nome: "Thiago Nunes", data_inicio: "2026-07-01", data_fim: "2026-07-15", dia_retorno: "2026-07-16", dias_ferias: 15 },
+            { nome: "Rodrigo", data_inicio: "2026-08-01", data_fim: "2026-08-15", dia_retorno: "2026-08-17", dias_ferias: 15 },
+            { nome: "Gian", data_inicio: "2026-08-03", data_fim: "2026-09-01", dia_retorno: "2026-09-02", dias_ferias: 30 },
+            { nome: "Carolina Lima", data_inicio: "2026-12-04", data_fim: "2027-01-02", dia_retorno: "2027-01-04", dias_ferias: 30 },
+            { nome: "Leonardo", data_inicio: "2026-08-17", data_fim: "2026-08-31", dia_retorno: "2026-09-01", dias_ferias: 15 },
+            { nome: "João", data_inicio: "2026-11-02", data_fim: "2026-12-01", dia_retorno: "2026-12-02", dias_ferias: 30 },
+            { nome: "Jorge", data_inicio: "2027-01-14", data_fim: "2027-02-12", dia_retorno: "2027-02-15", dias_ferias: 30 },
+            { nome: "Rodrigo", data_inicio: "2026-12-21", data_fim: "2027-01-04", dia_retorno: "2027-01-05", dias_ferias: 15 },
+            { nome: "Pedro Henrique", data_inicio: "2026-10-01", data_fim: "2026-10-30", dia_retorno: "2026-11-02", dias_ferias: 30 },
+            { nome: "Edimilton Gualberto", data_inicio: "2027-01-18", data_fim: "2027-02-16", dia_retorno: "2027-02-17", dias_ferias: 30 }
+        ];
+
+        // ELEMENTOS DO FORMULÁRIO E TABELA
+        const form = document.getElementById("vacationForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const formTitle = document.getElementById("formTitle");
+        const tableBody = document.getElementById("tableBody");
+        const toggleFormBtn = document.getElementById("toggleFormBtn");
+        const agendarPanel = document.getElementById("agendarPanel");
+
+        const inputInicio = document.getElementById("data_inicio");
+        const inputFim = document.getElementById("data_fim");
+        const inputDias = document.getElementById("dias_ferias");
+        const inputNome = document.getElementById("nome");
+
+        // RENDERIZAR TABELA
+        function renderTable() {
+            if (!tableBody) return;
+
+            if (currentVacations.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Nenhum registro encontrado.</td></tr>';
+                return;
+            }
+
+            currentVacations.sort((a, b) => {
+                if (!a.data_inicio) return 1;
+                if (!b.data_inicio) return -1;
+                return new Date(a.data_inicio) - new Date(b.data_inicio);
+            });
+
+            tableBody.innerHTML = "";
+            currentVacations.forEach((v) => {
+                const tr = document.createElement("tr");
+                const status = calcularStatus(v.data_inicio, v.data_fim);
+
+                let badgeClass = 'status-agendado';
+                if (status === 'Em Férias') badgeClass = 'status-em-ferias';
+                if (status === 'Finalizada') badgeClass = 'status-finalizada';
+
+                tr.innerHTML = `
+                    <td><strong>${v.nome || ''}</strong></td>
+                    <td>${formatDate(v.data_inicio)}</td>
+                    <td>${formatDate(v.data_fim)}</td>
+                    <td>${formatDate(v.dia_retorno)}</td>
+                    <td>${v.dias_ferias || ''}</td>
+                    <td><span class="status-badge ${badgeClass}">${status}</span></td>
+                    ${window.perfilUsuario === 'Gestor' ? `
+                    <td class="no-print">
+                        <button type="button" class="action-btn" onclick="window.editVacation('${v.id}')">Editar</button>
+                        <button type="button" class="action-btn danger" onclick="window.deleteVacation('${v.id}')">Excluir</button>
+                    </td>` : ''}
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // SINCRONIZAÇÃO EM TEMPO REAL COM FIREBASE
+        onValue(feriasRef, (snapshot) => {
+            if (!snapshot.exists()) {
+                // Primeira inicialização do nó 'ferias' no Firebase
+                FERIAS_INICIAIS.forEach(item => {
+                    const status = calcularStatus(item.data_inicio, item.data_fim);
+                    push(feriasRef, { ...item, status });
+                });
+                return;
+            }
+
+            currentVacations = [];
+            snapshot.forEach((child) => {
+                const val = child.val();
+                currentVacations.push({
+                    id: child.key,
+                    nome: val.nome || val.Nome || "",
+                    data_inicio: val.data_inicio || val["Data de Início"] || "",
+                    data_fim: val.data_fim || val["Data de Fim"] || "",
+                    dia_retorno: val.dia_retorno || val["Dia de Retorno"] || "",
+                    dias_ferias: val.dias_ferias !== undefined ? val.dias_ferias : (val["Dias de Férias"] || 0),
+                    status: val.status || val.Status || ""
+                });
+            });
+
+            // Garante que o Edimilton Gualberto estará salvo no Firebase caso o banco já existisse sem ele
+            const temEdimilton = currentVacations.some(v => (v.nome || '').toLowerCase().includes("edimilton"));
+            if (!temEdimilton) {
+                const edimiltonData = FERIAS_INICIAIS.find(f => f.nome.includes("Edimilton"));
+                if (edimiltonData) {
+                    const status = calcularStatus(edimiltonData.data_inicio, edimiltonData.data_fim);
+                    push(feriasRef, { ...edimiltonData, status });
+                }
+            }
+
+            renderTable();
+        });
+
+        // CÁLCULOS DINÂMICOS AO DIGITAR
+        inputInicio.addEventListener("input", () => {
+            if (inputDias.value) {
+                inputFim.value = calcularDataFim(inputInicio.value, inputDias.value);
+            } else if (inputFim.value) {
+                inputDias.value = calcularDias(inputInicio.value, inputFim.value);
+            }
+        });
+
+        inputDias.addEventListener("input", (e) => {
+            if (e.target.value) {
+                inputFim.value = "";
+                if (inputInicio.value) {
+                    inputFim.value = calcularDataFim(inputInicio.value, e.target.value);
+                }
+            }
+        });
+
+        inputFim.addEventListener("input", (e) => {
+            if (e.target.value) {
+                inputDias.value = "";
+                if (inputInicio.value) {
+                    inputDias.value = calcularDias(inputInicio.value, e.target.value);
+                }
+            }
+        });
+
+        // CONTROLE DO PAINEL DE AGENDAMENTO
+        toggleFormBtn.addEventListener("click", () => {
+            if (agendarPanel.style.display === "none") {
+                agendarPanel.style.display = "block";
+                toggleFormBtn.innerText = "Fechar Formulário";
+            } else {
+                cancelEdit();
+            }
+        });
+
+        const cancelEdit = () => {
+            editId = null;
+            form.reset();
+            formTitle.innerText = "Agendar Férias";
+            submitBtn.innerText = "Salvar Férias";
+            cancelBtn.style.display = "none";
+            agendarPanel.style.display = "none";
+            toggleFormBtn.innerText = "+ Novo Agendamento";
+        };
+
+        cancelBtn.addEventListener("click", cancelEdit);
+
+        // FUNÇÃO EDITAR
+        window.editVacation = (id) => {
+            if (window.perfilUsuario !== 'Gestor') return;
+            const v = currentVacations.find(item => item.id == id);
+            if (!v) return;
+
+            inputNome.value = v.nome;
+            inputInicio.value = v.data_inicio;
+            inputFim.value = v.data_fim;
+            inputDias.value = v.dias_ferias;
+
+            editId = id;
+            formTitle.innerText = "Editar Férias";
+            submitBtn.innerText = "Atualizar Férias";
+            cancelBtn.style.display = "block";
+            agendarPanel.style.display = "block";
+            toggleFormBtn.innerText = "Fechar Formulário";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // FUNÇÃO EXCLUIR
+        window.deleteVacation = async (id) => {
+            if (window.perfilUsuario !== 'Gestor') return;
+            if (!confirm("Tem certeza que deseja excluir esse registro?")) return;
+
+            try {
+                await remove(ref(db, `ferias/${id}`));
+                window.showToast("Férias excluídas com sucesso!", "success");
+                if (editId === id) cancelEdit();
+            } catch (err) {
+                console.error(err);
+                window.showToast("Erro ao excluir.", "error");
+            }
+        };
+
+        // SUBMIT DO FORMULÁRIO (SALVAR / ATUALIZAR)
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (window.perfilUsuario !== 'Gestor') return;
+
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Salvando...";
+
+            try {
+                const inicio = inputInicio.value;
+                let fim = inputFim.value;
+                let dias = parseInt(inputDias.value || 0);
+
+                if (inicio && dias && !fim) {
+                    fim = calcularDataFim(inicio, dias);
+                    inputFim.value = fim;
+                } else if (inicio && fim && !dias) {
+                    dias = calcularDias(inicio, fim);
+                    inputDias.value = dias;
+                }
+
+                const retorno = calcularDiaRetorno(fim);
+                const status = calcularStatus(inicio, fim);
+
+                const payload = {
+                    nome: inputNome.value.trim(),
+                    data_inicio: inicio,
+                    data_fim: fim,
+                    dia_retorno: retorno,
+                    dias_ferias: dias,
+                    status: status
+                };
+
+                if (editId !== null) {
+                    await update(ref(db, `ferias/${editId}`), payload);
+                    window.showToast("Férias atualizadas com sucesso!", "success");
+                } else {
+                    await push(feriasRef, payload);
+                    window.showToast("Férias cadastradas com sucesso!", "success");
+                }
+                cancelEdit();
+            } catch (err) {
+                console.error(err);
+                window.showToast("Erro ao salvar no Firebase.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            }
+        });
+
+        // AUTENTICAÇÃO E PERFIL DO USUÁRIO
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "/";
                 return;
             }
 
-            document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
-            document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
+            const photoEl = document.getElementById('user-photo');
+            if (photoEl) photoEl.src = user.photoURL || 'https://via.placeholder.com/40';
+
+            const nameEl = document.getElementById('user-name-widget');
+            if (nameEl) nameEl.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
             const userRef = ref(db, 'usuarios/' + user.uid);
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
                     window.perfilUsuario = snapshot.val().perfil || "Colaborador";
-                    if (snapshot.val().nome) {
-                        document.getElementById('user-name-widget').textContent = snapshot.val().nome.split(' ')[0];
+                    if (snapshot.val().nome && nameEl) {
+                        nameEl.textContent = snapshot.val().nome.split(' ')[0];
                     }
                 }
 
-                document.getElementById('user-role-widget').textContent = window.perfilUsuario;
+                const roleEl = document.getElementById('user-role-widget');
+                if (roleEl) roleEl.textContent = window.perfilUsuario;
 
                 const btnNovo = document.getElementById('toggleFormBtn');
                 const thAcoes = document.getElementById('th-acoes');
@@ -782,20 +871,22 @@
                 } else {
                     if (btnNovo) btnNovo.style.display = 'none';
                     if (thAcoes) thAcoes.style.display = 'none';
-                    document.getElementById('agendarPanel').style.display = 'none';
+                    if (agendarPanel) agendarPanel.style.display = 'none';
                 }
 
-                if (window.loadVacationsGlobal) {
-                    window.loadVacationsGlobal();
-                }
+                renderTable();
             });
         });
 
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "/";
+        // LOGOUT
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    window.location.href = "/";
+                });
             });
-        });
+        }
     </script>
 </body>
 
