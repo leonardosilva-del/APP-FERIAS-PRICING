@@ -126,7 +126,21 @@
         .sub-table-wrapper { padding: 15px; background: var(--bg-body); border-left: 4px solid var(--brand-primary); margin-bottom: 10px; border-radius: 0 0 8px 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
         html.dark-theme .sub-table-wrapper { background: #0f172a; }
         .sub-table { width: 100%; border-collapse: collapse; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 6px; overflow: hidden;}
-        .sub-table th { background: rgba(37, 99, 235, 0.05); font-size: 0.75rem; padding: 8px 12px; border-bottom: 1px solid var(--border-light); color: var(--text-600);}
+        
+        /* CABEÇALHO DA SUB-TABELA CONGELADO (STICKY) */
+        .sub-table th { 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            background: #f8fafc; /* Fundo sólido para cobrir as linhas ao rolar */
+            font-size: 0.75rem; 
+            padding: 8px 12px; 
+            color: var(--text-600);
+            box-shadow: 0 1px 0 0 var(--border-light); /* Borda inferior simulada pelo box-shadow */
+            white-space: nowrap;
+        }
+        html.dark-theme .sub-table th { background: #1e293b; }
+
         .sub-table td { padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid var(--border-light); color: var(--text-900);}
         .badge-encarte { background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-left: 8px;}
 
@@ -185,7 +199,7 @@
             <div class="upload-subtitle">Formatos aceitos: Excel (.xlsx) ou CSV.</div>
         </label>
 
-        <!-- FILTROS (Escondido até subir a planilha) -->
+        <!-- FILTROS -->
         <div class="filter-bar" id="filter-section">
             <div style="flex: 1; min-width: 200px;">
                 <span class="filter-label">Filtrar por Departamento</span>
@@ -221,7 +235,6 @@
                 <div class="kpi-value" id="kpi-margem">0</div>
                 <div style="font-size: 0.75rem; color: var(--text-400);">Precificação abaixo da margem alvo.</div>
             </div>
-            <!-- NOVO KPI DE HORÁRIO -->
             <div class="kpi-card orange">
                 <div class="kpi-title">Lançamentos Após 17h ⏰</div>
                 <div class="kpi-value" id="kpi-apos17h" style="color: var(--orange);">0</div>
@@ -236,7 +249,6 @@
 
         <!-- GRÁFICOS E TABELA -->
         <div class="charts-grid" id="chart-section">
-            <!-- Gráfico Visão Macro -->
             <div class="chart-card">
                 <div class="chart-header">Tipos de Críticas</div>
                 <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
@@ -244,7 +256,6 @@
                 </div>
             </div>
 
-            <!-- Tabela Power BI com Drill-down -->
             <div class="chart-card" style="grid-column: 1 / -1;">
                 <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>Análise Detalhada por Comprador (Clique na linha para expandir os itens)</span>
@@ -419,7 +430,7 @@
                 let dataHoraRaw = String(row['DTAHORALTERACAO'] || row['DATA'] || "").trim();
                 let isApos17h = false;
                 if (dataHoraRaw.includes(' ')) {
-                    let horaStr = dataHoraRaw.split(' ')[1]; // Pega apenas a parte "18:05:01"
+                    let horaStr = dataHoraRaw.split(' ')[1]; 
                     let horaInt = parseInt(horaStr.split(':')[0], 10);
                     if (horaInt >= 17) {
                         isApos17h = true;
@@ -428,7 +439,7 @@
                     }
                 }
 
-                // 2. Identificar Tipo de Crítica
+                // 2. Identificar Tipo de Crítica e Capturar Observação Completa
                 let tipoCriticaRaw = String(row['CODCRITICAPRECO'] || row['CRITICA'] || "").toUpperCase();
                 let obsCriticaRaw = String(row['OBSCRITICA'] || row['OBSERVACAO'] || "");
                 let obsUpper = obsCriticaRaw.toUpperCase();
@@ -461,13 +472,26 @@
                     let partes = obsCriticaRaw.split('>');
                     margemPraticada = partes[partes.length - 1].trim();
                 }
+                
+                // 5. Extrair a Observação Curta (Texto antes da Setinha ->)
+                let obsCurta = "-";
+                if(obsCriticaRaw.includes('->')) {
+                    obsCurta = obsCriticaRaw.split('->')[0].trim();
+                } else if(obsCriticaRaw) {
+                    obsCurta = obsCriticaRaw.trim();
+                }
 
-                // 5. Capturar a Margem Alvo (Objetiva)
                 let margemAlvo = String(row['MGMLUCRO'] || row['MARGEM'] || row['MG'] || "0");
+                
+                // 6. Extrair Filial e Segmento
+                let filial = String(row['NROEMPRESA'] || row['FILIAL'] || row['EMPRESA'] || "-");
+                let segmento = String(row['DESCSEGMENTO'] || row['SEGMENTO'] || "-");
 
-                // 6. Salvar o Item para a tabela de detalhe (Drill-down)
+                // 7. Salvar o Item para a tabela de Drill-down
                 resumoComprador[c].total++;
                 resumoComprador[c].itens.push({
+                    filial: filial,
+                    segmento: segmento,
                     codigo: row['SEQPRODUTO'] || row['CODIGO'],
                     descricao: row['DESCCOMPLETA'] || row['DESCRICAO'],
                     tipo: tipoCriticaRaw,
@@ -475,11 +499,11 @@
                     isApos17h: isApos17h,
                     dataHoraExata: dataHoraRaw,
                     margemAlvo: margemAlvo + '%',
-                    margemPraticada: margemPraticada !== "N/A" ? margemPraticada + '%' : '-'
+                    margemPraticada: margemPraticada !== "N/A" ? margemPraticada + '%' : '-',
+                    obsCurta: obsCurta
                 });
             });
 
-            // ATUALIZA KPIS
             document.getElementById('kpi-total').innerText = total;
             document.getElementById('kpi-processo').innerText = criticaProcessoGeral;
             document.getElementById('kpi-margem').innerText = margemMinima;
@@ -520,9 +544,6 @@
             window.atualizarCoresGraficos = () => { if(Object.keys(dadosOriginais).length > 0) aplicarFiltrosDashboard(); };
         }
 
-        // ==========================================
-        // GERAÇÃO DA TABELA POWER BI (COM DRILL-DOWN)
-        // ==========================================
         function gerarTabelaBI(resumoComprador) {
             const tbody = document.getElementById('bi-table-body');
             tbody.innerHTML = '';
@@ -531,7 +552,6 @@
                 return { nome: key, ...resumoComprador[key] };
             });
 
-            // Ordena colocando quem tem mais problema de Encarte primeiro, depois >17h, depois margem
             arrayCompradores.sort((a, b) => {
                 if (b.encarte !== a.encarte) return b.encarte - a.encarte;
                 if (b.apos17h !== a.apos17h) return b.apos17h - a.apos17h;
@@ -548,10 +568,6 @@
                 let bgApos17h = c.apos17h > 0 ? 'background: #fff7ed; color: #ea580c;' : 'background: var(--bg-body); color: var(--text-400);';
                 let bgMargem = c.margem > 0 ? 'background: #faf5ff; color: #8b5cf6;' : 'background: var(--bg-body); color: var(--text-400);';
                 
-                let isDark = document.documentElement.classList.contains('dark-theme');
-                let rowHover = isDark ? '#0f172a' : '#f8fafc';
-
-                // LINHA PRINCIPAL (Pai)
                 let trPai = document.createElement('tr');
                 trPai.className = 'clickable-row';
                 trPai.onclick = () => toggleSubTable(index);
@@ -567,7 +583,6 @@
                 `;
                 tbody.appendChild(trPai);
 
-                // LINHA SECUNDÁRIA (Filho / Drill-down)
                 let trFilho = document.createElement('tr');
                 trFilho.id = `subrow-${index}`;
                 trFilho.style.display = 'none';
@@ -580,12 +595,15 @@
                                 <table class="sub-table">
                                     <thead>
                                         <tr>
+                                            <th style="text-align: center; width: 60px;">Filial</th>
+                                            <th>Segmento</th>
                                             <th style="width: 80px;">Código</th>
                                             <th>Descrição do Produto</th>
                                             <th style="text-align: center;">Data/Hora</th>
                                             <th>Tipo de Crítica</th>
                                             <th style="text-align: center;">Margem Alvo</th>
                                             <th style="text-align: center;">Margem Praticada</th>
+                                            <th>Observação</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -593,23 +611,20 @@
 
                 c.itens.forEach(item => {
                     let badgeEncarteHTML = item.isEncarte ? `<span class="badge-encarte">ENCARTE</span>` : '';
-                    
-                    let alertPraticada = '';
-                    if (item.margemPraticada !== '-' && item.margemPraticada !== item.margemAlvo) {
-                        alertPraticada = `color: var(--danger); font-weight: 800;`;
-                    }
-
-                    // Se foi lançado após as 17h, pinta a hora de vermelho escuro/laranja
+                    let alertPraticada = (item.margemPraticada !== '-' && item.margemPraticada !== item.margemAlvo) ? `color: var(--danger); font-weight: 800;` : '';
                     let alertHora = item.isApos17h ? `color: var(--danger); font-weight: 700;` : `color: var(--text-600);`;
 
                     detalhesHTML += `
                         <tr>
+                            <td style="text-align: center; font-weight: 600;">${item.filial}</td>
+                            <td style="font-size: 0.75rem;">${item.segmento}</td>
                             <td><strong>${item.codigo}</strong></td>
                             <td>${item.descricao} ${badgeEncarteHTML}</td>
                             <td style="text-align: center; font-size: 0.75rem; ${alertHora}">${item.dataHoraExata}</td>
                             <td>${item.tipo}</td>
                             <td style="text-align: center; font-weight: 600; color: var(--purple);">${item.margemAlvo}</td>
                             <td style="text-align: center; ${alertPraticada}">${item.margemPraticada}</td>
+                            <td style="font-size: 0.75rem; color: var(--text-600);">${item.obsCurta}</td>
                         </tr>
                     `;
                 });
@@ -620,7 +635,6 @@
             });
         }
 
-        // Função global para abrir e fechar a gaveta da tabela
         window.toggleSubTable = function(index) {
             const subrow = document.getElementById(`subrow-${index}`);
             const icon = document.getElementById(`icon-${index}`);
