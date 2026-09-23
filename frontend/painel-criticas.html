@@ -36,6 +36,7 @@
             --bg-body: #f3f4f6; --bg-surface: #ffffff; --text-900: #0f172a; --text-600: #475569; --text-400: #94a3b8;
             --border-light: #e2e8f0; --brand-primary: #2563eb; --brand-primary-hover: #1d4ed8;
             --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --info: #0ea5e9; --purple: #8b5cf6;
+            --orange: #f97316;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius-lg: 12px; --radius-md: 8px;
         }
 
@@ -90,7 +91,7 @@
         .filter-label { font-size: 0.85rem; font-weight: 600; color: var(--text-600); margin-bottom: 5px; display: block; }
 
         /* KPIS */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; display: none; margin-top: 1.5rem; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; display: none; margin-top: 1.5rem; }
         .kpi-card { background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-top: 4px solid var(--brand-primary); transition: 0.2s; }
         .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .kpi-title { font-size: 0.8rem; font-weight: 700; color: var(--text-600); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -99,9 +100,10 @@
         .kpi-card.danger { border-top-color: var(--danger); background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(255,255,255,0) 100%); }
         .kpi-card.warning { border-top-color: var(--warning); }
         .kpi-card.purple { border-top-color: var(--purple); }
+        .kpi-card.orange { border-top-color: var(--orange); background: linear-gradient(180deg, rgba(249, 115, 22, 0.05) 0%, rgba(255,255,255,0) 100%); }
 
         /* GRÁFICOS E TABELA BI */
-        .charts-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; display: none; margin-top: 1.5rem; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 1.5rem; display: none; margin-top: 1.5rem; }
         .chart-card { background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
         .chart-header { font-size: 1.1rem; font-weight: 700; color: var(--text-900); margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem; }
         
@@ -110,8 +112,11 @@
         .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: var(--text-600); font-weight: 700; padding: 12px; border-bottom: 2px solid var(--border-light); white-space: nowrap;}
         html.dark-theme .bi-table th { background: rgba(255,255,255,0.02); }
         .bi-table td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-900); font-weight: 500; }
+        .bi-table tr:last-child td { border-bottom: none; }
+        .bi-table tr:hover td { background: rgba(0,0,0,0.02); }
+        html.dark-theme .bi-table tr:hover td { background: rgba(255,255,255,0.02); }
         .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: var(--bg-body); display: inline-block; text-align: center; min-width: 40px;}
-        
+
         /* ESTILOS DO DRILL-DOWN (SUB-TABELA) */
         .clickable-row { cursor: pointer; transition: background-color 0.2s; }
         .clickable-row:hover { background-color: rgba(37, 99, 235, 0.05) !important; }
@@ -216,6 +221,12 @@
                 <div class="kpi-value" id="kpi-margem">0</div>
                 <div style="font-size: 0.75rem; color: var(--text-400);">Precificação abaixo da margem alvo.</div>
             </div>
+            <!-- NOVO KPI DE HORÁRIO -->
+            <div class="kpi-card orange">
+                <div class="kpi-title">Lançamentos Após 17h ⏰</div>
+                <div class="kpi-value" id="kpi-apos17h" style="color: var(--orange);">0</div>
+                <div style="font-size: 0.75rem; color: var(--orange); font-weight: 600;">Fora do prazo operacional!</div>
+            </div>
             <div class="kpi-card danger">
                 <div class="kpi-title">Alerta ENCARTE / TV 🚨</div>
                 <div class="kpi-value" id="kpi-encarte" style="color: var(--danger);">0</div>
@@ -227,7 +238,7 @@
         <div class="charts-grid" id="chart-section">
             <!-- Gráfico Visão Macro -->
             <div class="chart-card">
-                <div class="chart-header">Distribuição dos Tipos de Críticas</div>
+                <div class="chart-header">Tipos de Críticas</div>
                 <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
                     <canvas id="chartTipos"></canvas>
                 </div>
@@ -248,6 +259,7 @@
                                 <th style="text-align: center;">Total (Emb. 1)</th>
                                 <th style="text-align: center; color: var(--warning);">Crítica Processo</th>
                                 <th style="text-align: center; color: var(--purple);">Margem Mínima</th>
+                                <th style="text-align: center; color: var(--orange);">Após 17h ⏰</th>
                                 <th style="text-align: center; color: var(--danger);">Encarte/TV (Alerta)</th>
                             </tr>
                         </thead>
@@ -390,7 +402,7 @@
         }
 
         function processarDashboard(dados) {
-            let total = 0; let margemMinima = 0; let criticaProcessoGeral = 0; let encarteTv = 0;
+            let total = 0; let margemMinima = 0; let criticaProcessoGeral = 0; let encarteTv = 0; let totalApos17h = 0;
             let resumoComprador = {};
             let resumoTiposCritica = { "Margem Mínima Objetiva": 0, "Crítica Processo / Geral": 0, "Outros": 0 };
 
@@ -400,10 +412,23 @@
                 let d = (row['DEPARTAMENTO'] || row['Departamento'] || "-").trim();
                 
                 if (!resumoComprador[c]) {
-                    resumoComprador[c] = { depto: d, total: 0, margem: 0, processo: 0, encarte: 0, itens: [] };
+                    resumoComprador[c] = { depto: d, total: 0, margem: 0, processo: 0, encarte: 0, apos17h: 0, itens: [] };
                 }
 
-                // 1. Identificar Tipo de Crítica
+                // 1. Identificar Data/Hora > 17h
+                let dataHoraRaw = String(row['DTAHORALTERACAO'] || row['DATA'] || "").trim();
+                let isApos17h = false;
+                if (dataHoraRaw.includes(' ')) {
+                    let horaStr = dataHoraRaw.split(' ')[1]; // Pega apenas a parte "18:05:01"
+                    let horaInt = parseInt(horaStr.split(':')[0], 10);
+                    if (horaInt >= 17) {
+                        isApos17h = true;
+                        totalApos17h++;
+                        resumoComprador[c].apos17h++;
+                    }
+                }
+
+                // 2. Identificar Tipo de Crítica
                 let tipoCriticaRaw = String(row['CODCRITICAPRECO'] || row['CRITICA'] || "").toUpperCase();
                 let obsCriticaRaw = String(row['OBSCRITICA'] || row['OBSERVACAO'] || "");
                 let obsUpper = obsCriticaRaw.toUpperCase();
@@ -422,7 +447,7 @@
                     resumoTiposCritica["Outros"]++;
                 }
 
-                // 2. Identificar ENCARTE/TV
+                // 3. Identificar ENCARTE/TV
                 let isEncarte = false;
                 if (isMargem && (obsUpper.includes('ENCARTE') || obsUpper.includes('TV'))) {
                     encarteTv++;
@@ -430,24 +455,25 @@
                     resumoComprador[c].encarte++;
                 }
 
-                // 3. O PULO DO GATO: Extrair a Margem Praticada de dentro da Observação
+                // 4. Extrair a Margem Praticada
                 let margemPraticada = "N/A";
                 if(obsCriticaRaw.includes('>')) {
                     let partes = obsCriticaRaw.split('>');
-                    // Pega tudo o que está depois do último '>' e limpa os espaços
                     margemPraticada = partes[partes.length - 1].trim();
                 }
 
-                // 4. Capturar a Margem Alvo (Objetiva)
+                // 5. Capturar a Margem Alvo (Objetiva)
                 let margemAlvo = String(row['MGMLUCRO'] || row['MARGEM'] || row['MG'] || "0");
 
-                // 5. Salvar o Item para a tabela de detalhe (Drill-down)
+                // 6. Salvar o Item para a tabela de detalhe (Drill-down)
                 resumoComprador[c].total++;
                 resumoComprador[c].itens.push({
                     codigo: row['SEQPRODUTO'] || row['CODIGO'],
                     descricao: row['DESCCOMPLETA'] || row['DESCRICAO'],
                     tipo: tipoCriticaRaw,
                     isEncarte: isEncarte,
+                    isApos17h: isApos17h,
+                    dataHoraExata: dataHoraRaw,
                     margemAlvo: margemAlvo + '%',
                     margemPraticada: margemPraticada !== "N/A" ? margemPraticada + '%' : '-'
                 });
@@ -458,6 +484,7 @@
             document.getElementById('kpi-processo').innerText = criticaProcessoGeral;
             document.getElementById('kpi-margem').innerText = margemMinima;
             document.getElementById('kpi-encarte').innerText = encarteTv;
+            document.getElementById('kpi-apos17h').innerText = totalApos17h;
 
             document.getElementById('kpi-section').style.display = 'grid';
             document.getElementById('chart-section').style.display = 'grid';
@@ -504,19 +531,21 @@
                 return { nome: key, ...resumoComprador[key] };
             });
 
-            // Ordena colocando quem tem mais problema de Encarte primeiro, depois quem tem mais erro de margem
+            // Ordena colocando quem tem mais problema de Encarte primeiro, depois >17h, depois margem
             arrayCompradores.sort((a, b) => {
                 if (b.encarte !== a.encarte) return b.encarte - a.encarte;
+                if (b.apos17h !== a.apos17h) return b.apos17h - a.apos17h;
                 return b.margem - a.margem;
             });
 
             if (arrayCompradores.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-600);">Nenhum dado encontrado para este filtro.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-600);">Nenhum dado encontrado para este filtro.</td></tr>`;
                 return;
             }
 
             arrayCompradores.forEach((c, index) => {
                 let bgEncarte = c.encarte > 0 ? 'background: #fef2f2; color: #ef4444;' : 'background: var(--bg-body); color: var(--text-400);';
+                let bgApos17h = c.apos17h > 0 ? 'background: #fff7ed; color: #ea580c;' : 'background: var(--bg-body); color: var(--text-400);';
                 let bgMargem = c.margem > 0 ? 'background: #faf5ff; color: #8b5cf6;' : 'background: var(--bg-body); color: var(--text-400);';
                 
                 let isDark = document.documentElement.classList.contains('dark-theme');
@@ -533,6 +562,7 @@
                     <td style="text-align: center;"><span class="badge-bi" style="background: var(--border-light);">${c.total}</span></td>
                     <td style="text-align: center;"><span class="badge-bi">${c.processo}</span></td>
                     <td style="text-align: center;"><span class="badge-bi" style="${bgMargem}">${c.margem}</span></td>
+                    <td style="text-align: center;"><span class="badge-bi" style="${bgApos17h}">${c.apos17h}</span></td>
                     <td style="text-align: center;"><span class="badge-bi" style="${bgEncarte}">${c.encarte}</span></td>
                 `;
                 tbody.appendChild(trPai);
@@ -543,7 +573,7 @@
                 trFilho.style.display = 'none';
                 
                 let detalhesHTML = `
-                    <td colspan="7" style="padding: 0; border: none;">
+                    <td colspan="8" style="padding: 0; border: none;">
                         <div class="sub-table-wrapper">
                             <h4 style="margin-bottom: 8px; font-size: 0.85rem; color: var(--text-600);">📋 Detalhamento de Itens: ${c.nome}</h4>
                             <div style="max-height: 280px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border-light);">
@@ -552,6 +582,7 @@
                                         <tr>
                                             <th style="width: 80px;">Código</th>
                                             <th>Descrição do Produto</th>
+                                            <th style="text-align: center;">Data/Hora</th>
                                             <th>Tipo de Crítica</th>
                                             <th style="text-align: center;">Margem Alvo</th>
                                             <th style="text-align: center;">Margem Praticada</th>
@@ -563,16 +594,19 @@
                 c.itens.forEach(item => {
                     let badgeEncarteHTML = item.isEncarte ? `<span class="badge-encarte">ENCARTE</span>` : '';
                     
-                    // Lógica Visual: Se a margem for diferente, fica vermelho piscando atenção
                     let alertPraticada = '';
                     if (item.margemPraticada !== '-' && item.margemPraticada !== item.margemAlvo) {
                         alertPraticada = `color: var(--danger); font-weight: 800;`;
                     }
 
+                    // Se foi lançado após as 17h, pinta a hora de vermelho escuro/laranja
+                    let alertHora = item.isApos17h ? `color: var(--danger); font-weight: 700;` : `color: var(--text-600);`;
+
                     detalhesHTML += `
                         <tr>
                             <td><strong>${item.codigo}</strong></td>
                             <td>${item.descricao} ${badgeEncarteHTML}</td>
+                            <td style="text-align: center; font-size: 0.75rem; ${alertHora}">${item.dataHoraExata}</td>
                             <td>${item.tipo}</td>
                             <td style="text-align: center; font-weight: 600; color: var(--purple);">${item.margemAlvo}</td>
                             <td style="text-align: center; ${alertPraticada}">${item.margemPraticada}</td>
