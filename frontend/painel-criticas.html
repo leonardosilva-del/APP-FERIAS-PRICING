@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Críticas - Intranet Pricing</title>
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/favicon.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Importando SheetJS (Leitura de Excel/CSV) e Chart.js (Gráficos) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SCRIPT DO MODO DARK GLOBAL -->
+    <script>
+        if (localStorage.getItem('tema-intranet') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+        function toggleDark() {
+            document.documentElement.classList.toggle('dark-theme');
+            localStorage.setItem('tema-intranet', document.documentElement.classList.contains('dark-theme') ? 'dark' : 'light');
+            
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) btnIcon.textContent = document.documentElement.classList.contains('dark-theme') ? '☀️' : '🌙';
+            
+            if(window.atualizarCoresGraficos) window.atualizarCoresGraficos();
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-body: #f3f4f6; --bg-surface: #ffffff; --text-900: #0f172a; --text-600: #475569; --text-400: #94a3b8;
+            --border-light: #e2e8f0; --brand-primary: #2563eb; --brand-primary-hover: #1d4ed8;
+            --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --info: #0ea5e9; --purple: #8b5cf6;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius-lg: 12px; --radius-md: 8px;
+        }
+
+        html.dark-theme {
+            --bg-body: #0f172a; --bg-surface: #1e293b; --text-900: #f8fafc; --text-600: #94a3b8;
+            --text-400: #64748b; --border-light: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-900); min-height: 100vh; display: flex; flex-direction: column; transition: background-color 0.3s ease; position: relative; }
+
+        /* --- TELA DE CARREGAMENTO --- */
+        #loading-screen { position: fixed; inset: 0; background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-600); transition: background-color 0.3s ease; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; margin-bottom: 15px; color: var(--brand-primary); }
+
+        /* --- CONTROLES DO TOPO DIREITO --- */
+        .top-controls { position: absolute; top: 24px; right: 32px; display: flex; align-items: center; gap: 15px; z-index: 100; }
+        .btn-theme { background: var(--bg-surface); color: var(--text-900); border: 1px solid var(--border-light); font-size: 1.1rem; padding: 0.5rem 0.7rem; border-radius: 50px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; }
+        .btn-theme:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        /* --- WIDGET DE PERFIL --- */
+        .user-profile-widget { display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 6px 16px 6px 6px; border-radius: 50px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); transition: all 0.2s ease; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--brand-primary); object-fit: cover; }
+        .user-info-widget { display: flex; flex-direction: column; justify-content: center; }
+        .user-name-widget { font-size: 0.85rem; font-weight: 600; color: var(--text-900); line-height: 1.2; }
+        .user-role-widget { font-size: 0.7rem; color: var(--text-400); line-height: 1.2; }
+        .btn-logout-widget { background: transparent; border: none; color: var(--text-400); padding: 6px; margin-left: 4px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-logout-widget:hover { background: #fee2e2; color: #ef4444; }
+
+        /* HEADER PRINCIPAL */
+        .container { max-width: 1400px; margin: 0 auto; width: 100%; padding: 2rem; display: none; }
+        .header { display: flex; align-items: center; margin-bottom: 2rem; gap: 1.5rem; flex-wrap: wrap; padding-right: 250px; }
+        .header-logo { height: 48px; object-fit: contain; }
+        .back-btn { text-decoration: none; color: var(--text-600); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius-md); transition: all 0.2s; border: 1px solid var(--border-light); background-color: var(--bg-surface); box-shadow: var(--shadow-sm); }
+        .back-btn:hover { color: var(--text-900); border-color: var(--border-light); box-shadow: var(--shadow-md); }
+        h1 { font-size: 2rem; font-weight: 700; color: var(--text-900); }
+
+        /* UPLOAD ZONE */
+        .upload-zone { background: var(--bg-surface); border: 2px dashed var(--brand-primary); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin-top: 1rem; box-shadow: var(--shadow-sm); }
+        .upload-zone:hover { background: rgba(37, 99, 235, 0.03); border-color: var(--brand-primary-hover); }
+        .upload-zone input { display: none; }
+        .upload-icon { font-size: 2.5rem; color: var(--brand-primary); }
+        .upload-title { font-size: 1.1rem; font-weight: 600; color: var(--text-900); }
+        .upload-subtitle { font-size: 0.9rem; color: var(--text-600); }
+
+        /* FILTROS DINÂMICOS */
+        .filter-bar { display: none; gap: 15px; margin-top: 2rem; background: var(--bg-surface); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); flex-wrap: wrap; align-items: center; }
+        .filter-select { padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border-light); background: var(--bg-body); color: var(--text-900); font-weight: 500; outline: none; transition: 0.2s; min-width: 200px; flex: 1; }
+        html.dark-theme .filter-select { background: #0f172a; border-color: #334155; }
+        .filter-select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .filter-label { font-size: 0.85rem; font-weight: 600; color: var(--text-600); margin-bottom: 5px; display: block; }
+
+        /* KPIS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; display: none; margin-top: 1.5rem; }
+        .kpi-card { background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-top: 4px solid var(--brand-primary); transition: 0.2s; }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .kpi-title { font-size: 0.8rem; font-weight: 700; color: var(--text-600); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 2.2rem; font-weight: 800; color: var(--text-900); }
+        .kpi-card.info { border-top-color: var(--info); }
+        .kpi-card.danger { border-top-color: var(--danger); background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(255,255,255,0) 100%); }
+        .kpi-card.warning { border-top-color: var(--warning); }
+        .kpi-card.purple { border-top-color: var(--purple); }
+
+        /* GRÁFICOS E TABELA BI */
+        .charts-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; display: none; margin-top: 1.5rem; }
+        .chart-card { background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
+        .chart-header { font-size: 1.1rem; font-weight: 700; color: var(--text-900); margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem; }
+        
+        .bi-table-container { overflow-x: auto; margin-top: 10px; }
+        .bi-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: var(--text-600); font-weight: 700; padding: 12px; border-bottom: 2px solid var(--border-light); white-space: nowrap;}
+        html.dark-theme .bi-table th { background: rgba(255,255,255,0.02); }
+        .bi-table td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-900); font-weight: 500; }
+        .bi-table tr:last-child td { border-bottom: none; }
+        .bi-table tr:hover td { background: rgba(0,0,0,0.02); }
+        html.dark-theme .bi-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: var(--bg-body); display: inline-block; text-align: center; min-width: 40px;}
+
+        @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body>
+
+    <!-- TELA DE LOADING -->
+    <div id="loading-screen">
+        <svg class="spinner" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <h2 style="font-weight: 600; font-size: 1.2rem;">Autenticando acesso...</h2>
+    </div>
+
+    <!-- CONTROLES DO TOPO -->
+    <div class="top-controls" style="display: none;" id="widget-perfil">
+        <button onclick="toggleDark()" class="btn-theme" title="Alternar Tema Escuro/Claro">
+            <span id="icon-theme">🌙</span>
+        </button>
+
+        <div class="user-profile-widget">
+            <img id="user-photo" src="" class="user-avatar" alt="Foto">
+            <div class="user-info-widget">
+                <span id="user-name-widget" class="user-name-widget">Carregando...</span>
+                <span id="user-role-widget" class="user-role-widget">Perfil</span>
+            </div>
+            <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
+        <div class="header">
+            <a href="/" class="back-btn" title="Voltar ao Menu Principal">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Voltar
+            </a>
+            <img src="/logo.png" alt="Dia a Dia" class="header-logo">
+            <h1>Painel de Críticas</h1>
+        </div>
+
+        <div>
+            <p style="color: var(--text-600); font-size: 1.05rem;">Dashboard gerencial focado em divergências de preço e margens. O sistema isola automaticamente embalagens unitárias.</p>
+        </div>
+
+        <!-- ZONA DE UPLOAD -->
+        <label class="upload-zone" id="upload-box">
+            <input type="file" id="file-upload" accept=".xlsx, .xls, .csv">
+            <div class="upload-icon">📊</div>
+            <div class="upload-title" id="upload-text">Clique ou arraste a planilha do Consinco aqui</div>
+            <div class="upload-subtitle">Formatos aceitos: Excel (.xlsx) ou CSV.</div>
+        </label>
+
+        <!-- FILTROS (Escondido até subir a planilha) -->
+        <div class="filter-bar" id="filter-section">
+            <div style="flex: 1; min-width: 200px;">
+                <span class="filter-label">Filtrar por Departamento</span>
+                <select id="filtro-depto" class="filter-select" onchange="aplicarFiltrosDashboard()">
+                    <option value="ALL">Todos os Departamentos</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <span class="filter-label">Filtrar por Comprador</span>
+                <select id="filtro-comprador" class="filter-select" onchange="aplicarFiltrosDashboard()">
+                    <option value="ALL">Todos os Compradores</option>
+                </select>
+            </div>
+            <div>
+                <button class="btn-theme" onclick="resetarFiltros()" style="margin-top: 22px; padding: 10px 15px; border-radius: 6px; font-size: 0.9rem; background: var(--bg-body); border-color: var(--border-light);">Limpar Filtros</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD KPIS -->
+        <div class="kpi-grid" id="kpi-section">
+            <div class="kpi-card info">
+                <div class="kpi-title">Total de Críticas (Emb. 1)</div>
+                <div class="kpi-value" id="kpi-total">0</div>
+                <div style="font-size: 0.75rem; color: var(--text-400);">Filtro base aplicado.</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-title">Crítica Processo / Geral</div>
+                <div class="kpi-value" id="kpi-processo">0</div>
+                <div style="font-size: 0.75rem; color: var(--text-400);">Erros operacionais de entrada.</div>
+            </div>
+            <div class="kpi-card purple">
+                <div class="kpi-title">Margem Mínima Objetiva</div>
+                <div class="kpi-value" id="kpi-margem">0</div>
+                <div style="font-size: 0.75rem; color: var(--text-400);">Precificação abaixo da margem alvo.</div>
+            </div>
+            <div class="kpi-card danger">
+                <div class="kpi-title">Alerta ENCARTE / TV 🚨</div>
+                <div class="kpi-value" id="kpi-encarte" style="color: var(--danger);">0</div>
+                <div style="font-size: 0.75rem; color: var(--danger); font-weight: 600;">Presos na margem mínima!</div>
+            </div>
+        </div>
+
+        <!-- GRÁFICOS E TABELA -->
+        <div class="charts-grid" id="chart-section">
+            <!-- Gráfico Visão Macro -->
+            <div class="chart-card">
+                <div class="chart-header">Distribuição dos Tipos de Críticas</div>
+                <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
+                    <canvas id="chartTipos"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabela Power BI -->
+            <div class="chart-card" style="grid-column: 1 / -1;">
+                <div class="chart-header">Análise Detalhada por Comprador (Power BI View)</div>
+                <div class="bi-table-container">
+                    <table class="bi-table">
+                        <thead>
+                            <tr>
+                                <th>Comprador</th>
+                                <th>Departamento</th>
+                                <th style="text-align: center;">Total (Emb. 1)</th>
+                                <th style="text-align: center; color: var(--warning);">Crítica Processo</th>
+                                <th style="text-align: center; color: var(--purple);">Margem Mínima</th>
+                                <th style="text-align: center; color: var(--danger);">Encarte/TV (Alerta)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bi-table-body">
+                            <!-- Injetado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { ref, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        // ==========================================
+        // AUTENTICAÇÃO E SEGURANÇA
+        // ==========================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "/"; return; }
+            document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
+            
+            try {
+                const userRef = ref(db, 'usuarios/' + user.uid);
+                const snapshot = await get(userRef);
+
+                if (snapshot.exists()) {
+                    const dadosUser = snapshot.val();
+                    const perfil = dadosUser.perfil || 'Colaborador';
+                    
+                    document.getElementById('user-name-widget').textContent = (dadosUser.nome || user.email).split(' ')[0];
+                    document.getElementById('user-role-widget').textContent = perfil;
+                    
+                    if (perfil === "Comercial" || perfil === "Bloqueado") {
+                        alert("Acesso Negado: Apenas a equipe de Pricing pode acessar este painel.");
+                        window.location.href = "/";
+                        return;
+                    }
+
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('widget-perfil').style.display = 'flex';
+                    document.getElementById('main-container').style.display = 'block';
+                } else {
+                    window.location.href = "/";
+                }
+            } catch (error) {
+                console.error(error);
+                window.location.href = "/";
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "/"; }); });
+
+
+        // ==========================================
+        // MOTOR DE DADOS E BI
+        // ==========================================
+        let dadosOriginais = []; // Guarda apenas os de Emb 1
+        let myChartTipos = null;
+
+        // Leitura do Arquivo
+        document.getElementById('file-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            document.getElementById('upload-text').innerText = "Processando os dados de: " + file.name + "...";
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = evt.target.result;
+                // Lê o CSV ou Excel
+                const workbook = XLSX.read(data, {type: 'binary'});
+                const sheetName = workbook.SheetNames[0];
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                
+                // Pré-Filtro: Mantém apenas onde a embalagem termina com '1' (Ex: 'UN 1', 'CX 1', etc.)
+                dadosOriginais = json.filter(row => {
+                    let emb = String(row['DESC_EMBALAGEM'] || row['EMBALAGEM'] || "").trim();
+                    if (!emb) return false;
+                    let partes = emb.split(' ');
+                    let qtde = partes[partes.length - 1]; // pega a última palavra/número
+                    return qtde === '1';
+                });
+
+                if (dadosOriginais.length === 0) {
+                    alert("Aviso: Nenhum item com embalagem unitária (1) foi encontrado na planilha.");
+                }
+
+                popularFiltrosSelects();
+                aplicarFiltrosDashboard();
+                document.getElementById('upload-box').style.display = 'none';
+            };
+            // readAsBinaryString é melhor compatível com XLSX/CSV
+            reader.readAsBinaryString(file);
+        });
+
+        // Popula as opções do Dropdown (Filtros Interativos)
+        function popularFiltrosSelects() {
+            let deptos = new Set();
+            let compradores = new Set();
+
+            dadosOriginais.forEach(row => {
+                let d = (row['DEPARTAMENTO'] || row['Departamento'] || "Sem Depto").trim();
+                let c = (row['COMPRADOR'] || row['Comprador'] || "Sem Comprador").trim();
+                deptos.add(d);
+                compradores.add(c);
+            });
+
+            const selDepto = document.getElementById('filtro-depto');
+            const selComprador = document.getElementById('filtro-comprador');
+
+            // Limpa e popula Depto
+            selDepto.innerHTML = '<option value="ALL">Todos os Departamentos</option>';
+            Array.from(deptos).sort().forEach(d => {
+                selDepto.innerHTML += `<option value="${d}">${d}</option>`;
+            });
+
+            // Limpa e popula Comprador
+            selComprador.innerHTML = '<option value="ALL">Todos os Compradores</option>';
+            Array.from(compradores).sort().forEach(c => {
+                selComprador.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+
+            document.getElementById('filter-section').style.display = 'flex';
+        }
+
+        window.resetarFiltros = function() {
+            document.getElementById('filtro-depto').value = 'ALL';
+            document.getElementById('filtro-comprador').value = 'ALL';
+            aplicarFiltrosDashboard();
+        }
+
+        // FUNÇÃO PRINCIPAL: Recalcula tudo quando um filtro muda
+        window.aplicarFiltrosDashboard = function() {
+            const deptoFiltro = document.getElementById('filtro-depto').value;
+            const compradorFiltro = document.getElementById('filtro-comprador').value;
+
+            const dadosFiltrados = dadosOriginais.filter(row => {
+                let d = (row['DEPARTAMENTO'] || row['Departamento'] || "Sem Depto").trim();
+                let c = (row['COMPRADOR'] || row['Comprador'] || "Sem Comprador").trim();
+                
+                if (deptoFiltro !== "ALL" && d !== deptoFiltro) return false;
+                if (compradorFiltro !== "ALL" && c !== compradorFiltro) return false;
+                return true;
+            });
+
+            processarDashboard(dadosFiltrados);
+        }
+
+        function processarDashboard(dados) {
+            let total = 0;
+            let margemMinima = 0;
+            let criticaProcessoGeral = 0;
+            let encarteTv = 0;
+
+            // Dicionário para alimentar a Tabela BI
+            let resumoComprador = {};
+            let resumoTiposCritica = { "Margem Mínima Objetiva": 0, "Crítica Processo / Geral": 0, "Outros": 0 };
+
+            dados.forEach(row => {
+                total++;
+
+                // 1. Identificar Tipo de Crítica (Coluna N)
+                let tipoCriticaRaw = String(row['CODCRITICAPRECO'] || row['CRITICA'] || "").toUpperCase();
+                let isMargem = false;
+                
+                if (tipoCriticaRaw.includes('MARGEM MINIMA OBJETIVA') || tipoCriticaRaw.includes('MARGEM MÍNIMA OBJETIVA')) {
+                    margemMinima++;
+                    resumoTiposCritica["Margem Mínima Objetiva"]++;
+                    isMargem = true;
+                } else if (tipoCriticaRaw.includes('PROCESSO') || tipoCriticaRaw.includes('GERAL')) {
+                    criticaProcessoGeral++;
+                    resumoTiposCritica["Crítica Processo / Geral"]++;
+                } else {
+                    resumoTiposCritica["Outros"]++;
+                }
+
+                // 2. Identificar ENCARTE/TV dentro das Críticas (Coluna O)
+                let obsCriticaRaw = String(row['OBSCRITICA'] || row['OBSERVACAO'] || "").toUpperCase();
+                let isEncarte = false;
+                if (isMargem && (obsCriticaRaw.includes('ENCARTE') || obsCriticaRaw.includes('TV'))) {
+                    encarteTv++;
+                    isEncarte = true;
+                }
+
+                // 3. Montar Resumo por Comprador
+                let c = (row['COMPRADOR'] || row['Comprador'] || "Sem Comprador").trim();
+                let d = (row['DEPARTAMENTO'] || row['Departamento'] || "-").trim();
+                
+                if (!resumoComprador[c]) {
+                    resumoComprador[c] = { depto: d, total: 0, margem: 0, processo: 0, encarte: 0 };
+                }
+                
+                resumoComprador[c].total++;
+                if(isMargem) resumoComprador[c].margem++;
+                if(tipoCriticaRaw.includes('PROCESSO') || tipoCriticaRaw.includes('GERAL')) resumoComprador[c].processo++;
+                if(isEncarte) resumoComprador[c].encarte++;
+            });
+
+            // ATUALIZA KPIS DOM
+            document.getElementById('kpi-total').innerText = total;
+            document.getElementById('kpi-processo').innerText = criticaProcessoGeral;
+            document.getElementById('kpi-margem').innerText = margemMinima;
+            document.getElementById('kpi-encarte').innerText = encarteTv;
+
+            document.getElementById('kpi-section').style.display = 'grid';
+            document.getElementById('chart-section').style.display = 'grid';
+
+            gerarGraficoTipos(resumoTiposCritica);
+            gerarTabelaBI(resumoComprador);
+        }
+
+        function gerarGraficoTipos(dadosStatus) {
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            const textColor = isDark ? '#f8fafc' : '#1e293b';
+
+            const ctx = document.getElementById('chartTipos').getContext('2d');
+            if(myChartTipos) myChartTipos.destroy();
+            myChartTipos = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Margem Mínima', 'Processo / Geral', 'Outros'],
+                    datasets: [{
+                        data: [dadosStatus['Margem Mínima Objetiva'], dadosStatus['Crítica Processo / Geral'], dadosStatus['Outros']],
+                        backgroundColor: ['#8b5cf6', '#f59e0b', '#94a3b8'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'right', labels: { color: textColor, padding: 20, font: {size: 13, family: 'Inter'} } } 
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            window.atualizarCoresGraficos = () => {
+                if(Object.keys(dadosOriginais).length > 0) aplicarFiltrosDashboard();
+            };
+        }
+
+        function gerarTabelaBI(resumoComprador) {
+            const tbody = document.getElementById('bi-table-body');
+            tbody.innerHTML = '';
+
+            // Transforma objeto em array e ordena por Comprador com mais "Encarte/TV" ou "Margem"
+            let arrayCompradores = Object.keys(resumoComprador).map(key => {
+                return { nome: key, ...resumoComprador[key] };
+            });
+
+            arrayCompradores.sort((a, b) => {
+                if (b.encarte !== a.encarte) return b.encarte - a.encarte;
+                return b.margem - a.margem;
+            });
+
+            if (arrayCompradores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-600);">Nenhum dado encontrado para este filtro.</td></tr>`;
+                return;
+            }
+
+            arrayCompradores.forEach(c => {
+                // Formatação condicional para chamar a atenção
+                let bgEncarte = c.encarte > 0 ? 'background: #fef2f2; color: #ef4444;' : 'background: var(--bg-body); color: var(--text-400);';
+                let bgMargem = c.margem > 0 ? 'background: #faf5ff; color: #8b5cf6;' : 'background: var(--bg-body); color: var(--text-400);';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 700;">${c.nome}</td>
+                        <td style="color: var(--text-600); font-size: 0.8rem;">${c.depto}</td>
+                        <td style="text-align: center;"><span class="badge-bi" style="background: var(--border-light);">${c.total}</span></td>
+                        <td style="text-align: center;"><span class="badge-bi">${c.processo}</span></td>
+                        <td style="text-align: center;"><span class="badge-bi" style="${bgMargem}">${c.margem}</span></td>
+                        <td style="text-align: center;"><span class="badge-bi" style="${bgEncarte}">${c.encarte}</span></td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
