@@ -290,7 +290,7 @@
             </a>
             
             <!-- NOVO CARD: DASHBOARD DE CRÍTICAS -->
-            <a href="painel-criticas.html" class="card card-pricing" id="card-criticas">
+            <a href="painel-criticas.html" class="card" id="card-criticas">
                 <div class="icon-container" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">📊</div>
                 <h2>Críticas Consinco</h2>
                 <p>Dashboard executivo das divergências de preço.</p>
@@ -380,24 +380,28 @@
             const pricingCards = document.querySelectorAll('.card-pricing');
             const cardUsuarios = document.getElementById('card-usuarios');
             const cardChamados = document.getElementById('card-chamados');
+            const cardCriticas = document.getElementById('card-criticas');
 
             // HIERARQUIA DE NÍVEIS
             if (perfilDoBanco === "Comercial") {
                 pricingCards.forEach(c => c.style.display = 'none');
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
+                if (cardCriticas) cardCriticas.style.display = 'flex'; // Comercial vê o card de Críticas
                 if (headerTitle) headerTitle.textContent = "Portal Comercial ;DD";
-                if (headerSubtitle) headerSubtitle.textContent = "Acesse o painel de solicitações abaixo para enviar e acompanhar chamados.";
+                if (headerSubtitle) headerSubtitle.textContent = "Acesse suas ferramentas abaixo.";
             } else if (perfilDoBanco === "Gestor") {
                 pricingCards.forEach(c => c.style.display = 'flex');
                 if (cardUsuarios) cardUsuarios.style.display = 'flex';
                 if (cardChamados) cardChamados.style.display = 'flex';
+                if (cardCriticas) cardCriticas.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             } else {
                 pricingCards.forEach(c => c.style.display = 'flex');
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
+                if (cardCriticas) cardCriticas.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             }
@@ -411,9 +415,7 @@
                 document.body.classList.add('auth-ready');
             }
 
-            // ==========================================
             // LÓGICA DO BADGE DE ANIVERSÁRIO
-            // ==========================================
             if (perfilDoBanco !== "Comercial") {
                 const aniversariantesRef = ref(db, 'aniversariantes');
                 get(aniversariantesRef).then((snapshot) => {
@@ -441,12 +443,10 @@
                 });
             }
 
-            // ==========================================
             // LÓGICA DO DASHBOARD DE CHAMADOS (PRICING)
-            // ==========================================
             if (perfilDoBanco === "Gestor" || perfilDoBanco === "Pricing") {
                 const resumoContainer = document.getElementById('resumo-chamados-pricing');
-                if (resumoContainer) resumoContainer.style.display = 'flex'; // Exibe o mini-dashboard
+                if (resumoContainer) resumoContainer.style.display = 'flex';
 
                 let chamadosAtivosIndex = [];
                 const chamadosRef = ref(db, 'chamados_comercial');
@@ -468,12 +468,9 @@
                     const agora = Date.now();
                     
                     chamadosAtivosIndex.forEach(c => {
-                        // Contagem de pendentes (Fila de Análise)
                         if (c.status === "Aberto" || c.status === "Em Análise") {
                             pendentesAprovacao++;
                         }
-
-                        // Contagem de Timer (Para Derrubar)
                         if (c.tipo && c.tipo.includes("3") && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido) {
                             if (agora > c.timerExpiraEm) {
                                 expirados++;
@@ -483,15 +480,13 @@
                         }
                     });
 
-                    // Elementos do DOM
                     const contAnalise = document.getElementById('contador-analise');
                     const contDerrubar = document.getElementById('contador-derrubar');
 
-                    // Atualiza cor e número: Aprovar/Analisar
                     if (contAnalise) {
                         contAnalise.textContent = pendentesAprovacao;
                         if (pendentesAprovacao > 0) {
-                            contAnalise.style.background = '#fef3c7'; // Amarelo
+                            contAnalise.style.background = '#fef3c7'; 
                             contAnalise.style.color = '#d97706';
                         } else {
                             contAnalise.style.background = 'var(--bg-color)';
@@ -499,16 +494,15 @@
                         }
                     }
 
-                    // Atualiza cor e número: Derrubar Preço
                     if (contDerrubar) {
                         let totalDerrubar = expirados + rodando;
                         contDerrubar.textContent = totalDerrubar;
                         
                         if (expirados > 0) {
-                            contDerrubar.style.background = '#ef4444'; // Vermelho alerta
+                            contDerrubar.style.background = '#ef4444'; 
                             contDerrubar.style.color = '#ffffff';
                         } else if (rodando > 0) {
-                            contDerrubar.style.background = '#ffedd5'; // Laranja ameno
+                            contDerrubar.style.background = '#ffedd5'; 
                             contDerrubar.style.color = '#ea580c';
                         } else {
                             contDerrubar.style.background = 'var(--bg-color)';
@@ -517,7 +511,6 @@
                     }
                 }
 
-                // Atualiza a verificação de timers expirando a cada 10 segundos
                 if (!window.badgeIntervalSet) {
                     window.badgeIntervalSet = true;
                     setInterval(atualizarBadgeChamados, 10000);

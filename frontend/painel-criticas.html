@@ -117,6 +117,9 @@
         .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: var(--text-600); font-weight: 700; padding: 12px; border-bottom: 2px solid var(--border-light); white-space: nowrap;}
         html.dark-theme .bi-table th { background: rgba(255,255,255,0.02); }
         .bi-table td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-900); font-weight: 500; }
+        .bi-table tr:last-child td { border-bottom: none; }
+        .bi-table tr:hover td { background: rgba(0,0,0,0.02); }
+        html.dark-theme .bi-table tr:hover td { background: rgba(255,255,255,0.02); }
         .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: var(--bg-body); display: inline-block; text-align: center; min-width: 40px;}
 
         /* ESTILOS DO DRILL-DOWN (SUB-TABELA) COM CABEÇALHO CONGELADO */
@@ -128,7 +131,6 @@
         .sub-table-wrapper { padding: 15px; background: var(--bg-body); border-left: 4px solid var(--brand-primary); margin-bottom: 10px; border-radius: 0 0 8px 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
         html.dark-theme .sub-table-wrapper { background: #0f172a; }
         
-        /* O Segredo do Cabeçalho Congelado: border-collapse e sticky */
         .sub-table-scroll { max-height: 320px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border-light); position: relative; background: var(--bg-surface); }
         .sub-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--bg-surface); }
         
@@ -198,7 +200,7 @@
             <p style="color: var(--text-600); font-size: 1.05rem;">Dashboard gerencial sincronizado em tempo real na nuvem.</p>
         </div>
 
-        <!-- BARRA DE STATUS (Mostrada quando os dados são carregados do Firebase) -->
+        <!-- BARRA DE STATUS -->
         <div class="status-nuvem" id="status-box">
             <span id="texto-status-nuvem">🕒 Buscando dados na nuvem...</span>
             <label class="btn-update-small">
@@ -207,7 +209,7 @@
             </label>
         </div>
 
-        <!-- ZONA DE UPLOAD GIGANTE (Mostrada se o Firebase estiver vazio) -->
+        <!-- ZONA DE UPLOAD GIGANTE -->
         <label class="upload-zone" id="upload-box" style="display: none;">
             <input type="file" id="file-upload-big" accept=".xlsx, .xls, .csv">
             <div class="upload-icon">☁️</div>
@@ -305,6 +307,7 @@
         }
 
         let nomeUsuarioLogado = "Usuário";
+        let perfilUsuarioLogado = "Colaborador"; // Nova variável para controle global de tela
 
         // ==========================================
         // AUTENTICAÇÃO E SEGURANÇA
@@ -319,14 +322,14 @@
 
                 if (snapshot.exists()) {
                     const dadosUser = snapshot.val();
-                    const perfil = dadosUser.perfil || 'Colaborador';
+                    perfilUsuarioLogado = dadosUser.perfil || 'Colaborador';
                     nomeUsuarioLogado = (dadosUser.nome || user.email).split(' ')[0];
                     
                     document.getElementById('user-name-widget').textContent = nomeUsuarioLogado;
-                    document.getElementById('user-role-widget').textContent = perfil;
+                    document.getElementById('user-role-widget').textContent = perfilUsuarioLogado;
                     
-                    if (perfil === "Comercial" || perfil === "Bloqueado") {
-                        alert("Acesso Negado: Apenas a equipe de Pricing pode acessar este painel.");
+                    if (perfilUsuarioLogado === "Bloqueado") {
+                        alert("Acesso Negado: Sua conta está bloqueada.");
                         window.location.href = "/";
                         return;
                     }
@@ -334,6 +337,7 @@
                     document.getElementById('widget-perfil').style.display = 'flex';
                     document.getElementById('main-container').style.display = 'block';
 
+                    // Inicia a busca dos dados no Firebase
                     carregarDadosDaNuvem();
                 } else {
                     window.location.href = "/";
@@ -366,11 +370,27 @@
                     document.getElementById('upload-box').style.display = 'none';
                     document.getElementById('status-box').style.display = 'flex';
 
+                    // BARREIRA DO COMERCIAL: Remove botões de upload/substituir base se for equipe Comercial
+                    if (perfilUsuarioLogado === "Comercial") {
+                        const btnUpdate = document.querySelector('.btn-update-small');
+                        if (btnUpdate) btnUpdate.style.display = 'none';
+                    }
+
                     popularFiltrosSelects();
                     aplicarFiltrosDashboard();
                 } else {
-                    document.getElementById('upload-box').style.display = 'flex';
-                    document.getElementById('status-box').style.display = 'none';
+                    // SE NÃO TIVER DADOS NA NUVEM AINDA
+                    if (perfilUsuarioLogado === "Comercial") {
+                        document.getElementById('upload-box').style.display = 'none';
+                        document.getElementById('status-box').style.display = 'flex';
+                        document.getElementById('texto-status-nuvem').innerHTML = `⚠️ Nenhuma base foi disponibilizada pela equipe de Pricing hoje.`;
+                        
+                        const btnUpdate = document.querySelector('.btn-update-small');
+                        if (btnUpdate) btnUpdate.style.display = 'none';
+                    } else {
+                        document.getElementById('upload-box').style.display = 'flex';
+                        document.getElementById('status-box').style.display = 'none';
+                    }
                 }
             });
         }
