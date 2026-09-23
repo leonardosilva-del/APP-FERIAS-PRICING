@@ -75,13 +75,18 @@
         .back-btn:hover { color: var(--text-900); border-color: var(--border-light); box-shadow: var(--shadow-md); }
         h1 { font-size: 2rem; font-weight: 700; color: var(--text-900); }
 
-        /* UPLOAD ZONE */
+        /* UPLOAD E STATUS NUVEM */
         .upload-zone { background: var(--bg-surface); border: 2px dashed var(--brand-primary); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin-top: 1rem; box-shadow: var(--shadow-sm); }
         .upload-zone:hover { background: rgba(37, 99, 235, 0.03); border-color: var(--brand-primary-hover); }
         .upload-zone input { display: none; }
         .upload-icon { font-size: 2.5rem; color: var(--brand-primary); }
         .upload-title { font-size: 1.1rem; font-weight: 600; color: var(--text-900); }
         .upload-subtitle { font-size: 0.9rem; color: var(--text-600); }
+
+        .status-nuvem { background: #e0f2fe; color: #0369a1; padding: 12px 20px; border-radius: var(--radius-md); margin-top: 1rem; display: none; align-items: center; justify-content: space-between; border: 1px solid #bae6fd; font-size: 0.9rem; }
+        html.dark-theme .status-nuvem { background: rgba(14, 165, 233, 0.1); color: #38bdf8; border-color: #0284c7; }
+        .btn-update-small { background: var(--brand-primary); color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.2s; border: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-update-small:hover { background: var(--brand-primary-hover); }
 
         /* FILTROS DINÂMICOS */
         .filter-bar { display: none; gap: 15px; margin-top: 2rem; background: var(--bg-surface); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); flex-wrap: wrap; align-items: center; }
@@ -102,7 +107,7 @@
         .kpi-card.purple { border-top-color: var(--purple); }
         .kpi-card.orange { border-top-color: var(--orange); background: linear-gradient(180deg, rgba(249, 115, 22, 0.05) 0%, rgba(255,255,255,0) 100%); }
 
-        /* GRÁFICOS E TABELA BI */
+        /* GRÁFICOS E TABELA BI PAI */
         .charts-grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 1.5rem; display: none; margin-top: 1.5rem; }
         .chart-card { background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
         .chart-header { font-size: 1.1rem; font-weight: 700; color: var(--text-900); margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem; }
@@ -112,12 +117,9 @@
         .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: var(--text-600); font-weight: 700; padding: 12px; border-bottom: 2px solid var(--border-light); white-space: nowrap;}
         html.dark-theme .bi-table th { background: rgba(255,255,255,0.02); }
         .bi-table td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-900); font-weight: 500; }
-        .bi-table tr:last-child td { border-bottom: none; }
-        .bi-table tr:hover td { background: rgba(0,0,0,0.02); }
-        html.dark-theme .bi-table tr:hover td { background: rgba(255,255,255,0.02); }
         .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: var(--bg-body); display: inline-block; text-align: center; min-width: 40px;}
 
-        /* ESTILOS DO DRILL-DOWN (SUB-TABELA) */
+        /* ESTILOS DO DRILL-DOWN (SUB-TABELA) COM CABEÇALHO CONGELADO */
         .clickable-row { cursor: pointer; transition: background-color 0.2s; }
         .clickable-row:hover { background-color: rgba(37, 99, 235, 0.05) !important; }
         html.dark-theme .clickable-row:hover { background-color: rgba(37, 99, 235, 0.1) !important; }
@@ -125,45 +127,52 @@
         
         .sub-table-wrapper { padding: 15px; background: var(--bg-body); border-left: 4px solid var(--brand-primary); margin-bottom: 10px; border-radius: 0 0 8px 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
         html.dark-theme .sub-table-wrapper { background: #0f172a; }
-        .sub-table { width: 100%; border-collapse: collapse; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 6px; overflow: hidden;}
         
-        /* CABEÇALHO DA SUB-TABELA CONGELADO (STICKY) */
+        /* O Segredo do Cabeçalho Congelado: border-collapse e sticky */
+        .sub-table-scroll { max-height: 320px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border-light); position: relative; background: var(--bg-surface); }
+        .sub-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--bg-surface); }
+        
         .sub-table th { 
             position: sticky; 
             top: 0; 
-            z-index: 10; 
-            background: #f8fafc; /* Fundo sólido para cobrir as linhas ao rolar */
+            z-index: 20; 
+            background: #f8fafc; 
             font-size: 0.75rem; 
-            padding: 8px 12px; 
-            color: var(--text-600);
-            box-shadow: 0 1px 0 0 var(--border-light); /* Borda inferior simulada pelo box-shadow */
-            white-space: nowrap;
+            padding: 10px 12px; 
+            color: var(--text-600); 
+            border-bottom: 1px solid var(--border-light); 
+            white-space: nowrap; 
+            text-transform: uppercase;
         }
-        html.dark-theme .sub-table th { background: #1e293b; }
-
+        html.dark-theme .sub-table th { background: #1e293b; border-bottom-color: #334155; }
+        
         .sub-table td { padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid var(--border-light); color: var(--text-900);}
+        .sub-table tr:last-child td { border-bottom: none; }
         .badge-encarte { background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-left: 8px;}
+
+        /* Toasts */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; box-shadow: var(--shadow-md); animation: slideIn 0.3s forwards; pointer-events: auto; }
+        .toast.success { background-color: var(--status-success); }
+        .toast.error { background-color: var(--status-danger); }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
         @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 
 <body>
+    <div id="toast-container"></div>
 
-    <!-- TELA DE LOADING -->
     <div id="loading-screen">
         <svg class="spinner" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
         </svg>
-        <h2 style="font-weight: 600; font-size: 1.2rem;">Autenticando acesso...</h2>
+        <h2 style="font-weight: 600; font-size: 1.2rem;">Sincronizando com a Nuvem...</h2>
     </div>
 
-    <!-- CONTROLES DO TOPO -->
     <div class="top-controls" style="display: none;" id="widget-perfil">
-        <button onclick="toggleDark()" class="btn-theme" title="Alternar Tema Escuro/Claro">
-            <span id="icon-theme">🌙</span>
-        </button>
-
+        <button onclick="toggleDark()" class="btn-theme" title="Alternar Tema Escuro/Claro"><span id="icon-theme">🌙</span></button>
         <div class="user-profile-widget">
             <img id="user-photo" src="" class="user-avatar" alt="Foto">
             <div class="user-info-widget">
@@ -171,9 +180,7 @@
                 <span id="user-role-widget" class="user-role-widget">Perfil</span>
             </div>
             <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </div>
     </div>
@@ -188,14 +195,23 @@
         </div>
 
         <div>
-            <p style="color: var(--text-600); font-size: 1.05rem;">Dashboard gerencial focado em divergências de preço e margens. O sistema isola automaticamente embalagens unitárias.</p>
+            <p style="color: var(--text-600); font-size: 1.05rem;">Dashboard gerencial sincronizado em tempo real na nuvem.</p>
         </div>
 
-        <!-- ZONA DE UPLOAD -->
-        <label class="upload-zone" id="upload-box">
-            <input type="file" id="file-upload" accept=".xlsx, .xls, .csv">
-            <div class="upload-icon">📊</div>
-            <div class="upload-title" id="upload-text">Clique ou arraste a planilha do Consinco aqui</div>
+        <!-- BARRA DE STATUS (Mostrada quando os dados são carregados do Firebase) -->
+        <div class="status-nuvem" id="status-box">
+            <span id="texto-status-nuvem">🕒 Buscando dados na nuvem...</span>
+            <label class="btn-update-small">
+                🔄 Substituir Base
+                <input type="file" id="file-upload-small" accept=".xlsx, .xls, .csv" style="display:none;">
+            </label>
+        </div>
+
+        <!-- ZONA DE UPLOAD GIGANTE (Mostrada se o Firebase estiver vazio) -->
+        <label class="upload-zone" id="upload-box" style="display: none;">
+            <input type="file" id="file-upload-big" accept=".xlsx, .xls, .csv">
+            <div class="upload-icon">☁️</div>
+            <div class="upload-title" id="upload-text">O banco de dados está vazio. Suba o primeiro relatório do Consinco.</div>
             <div class="upload-subtitle">Formatos aceitos: Excel (.xlsx) ou CSV.</div>
         </label>
 
@@ -203,15 +219,11 @@
         <div class="filter-bar" id="filter-section">
             <div style="flex: 1; min-width: 200px;">
                 <span class="filter-label">Filtrar por Departamento</span>
-                <select id="filtro-depto" class="filter-select" onchange="aplicarFiltrosDashboard()">
-                    <option value="ALL">Todos os Departamentos</option>
-                </select>
+                <select id="filtro-depto" class="filter-select" onchange="aplicarFiltrosDashboard()"><option value="ALL">Todos os Departamentos</option></select>
             </div>
             <div style="flex: 1; min-width: 200px;">
                 <span class="filter-label">Filtrar por Comprador</span>
-                <select id="filtro-comprador" class="filter-select" onchange="aplicarFiltrosDashboard()">
-                    <option value="ALL">Todos os Compradores</option>
-                </select>
+                <select id="filtro-comprador" class="filter-select" onchange="aplicarFiltrosDashboard()"><option value="ALL">Todos os Compradores</option></select>
             </div>
             <div>
                 <button class="btn-theme" onclick="resetarFiltros()" style="margin-top: 22px; padding: 10px 15px; border-radius: 6px; font-size: 0.9rem; background: var(--bg-body); border-color: var(--border-light);">Limpar Filtros</button>
@@ -251,9 +263,7 @@
         <div class="charts-grid" id="chart-section">
             <div class="chart-card">
                 <div class="chart-header">Tipos de Críticas</div>
-                <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
-                    <canvas id="chartTipos"></canvas>
-                </div>
+                <div style="height: 300px; width: 100%; display: flex; justify-content: center;"><canvas id="chartTipos"></canvas></div>
             </div>
 
             <div class="chart-card" style="grid-column: 1 / -1;">
@@ -274,9 +284,7 @@
                                 <th style="text-align: center; color: var(--danger);">Encarte/TV (Alerta)</th>
                             </tr>
                         </thead>
-                        <tbody id="bi-table-body">
-                            <!-- Injetado via JS -->
-                        </tbody>
+                        <tbody id="bi-table-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -286,7 +294,17 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        window.showToast = function (message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`; toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        let nomeUsuarioLogado = "Usuário";
 
         // ==========================================
         // AUTENTICAÇÃO E SEGURANÇA
@@ -302,8 +320,9 @@
                 if (snapshot.exists()) {
                     const dadosUser = snapshot.val();
                     const perfil = dadosUser.perfil || 'Colaborador';
+                    nomeUsuarioLogado = (dadosUser.nome || user.email).split(' ')[0];
                     
-                    document.getElementById('user-name-widget').textContent = (dadosUser.nome || user.email).split(' ')[0];
+                    document.getElementById('user-name-widget').textContent = nomeUsuarioLogado;
                     document.getElementById('user-role-widget').textContent = perfil;
                     
                     if (perfil === "Comercial" || perfil === "Bloqueado") {
@@ -312,9 +331,10 @@
                         return;
                     }
 
-                    document.getElementById('loading-screen').style.display = 'none';
                     document.getElementById('widget-perfil').style.display = 'flex';
                     document.getElementById('main-container').style.display = 'block';
+
+                    carregarDadosDaNuvem();
                 } else {
                     window.location.href = "/";
                 }
@@ -327,17 +347,38 @@
         document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "/"; }); });
 
         // ==========================================
-        // MOTOR DE DADOS E BI (COMPLETO E ROBUSTO)
+        // MOTOR DE DADOS E NUVEM (FIREBASE)
         // ==========================================
         let dadosOriginais = []; 
         let myChartTipos = null;
 
-        // Leitura do Arquivo
-        document.getElementById('file-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
+        function carregarDadosDaNuvem() {
+            onValue(ref(db, 'painel_criticas/atual'), (snapshot) => {
+                document.getElementById('loading-screen').style.display = 'none'; 
 
-            document.getElementById('upload-text').innerText = "Processando os dados de: " + file.name + "...";
+                if (snapshot.exists()) {
+                    const payload = snapshot.val();
+                    dadosOriginais = payload.dados || [];
+                    
+                    let dataFormatada = new Date(payload.atualizadoEm).toLocaleString('pt-BR');
+                    document.getElementById('texto-status-nuvem').innerHTML = `🕒 Sincronizado: Base importada em <strong>${dataFormatada}</strong> por <strong>${payload.atualizadoPor}</strong>.`;
+                    
+                    document.getElementById('upload-box').style.display = 'none';
+                    document.getElementById('status-box').style.display = 'flex';
+
+                    popularFiltrosSelects();
+                    aplicarFiltrosDashboard();
+                } else {
+                    document.getElementById('upload-box').style.display = 'flex';
+                    document.getElementById('status-box').style.display = 'none';
+                }
+            });
+        }
+
+        function processarUploadArquivo(file) {
+            if(!file) return;
+            
+            showToast("⏳ Processando e enviando para a nuvem...", "success");
 
             const reader = new FileReader();
             reader.onload = function(evt) {
@@ -346,27 +387,37 @@
                 const sheetName = workbook.SheetNames[0];
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
                 
-                // Pré-Filtro: Mantém apenas onde a embalagem termina com '1'
-                dadosOriginais = json.filter(row => {
+                let dadosFiltradosNuvem = json.filter(row => {
                     let emb = String(row['DESC_EMBALAGEM'] || row['EMBALAGEM'] || "").trim();
                     if (!emb) return false;
                     let partes = emb.split(' ');
-                    let qtde = partes[partes.length - 1]; 
-                    return qtde === '1';
+                    return partes[partes.length - 1] === '1'; 
                 });
 
-                if (dadosOriginais.length === 0) {
-                    alert("Aviso: Nenhum item com embalagem unitária (1) foi encontrado na planilha.");
+                if (dadosFiltradosNuvem.length === 0) {
+                    showToast("Erro: Nenhum item com embalagem unitária (1) encontrado.", "error");
+                    return;
                 }
 
-                popularFiltrosSelects();
-                aplicarFiltrosDashboard();
-                document.getElementById('upload-box').style.display = 'none';
+                const payload = {
+                    atualizadoEm: Date.now(),
+                    atualizadoPor: nomeUsuarioLogado,
+                    dados: dadosFiltradosNuvem
+                };
+
+                set(ref(db, 'painel_criticas/atual'), payload).then(() => {
+                    showToast("✅ Planilha salva na nuvem! O painel de todos foi atualizado.", "success");
+                }).catch(e => {
+                    showToast("Erro ao salvar: " + e.message, "error");
+                });
             };
             reader.readAsBinaryString(file);
-        });
+        }
 
-        // Dropdowns de Filtro
+        document.getElementById('file-upload-big').addEventListener('change', function(e) { processarUploadArquivo(e.target.files[0]); });
+        document.getElementById('file-upload-small').addEventListener('change', function(e) { processarUploadArquivo(e.target.files[0]); });
+
+
         function popularFiltrosSelects() {
             let deptos = new Set();
             let compradores = new Set();
@@ -396,7 +447,6 @@
             aplicarFiltrosDashboard();
         }
 
-        // FUNÇÃO PRINCIPAL: Recalcula tudo quando um filtro muda
         window.aplicarFiltrosDashboard = function() {
             const deptoFiltro = document.getElementById('filtro-depto').value;
             const compradorFiltro = document.getElementById('filtro-comprador').value;
@@ -426,7 +476,6 @@
                     resumoComprador[c] = { depto: d, total: 0, margem: 0, processo: 0, encarte: 0, apos17h: 0, itens: [] };
                 }
 
-                // 1. Identificar Data/Hora > 17h
                 let dataHoraRaw = String(row['DTAHORALTERACAO'] || row['DATA'] || "").trim();
                 let isApos17h = false;
                 if (dataHoraRaw.includes(' ')) {
@@ -439,7 +488,6 @@
                     }
                 }
 
-                // 2. Identificar Tipo de Crítica e Capturar Observação Completa
                 let tipoCriticaRaw = String(row['CODCRITICAPRECO'] || row['CRITICA'] || "").toUpperCase();
                 let obsCriticaRaw = String(row['OBSCRITICA'] || row['OBSERVACAO'] || "");
                 let obsUpper = obsCriticaRaw.toUpperCase();
@@ -458,7 +506,6 @@
                     resumoTiposCritica["Outros"]++;
                 }
 
-                // 3. Identificar ENCARTE/TV
                 let isEncarte = false;
                 if (isMargem && (obsUpper.includes('ENCARTE') || obsUpper.includes('TV'))) {
                     encarteTv++;
@@ -466,14 +513,12 @@
                     resumoComprador[c].encarte++;
                 }
 
-                // 4. Extrair a Margem Praticada
                 let margemPraticada = "N/A";
                 if(obsCriticaRaw.includes('>')) {
                     let partes = obsCriticaRaw.split('>');
                     margemPraticada = partes[partes.length - 1].trim();
                 }
                 
-                // 5. Extrair a Observação Curta (Texto antes da Setinha ->)
                 let obsCurta = "-";
                 if(obsCriticaRaw.includes('->')) {
                     obsCurta = obsCriticaRaw.split('->')[0].trim();
@@ -482,12 +527,9 @@
                 }
 
                 let margemAlvo = String(row['MGMLUCRO'] || row['MARGEM'] || row['MG'] || "0");
-                
-                // 6. Extrair Filial e Segmento
                 let filial = String(row['NROEMPRESA'] || row['FILIAL'] || row['EMPRESA'] || "-");
                 let segmento = String(row['DESCSEGMENTO'] || row['SEGMENTO'] || "-");
 
-                // 7. Salvar o Item para a tabela de Drill-down
                 resumoComprador[c].total++;
                 resumoComprador[c].itens.push({
                     filial: filial,
@@ -591,7 +633,7 @@
                     <td colspan="8" style="padding: 0; border: none;">
                         <div class="sub-table-wrapper">
                             <h4 style="margin-bottom: 8px; font-size: 0.85rem; color: var(--text-600);">📋 Detalhamento de Itens: ${c.nome}</h4>
-                            <div style="max-height: 280px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border-light);">
+                            <div class="sub-table-scroll">
                                 <table class="sub-table">
                                     <thead>
                                         <tr>
