@@ -110,10 +110,20 @@
         .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: var(--text-600); font-weight: 700; padding: 12px; border-bottom: 2px solid var(--border-light); white-space: nowrap;}
         html.dark-theme .bi-table th { background: rgba(255,255,255,0.02); }
         .bi-table td { padding: 12px; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; color: var(--text-900); font-weight: 500; }
-        .bi-table tr:last-child td { border-bottom: none; }
-        .bi-table tr:hover td { background: rgba(0,0,0,0.02); }
-        html.dark-theme .bi-table tr:hover td { background: rgba(255,255,255,0.02); }
         .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: var(--bg-body); display: inline-block; text-align: center; min-width: 40px;}
+        
+        /* ESTILOS DO DRILL-DOWN (SUB-TABELA) */
+        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
+        .clickable-row:hover { background-color: rgba(37, 99, 235, 0.05) !important; }
+        html.dark-theme .clickable-row:hover { background-color: rgba(37, 99, 235, 0.1) !important; }
+        .btn-expand { background: var(--bg-body); border: 1px solid var(--border-light); border-radius: 4px; padding: 2px 8px; color: var(--text-600); font-weight: 800; cursor: pointer; display: inline-block; transition: 0.2s;}
+        
+        .sub-table-wrapper { padding: 15px; background: var(--bg-body); border-left: 4px solid var(--brand-primary); margin-bottom: 10px; border-radius: 0 0 8px 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        html.dark-theme .sub-table-wrapper { background: #0f172a; }
+        .sub-table { width: 100%; border-collapse: collapse; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 6px; overflow: hidden;}
+        .sub-table th { background: rgba(37, 99, 235, 0.05); font-size: 0.75rem; padding: 8px 12px; border-bottom: 1px solid var(--border-light); color: var(--text-600);}
+        .sub-table td { padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid var(--border-light); color: var(--text-900);}
+        .badge-encarte { background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-left: 8px;}
 
         @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
     </style>
@@ -223,13 +233,16 @@
                 </div>
             </div>
 
-            <!-- Tabela Power BI -->
+            <!-- Tabela Power BI com Drill-down -->
             <div class="chart-card" style="grid-column: 1 / -1;">
-                <div class="chart-header">Análise Detalhada por Comprador (Power BI View)</div>
+                <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Análise Detalhada por Comprador (Clique na linha para expandir os itens)</span>
+                </div>
                 <div class="bi-table-container">
                     <table class="bi-table">
                         <thead>
                             <tr>
+                                <th style="width: 40px;"></th>
                                 <th>Comprador</th>
                                 <th>Departamento</th>
                                 <th style="text-align: center;">Total (Emb. 1)</th>
@@ -290,11 +303,10 @@
 
         document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "/"; }); });
 
-
         // ==========================================
-        // MOTOR DE DADOS E BI
+        // MOTOR DE DADOS E BI (COMPLETO E ROBUSTO)
         // ==========================================
-        let dadosOriginais = []; // Guarda apenas os de Emb 1
+        let dadosOriginais = []; 
         let myChartTipos = null;
 
         // Leitura do Arquivo
@@ -307,17 +319,16 @@
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const data = evt.target.result;
-                // Lê o CSV ou Excel
                 const workbook = XLSX.read(data, {type: 'binary'});
                 const sheetName = workbook.SheetNames[0];
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
                 
-                // Pré-Filtro: Mantém apenas onde a embalagem termina com '1' (Ex: 'UN 1', 'CX 1', etc.)
+                // Pré-Filtro: Mantém apenas onde a embalagem termina com '1'
                 dadosOriginais = json.filter(row => {
                     let emb = String(row['DESC_EMBALAGEM'] || row['EMBALAGEM'] || "").trim();
                     if (!emb) return false;
                     let partes = emb.split(' ');
-                    let qtde = partes[partes.length - 1]; // pega a última palavra/número
+                    let qtde = partes[partes.length - 1]; 
                     return qtde === '1';
                 });
 
@@ -329,11 +340,10 @@
                 aplicarFiltrosDashboard();
                 document.getElementById('upload-box').style.display = 'none';
             };
-            // readAsBinaryString é melhor compatível com XLSX/CSV
             reader.readAsBinaryString(file);
         });
 
-        // Popula as opções do Dropdown (Filtros Interativos)
+        // Dropdowns de Filtro
         function popularFiltrosSelects() {
             let deptos = new Set();
             let compradores = new Set();
@@ -348,17 +358,11 @@
             const selDepto = document.getElementById('filtro-depto');
             const selComprador = document.getElementById('filtro-comprador');
 
-            // Limpa e popula Depto
             selDepto.innerHTML = '<option value="ALL">Todos os Departamentos</option>';
-            Array.from(deptos).sort().forEach(d => {
-                selDepto.innerHTML += `<option value="${d}">${d}</option>`;
-            });
+            Array.from(deptos).sort().forEach(d => { selDepto.innerHTML += `<option value="${d}">${d}</option>`; });
 
-            // Limpa e popula Comprador
             selComprador.innerHTML = '<option value="ALL">Todos os Compradores</option>';
-            Array.from(compradores).sort().forEach(c => {
-                selComprador.innerHTML += `<option value="${c}">${c}</option>`;
-            });
+            Array.from(compradores).sort().forEach(c => { selComprador.innerHTML += `<option value="${c}">${c}</option>`; });
 
             document.getElementById('filter-section').style.display = 'flex';
         }
@@ -377,7 +381,6 @@
             const dadosFiltrados = dadosOriginais.filter(row => {
                 let d = (row['DEPARTAMENTO'] || row['Departamento'] || "Sem Depto").trim();
                 let c = (row['COMPRADOR'] || row['Comprador'] || "Sem Comprador").trim();
-                
                 if (deptoFiltro !== "ALL" && d !== deptoFiltro) return false;
                 if (compradorFiltro !== "ALL" && c !== compradorFiltro) return false;
                 return true;
@@ -387,56 +390,70 @@
         }
 
         function processarDashboard(dados) {
-            let total = 0;
-            let margemMinima = 0;
-            let criticaProcessoGeral = 0;
-            let encarteTv = 0;
-
-            // Dicionário para alimentar a Tabela BI
+            let total = 0; let margemMinima = 0; let criticaProcessoGeral = 0; let encarteTv = 0;
             let resumoComprador = {};
             let resumoTiposCritica = { "Margem Mínima Objetiva": 0, "Crítica Processo / Geral": 0, "Outros": 0 };
 
             dados.forEach(row => {
                 total++;
-
-                // 1. Identificar Tipo de Crítica (Coluna N)
-                let tipoCriticaRaw = String(row['CODCRITICAPRECO'] || row['CRITICA'] || "").toUpperCase();
-                let isMargem = false;
-                
-                if (tipoCriticaRaw.includes('MARGEM MINIMA OBJETIVA') || tipoCriticaRaw.includes('MARGEM MÍNIMA OBJETIVA')) {
-                    margemMinima++;
-                    resumoTiposCritica["Margem Mínima Objetiva"]++;
-                    isMargem = true;
-                } else if (tipoCriticaRaw.includes('PROCESSO') || tipoCriticaRaw.includes('GERAL')) {
-                    criticaProcessoGeral++;
-                    resumoTiposCritica["Crítica Processo / Geral"]++;
-                } else {
-                    resumoTiposCritica["Outros"]++;
-                }
-
-                // 2. Identificar ENCARTE/TV dentro das Críticas (Coluna O)
-                let obsCriticaRaw = String(row['OBSCRITICA'] || row['OBSERVACAO'] || "").toUpperCase();
-                let isEncarte = false;
-                if (isMargem && (obsCriticaRaw.includes('ENCARTE') || obsCriticaRaw.includes('TV'))) {
-                    encarteTv++;
-                    isEncarte = true;
-                }
-
-                // 3. Montar Resumo por Comprador
                 let c = (row['COMPRADOR'] || row['Comprador'] || "Sem Comprador").trim();
                 let d = (row['DEPARTAMENTO'] || row['Departamento'] || "-").trim();
                 
                 if (!resumoComprador[c]) {
-                    resumoComprador[c] = { depto: d, total: 0, margem: 0, processo: 0, encarte: 0 };
+                    resumoComprador[c] = { depto: d, total: 0, margem: 0, processo: 0, encarte: 0, itens: [] };
                 }
+
+                // 1. Identificar Tipo de Crítica
+                let tipoCriticaRaw = String(row['CODCRITICAPRECO'] || row['CRITICA'] || "").toUpperCase();
+                let obsCriticaRaw = String(row['OBSCRITICA'] || row['OBSERVACAO'] || "");
+                let obsUpper = obsCriticaRaw.toUpperCase();
                 
+                let isMargem = false;
+                if (tipoCriticaRaw.includes('MARGEM MINIMA OBJETIVA') || tipoCriticaRaw.includes('MARGEM MÍNIMA OBJETIVA')) {
+                    margemMinima++;
+                    resumoTiposCritica["Margem Mínima Objetiva"]++;
+                    isMargem = true;
+                    resumoComprador[c].margem++;
+                } else if (tipoCriticaRaw.includes('PROCESSO') || tipoCriticaRaw.includes('GERAL')) {
+                    criticaProcessoGeral++;
+                    resumoTiposCritica["Crítica Processo / Geral"]++;
+                    resumoComprador[c].processo++;
+                } else {
+                    resumoTiposCritica["Outros"]++;
+                }
+
+                // 2. Identificar ENCARTE/TV
+                let isEncarte = false;
+                if (isMargem && (obsUpper.includes('ENCARTE') || obsUpper.includes('TV'))) {
+                    encarteTv++;
+                    isEncarte = true;
+                    resumoComprador[c].encarte++;
+                }
+
+                // 3. O PULO DO GATO: Extrair a Margem Praticada de dentro da Observação
+                let margemPraticada = "N/A";
+                if(obsCriticaRaw.includes('>')) {
+                    let partes = obsCriticaRaw.split('>');
+                    // Pega tudo o que está depois do último '>' e limpa os espaços
+                    margemPraticada = partes[partes.length - 1].trim();
+                }
+
+                // 4. Capturar a Margem Alvo (Objetiva)
+                let margemAlvo = String(row['MGMLUCRO'] || row['MARGEM'] || row['MG'] || "0");
+
+                // 5. Salvar o Item para a tabela de detalhe (Drill-down)
                 resumoComprador[c].total++;
-                if(isMargem) resumoComprador[c].margem++;
-                if(tipoCriticaRaw.includes('PROCESSO') || tipoCriticaRaw.includes('GERAL')) resumoComprador[c].processo++;
-                if(isEncarte) resumoComprador[c].encarte++;
+                resumoComprador[c].itens.push({
+                    codigo: row['SEQPRODUTO'] || row['CODIGO'],
+                    descricao: row['DESCCOMPLETA'] || row['DESCRICAO'],
+                    tipo: tipoCriticaRaw,
+                    isEncarte: isEncarte,
+                    margemAlvo: margemAlvo + '%',
+                    margemPraticada: margemPraticada !== "N/A" ? margemPraticada + '%' : '-'
+                });
             });
 
-            // ATUALIZA KPIS DOM
+            // ATUALIZA KPIS
             document.getElementById('kpi-total').innerText = total;
             document.getElementById('kpi-processo').innerText = criticaProcessoGeral;
             document.getElementById('kpi-margem').innerText = margemMinima;
@@ -469,53 +486,123 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'right', labels: { color: textColor, padding: 20, font: {size: 13, family: 'Inter'} } } 
-                    },
+                    plugins: { legend: { position: 'right', labels: { color: textColor, padding: 20, font: {size: 13, family: 'Inter'} } } },
                     cutout: '65%'
                 }
             });
-
-            window.atualizarCoresGraficos = () => {
-                if(Object.keys(dadosOriginais).length > 0) aplicarFiltrosDashboard();
-            };
+            window.atualizarCoresGraficos = () => { if(Object.keys(dadosOriginais).length > 0) aplicarFiltrosDashboard(); };
         }
 
+        // ==========================================
+        // GERAÇÃO DA TABELA POWER BI (COM DRILL-DOWN)
+        // ==========================================
         function gerarTabelaBI(resumoComprador) {
             const tbody = document.getElementById('bi-table-body');
             tbody.innerHTML = '';
 
-            // Transforma objeto em array e ordena por Comprador com mais "Encarte/TV" ou "Margem"
             let arrayCompradores = Object.keys(resumoComprador).map(key => {
                 return { nome: key, ...resumoComprador[key] };
             });
 
+            // Ordena colocando quem tem mais problema de Encarte primeiro, depois quem tem mais erro de margem
             arrayCompradores.sort((a, b) => {
                 if (b.encarte !== a.encarte) return b.encarte - a.encarte;
                 return b.margem - a.margem;
             });
 
             if (arrayCompradores.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-600);">Nenhum dado encontrado para este filtro.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-600);">Nenhum dado encontrado para este filtro.</td></tr>`;
                 return;
             }
 
-            arrayCompradores.forEach(c => {
-                // Formatação condicional para chamar a atenção
+            arrayCompradores.forEach((c, index) => {
                 let bgEncarte = c.encarte > 0 ? 'background: #fef2f2; color: #ef4444;' : 'background: var(--bg-body); color: var(--text-400);';
                 let bgMargem = c.margem > 0 ? 'background: #faf5ff; color: #8b5cf6;' : 'background: var(--bg-body); color: var(--text-400);';
                 
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="font-weight: 700;">${c.nome}</td>
-                        <td style="color: var(--text-600); font-size: 0.8rem;">${c.depto}</td>
-                        <td style="text-align: center;"><span class="badge-bi" style="background: var(--border-light);">${c.total}</span></td>
-                        <td style="text-align: center;"><span class="badge-bi">${c.processo}</span></td>
-                        <td style="text-align: center;"><span class="badge-bi" style="${bgMargem}">${c.margem}</span></td>
-                        <td style="text-align: center;"><span class="badge-bi" style="${bgEncarte}">${c.encarte}</span></td>
-                    </tr>
+                let isDark = document.documentElement.classList.contains('dark-theme');
+                let rowHover = isDark ? '#0f172a' : '#f8fafc';
+
+                // LINHA PRINCIPAL (Pai)
+                let trPai = document.createElement('tr');
+                trPai.className = 'clickable-row';
+                trPai.onclick = () => toggleSubTable(index);
+                trPai.innerHTML = `
+                    <td style="text-align: center;"><span class="btn-expand" id="icon-${index}">+</span></td>
+                    <td style="font-weight: 700;">${c.nome}</td>
+                    <td style="color: var(--text-600); font-size: 0.8rem;">${c.depto}</td>
+                    <td style="text-align: center;"><span class="badge-bi" style="background: var(--border-light);">${c.total}</span></td>
+                    <td style="text-align: center;"><span class="badge-bi">${c.processo}</span></td>
+                    <td style="text-align: center;"><span class="badge-bi" style="${bgMargem}">${c.margem}</span></td>
+                    <td style="text-align: center;"><span class="badge-bi" style="${bgEncarte}">${c.encarte}</span></td>
                 `;
+                tbody.appendChild(trPai);
+
+                // LINHA SECUNDÁRIA (Filho / Drill-down)
+                let trFilho = document.createElement('tr');
+                trFilho.id = `subrow-${index}`;
+                trFilho.style.display = 'none';
+                
+                let detalhesHTML = `
+                    <td colspan="7" style="padding: 0; border: none;">
+                        <div class="sub-table-wrapper">
+                            <h4 style="margin-bottom: 8px; font-size: 0.85rem; color: var(--text-600);">📋 Detalhamento de Itens: ${c.nome}</h4>
+                            <div style="max-height: 280px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border-light);">
+                                <table class="sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 80px;">Código</th>
+                                            <th>Descrição do Produto</th>
+                                            <th>Tipo de Crítica</th>
+                                            <th style="text-align: center;">Margem Alvo</th>
+                                            <th style="text-align: center;">Margem Praticada</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+
+                c.itens.forEach(item => {
+                    let badgeEncarteHTML = item.isEncarte ? `<span class="badge-encarte">ENCARTE</span>` : '';
+                    
+                    // Lógica Visual: Se a margem for diferente, fica vermelho piscando atenção
+                    let alertPraticada = '';
+                    if (item.margemPraticada !== '-' && item.margemPraticada !== item.margemAlvo) {
+                        alertPraticada = `color: var(--danger); font-weight: 800;`;
+                    }
+
+                    detalhesHTML += `
+                        <tr>
+                            <td><strong>${item.codigo}</strong></td>
+                            <td>${item.descricao} ${badgeEncarteHTML}</td>
+                            <td>${item.tipo}</td>
+                            <td style="text-align: center; font-weight: 600; color: var(--purple);">${item.margemAlvo}</td>
+                            <td style="text-align: center; ${alertPraticada}">${item.margemPraticada}</td>
+                        </tr>
+                    `;
+                });
+
+                detalhesHTML += `</tbody></table></div></div></td>`;
+                trFilho.innerHTML = detalhesHTML;
+                tbody.appendChild(trFilho);
             });
+        }
+
+        // Função global para abrir e fechar a gaveta da tabela
+        window.toggleSubTable = function(index) {
+            const subrow = document.getElementById(`subrow-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+            if (subrow.style.display === 'none') {
+                subrow.style.display = 'table-row';
+                icon.textContent = '-';
+                icon.style.background = 'var(--brand-primary)';
+                icon.style.color = 'white';
+                icon.style.borderColor = 'var(--brand-primary)';
+            } else {
+                subrow.style.display = 'none';
+                icon.textContent = '+';
+                icon.style.background = 'var(--bg-body)';
+                icon.style.color = 'var(--text-600)';
+                icon.style.borderColor = 'var(--border-light)';
+            }
         }
     </script>
 </body>
