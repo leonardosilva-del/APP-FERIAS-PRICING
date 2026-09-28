@@ -325,6 +325,9 @@
                 <option value="todos">📅 Todas as Datas</option>
                 <option value="hoje">📅 Apenas de Hoje</option>
             </select>
+
+            <button type="button" id="btn-recarregar-fila" onclick="window.forcarSincronizacaoChamados(true)" class="filter-input" style="width: auto; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; background: var(--bg-surface); color: var(--text-900);" title="Sincronizar fila agora">🔄 Atualizar Fila</button>
+            <button type="button" id="btn-testar-audio" onclick="window.testarAlarmeSonoro()" class="filter-input" style="width: auto; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; background: var(--bg-surface); color: var(--text-900);" title="Testar áudio do alarme">🔊 Testar Som</button>
         </div>
         
         <div class="tickets-grid" id="grid-chamados">
@@ -335,7 +338,7 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, onValue, push, set, update, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, onValue, push, set, update, get, goOnline } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         let perfilUsuario = "Colaborador";
         let dadosUsuario = {};
@@ -533,6 +536,13 @@
             `;
             container.appendChild(toast);
         }
+
+        window.testarAlarmeSonoro = function() {
+            getAudioContext();
+            tocarAlarmeSonoro();
+            showToast("🔊 Alarme sonoro testado e ativado no navegador com sucesso!", "success");
+            notificarDesktop("🔔 Teste de Alarme", "O sistema de som e alertas está funcionando perfeitamente!");
+        };
         
         window.fecharModais = function() {
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
@@ -719,80 +729,147 @@
             }).catch(e => showToast(e.message, "error"));
         }
 
-        // 4. CARREGAMENTO E FILTROS INTELIGENTES E ALERTAS
-        function carregarChamados() {
-            onValue(ref(db, 'chamados_comercial'), (snapshot) => {
-                chamadosGlobais = snapshot.exists() ? snapshot.val() : {};
-                arrayChamadosAtuais = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
-                
-                const perfilNorm = (perfilUsuario || "").trim().toLowerCase();
-                const isPricingOuGestor = perfilNorm === "gestor" || perfilNorm === "pricing";
+        // 4. CARREGAMENTO, FILTROS E SINCRONIZAÇÃO EM TEMPO REAL ROBUSTA
+        window.processarDadosChamados = function(dadosRaw) {
+            chamadosGlobais = dadosRaw || {};
+            arrayChamadosAtuais = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
+            
+            const perfilNorm = (perfilUsuario || "").trim().toLowerCase();
+            const isPricingOuGestor = perfilNorm === "gestor" || perfilNorm === "pricing";
 
-                if (isPricingOuGestor) {
-                    const agora = Date.now();
-                    const abertosPontual = [];
-                    const novosPontuais = [];
+            if (isPricingOuGestor) {
+                const agora = Date.now();
+                const abertosPontual = [];
+                const novosPontuais = [];
 
-                    arrayChamadosAtuais.forEach(c => {
-                        const ehPontual = isVendaPontual(c.tipo);
-                        const estaAberto = c.status === "Aberto";
+                arrayChamadosAtuais.forEach(c => {
+                    const ehPontual = isVendaPontual(c.tipo);
+                    const estaAberto = c.status === "Aberto";
 
-                        if (ehPontual && estaAberto) {
-                            abertosPontual.push(c);
-                            if (!chamadosJaNotificados.has(c.id)) {
-                                novosPontuais.push(c);
-                                chamadosJaNotificados.add(c.id);
-                            }
+                    if (ehPontual && estaAberto) {
+                        abertosPontual.push(c);
+                        if (!chamadosJaNotificados.has(c.id)) {
+                            novosPontuais.push(c);
+                            chamadosJaNotificados.add(c.id);
                         }
-                    });
-
-                    // Primeira carga da página
-                    if (!primeiraCargaFeita) {
-                        primeiraCargaFeita = true;
-                        arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
-
-                        if (abertosPontual.length > 0) {
-                            tocarAlarmeSonoro();
-                            // Dispara alerta dos mais recentes
-                            abertosPontual.slice(0, 2).forEach(c => dispararAlertaVendaPontual(c));
-                            if (abertosPontual.length > 2) {
-                                showToast(`🚨 Há ${abertosPontual.length} Vendas Pontuais aguardando aprovação!`, "error");
-                            }
-                        }
-                    } else {
-                        // Tempo real: qualquer nova venda pontual que acabou de chegar
-                        if (novosPontuais.length > 0) {
-                            tocarAlarmeSonoro();
-                            novosPontuais.forEach(c => {
-                                dispararAlertaVendaPontual(c);
-                                notificarDesktop("🚨 Nova Venda Pontual Solicitada!", `Comprador: ${c.solicitante || 'Comercial'} | Loja: ${c.lojas || '-'}\n${c.produtoDesc || c.produtoCod || ''}`);
-                            });
-                        }
-                        arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
                     }
+                });
 
-                    // Controle dos Alertas na Aba do Navegador
-                    const expirados = arrayChamadosAtuais.filter(c => isVendaPontual(c.tipo) && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm).length;
-                    const outrosAbertos = arrayChamadosAtuais.filter(c => !isVendaPontual(c.tipo) && (c.status === "Aberto" || c.status === "Em Análise")).length;
+                // Primeira carga da página
+                if (!primeiraCargaFeita) {
+                    primeiraCargaFeita = true;
+                    arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
 
                     if (abertosPontual.length > 0) {
-                        atualizarAlertaAba('venda_pontual', abertosPontual.length);
-                    } else if (expirados > 0) {
-                        atualizarAlertaAba('tempo_esgotado', expirados);
-                    } else if (outrosAbertos > 0) {
-                        atualizarAlertaAba('pendente', outrosAbertos);
-                    } else {
-                        atualizarAlertaAba('nenhum', 0);
+                        tocarAlarmeSonoro();
+                        abertosPontual.slice(0, 2).forEach(c => dispararAlertaVendaPontual(c));
+                        if (abertosPontual.length > 2) {
+                            showToast(`🚨 Há ${abertosPontual.length} Vendas Pontuais aguardando aprovação!`, "error");
+                        }
                     }
-
                 } else {
-                    arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
+                    // Tempo real (WebSocket ou Polling de Segundo Plano)
+                    if (novosPontuais.length > 0) {
+                        tocarAlarmeSonoro();
+                        novosPontuais.forEach(c => {
+                            dispararAlertaVendaPontual(c);
+                            notificarDesktop("🚨 Nova Venda Pontual Solicitada!", `Comprador: ${c.solicitante || 'Comercial'} | Loja: ${c.lojas || '-'}\n${c.produtoDesc || c.produtoCod || ''}`);
+                        });
+                    }
+                    arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
+                }
+
+                // Controle dos Alertas na Aba do Navegador
+                const expirados = arrayChamadosAtuais.filter(c => isVendaPontual(c.tipo) && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm).length;
+                const outrosAbertos = arrayChamadosAtuais.filter(c => !isVendaPontual(c.tipo) && (c.status === "Aberto" || c.status === "Em Análise")).length;
+
+                if (abertosPontual.length > 0) {
+                    atualizarAlertaAba('venda_pontual', abertosPontual.length);
+                } else if (expirados > 0) {
+                    atualizarAlertaAba('tempo_esgotado', expirados);
+                } else if (outrosAbertos > 0) {
+                    atualizarAlertaAba('pendente', outrosAbertos);
+                } else {
                     atualizarAlertaAba('nenhum', 0);
                 }
 
-                arrayChamadosAtuais.sort((a,b) => (b.dataCriacao || 0) - (a.dataCriacao || 0));
-                aplicarFiltros();
+            } else {
+                arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
+                atualizarAlertaAba('nenhum', 0);
+            }
+
+            arrayChamadosAtuais.sort((a,b) => (b.dataCriacao || 0) - (a.dataCriacao || 0));
+            aplicarFiltros();
+        };
+
+        window.forcarSincronizacaoChamados = function(mostrarToast = false) {
+            const btn = document.getElementById('btn-recarregar-fila');
+            if (btn) btn.style.opacity = '0.6';
+
+            get(ref(db, 'chamados_comercial')).then(snapshot => {
+                if (btn) btn.style.opacity = '1';
+                if (snapshot.exists()) {
+                    window.processarDadosChamados(snapshot.val());
+                } else {
+                    window.processarDadosChamados({});
+                }
+                if (mostrarToast) showToast("Fila sincronizada com sucesso!");
+            }).catch(err => {
+                if (btn) btn.style.opacity = '1';
+                console.warn("Erro ao sincronizar chamados:", err);
             });
+        };
+
+        function carregarChamados() {
+            // 1. Escuta em tempo real do Firebase (Push WebSocket)
+            onValue(ref(db, 'chamados_comercial'), (snapshot) => {
+                window.processarDadosChamados(snapshot.exists() ? snapshot.val() : {});
+            });
+
+            // 2. Monitor de reconexão do Firebase
+            onValue(ref(db, '.info/connected'), (snap) => {
+                const online = snap.val() === true;
+                if (!online) {
+                    try { goOnline(db); } catch(e) {}
+                }
+            });
+
+            // 3. Auto-sync ao focar na janela ou mudar visibilidade (quando volta ao PC)
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    try { goOnline(db); } catch(e) {}
+                    window.forcarSincronizacaoChamados(false);
+                }
+            });
+            window.addEventListener('focus', () => {
+                try { goOnline(db); } catch(e) {}
+                window.forcarSincronizacaoChamados(false);
+            });
+
+            // 4. Web Worker Watchdog: executa polling em thread secundária
+            // (NÃO é pausado nem sofre throttling do Chrome quando a aba está em 2º plano)
+            try {
+                const workerCode = `
+                    setInterval(() => {
+                        postMessage('poll');
+                    }, 3500);
+                `;
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const worker = new Worker(URL.createObjectURL(blob));
+                worker.onmessage = () => {
+                    const perfilNorm = (perfilUsuario || "").trim().toLowerCase();
+                    if (perfilNorm === "gestor" || perfilNorm === "pricing") {
+                        window.forcarSincronizacaoChamados(false);
+                    }
+                };
+            } catch(e) {
+                setInterval(() => {
+                    const perfilNorm = (perfilUsuario || "").trim().toLowerCase();
+                    if (perfilNorm === "gestor" || perfilNorm === "pricing") {
+                        window.forcarSincronizacaoChamados(false);
+                    }
+                }, 3500);
+            }
         }
 
         window.aplicarFiltros = function() {

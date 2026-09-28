@@ -355,7 +355,7 @@
     <script type="module">
         import { auth, provider, db } from "./firebase-config.js";
         import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, get, update, onValue, goOnline } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         document.addEventListener('DOMContentLoaded', () => {
             const isDark = localStorage.getItem('tema-intranet') === 'dark';
@@ -613,9 +613,9 @@
                     return t.includes("3") || t.includes("pontual");
                 }
                 
-                onValue(chamadosRef, (snapshot) => {
+                function processarDadosChamadosIndex(snapshot) {
                     chamadosAtivosIndex = [];
-                    if (snapshot.exists()) {
+                    if (snapshot && snapshot.exists && snapshot.exists()) {
                         snapshot.forEach(child => {
                             chamadosAtivosIndex.push({ id: child.key, ...child.val() });
                         });
@@ -647,7 +647,54 @@
                     }
 
                     atualizarBadgeChamados();
+                }
+
+                function forcarSincronizacaoIndex() {
+                    get(chamadosRef).then(snapshot => {
+                        processarDadosChamadosIndex(snapshot);
+                    }).catch(e => console.warn("Erro no polling index:", e));
+                }
+
+                // 1. Escuta WebSocket nativa do Firebase
+                onValue(chamadosRef, (snapshot) => {
+                    processarDadosChamadosIndex(snapshot);
                 });
+
+                // 2. Monitor de reconexão do Firebase
+                onValue(ref(db, '.info/connected'), (snap) => {
+                    const online = snap.val() === true;
+                    if (!online) {
+                        try { goOnline(db); } catch(e) {}
+                    }
+                });
+
+                // 3. Auto-sync ao focar na janela ou mudar visibilidade
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        try { goOnline(db); } catch(e) {}
+                        forcarSincronizacaoIndex();
+                    }
+                });
+                window.addEventListener('focus', () => {
+                    try { goOnline(db); } catch(e) {}
+                    forcarSincronizacaoIndex();
+                });
+
+                // 4. Web Worker Watchdog: polling contínuo a cada 3.5s mesmo em segundo plano
+                try {
+                    const workerScript = `
+                        setInterval(() => {
+                            postMessage('poll');
+                        }, 3500);
+                    `;
+                    const blob = new Blob([workerScript], { type: 'application/javascript' });
+                    const bgWorker = new Worker(URL.createObjectURL(blob));
+                    bgWorker.onmessage = () => {
+                        forcarSincronizacaoIndex();
+                    };
+                } catch(e) {
+                    setInterval(forcarSincronizacaoIndex, 3500);
+                }
 
                 function atualizarBadgeChamados() {
                     let pendentesAprovacao = 0;
