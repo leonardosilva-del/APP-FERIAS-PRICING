@@ -159,7 +159,7 @@
             <div id="box-valores" style="display: none; gap: 10px; margin-top: 5px;">
                 <div id="box-preco" style="flex: 1; display: none;">
                     <label>Preço da Oferta (R$) <span style="color: #ef4444;">*</span></label>
-                    <input type="number" step="0.01" id="chamado-preco" placeholder="Ex: 19.90">
+                    <input type="text" inputmode="decimal" id="chamado-preco" placeholder="Ex: 19,90" oninput="mascaraMoeda(this)">
                 </div>
                 <div id="box-quantidade" style="flex: 1; display: none;">
                     <label>Qtd. da Venda <span style="color: #ef4444;">*</span></label>
@@ -668,6 +668,22 @@
             if(tipo.includes("5")) document.getElementById('box-promocao').style.display = 'flex';
         }
 
+        // Máscara de moeda brasileira (R$) - formata com vírgula e 2 casas decimais
+        window.mascaraMoeda = function(input) {
+            let v = input.value.replace(/\D/g, ''); // remove tudo que não é dígito
+            if (v === '') { input.value = ''; return; }
+            v = (parseInt(v, 10) / 100).toFixed(2); // divide por 100 para ter centavos
+            v = v.replace('.', ','); // troca ponto por vírgula
+            v = v.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // adiciona ponto como separador de milhar
+            input.value = v;
+        }
+
+        // Converte valor formatado (ex: "1.299,90") para número (ex: 1299.90)
+        function parsePrecoMoeda(valorFormatado) {
+            if (!valorFormatado) return '';
+            return valorFormatado.replace(/\./g, '').replace(',', '.');
+        }
+
         window.abrirModalChamado = function() {
             document.getElementById('chamado-cod').value = '';
             document.getElementById('chamado-desc').value = '';
@@ -715,7 +731,7 @@
             };
 
             if(tipo.includes("1") || tipo.includes("2") || tipo.includes("3")) payload.justificativa = document.getElementById('chamado-justificativa').value;
-            if(tipo.includes("2") || tipo.includes("3")) payload.preco = document.getElementById('chamado-preco').value;
+            if(tipo.includes("2") || tipo.includes("3")) payload.preco = parsePrecoMoeda(document.getElementById('chamado-preco').value);
             if(tipo.includes("3")) payload.quantidade = document.getElementById('chamado-quantidade').value;
             if(tipo.includes("4")) payload.analise = document.getElementById('chamado-analise').value;
             if(tipo.includes("5")) {
