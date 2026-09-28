@@ -345,9 +345,157 @@
         let idChamadoAtivo = null;
         let timerPadraoMinutos = 60; 
 
-        // VARIÁVEIS DO SISTEMA DE ALERTA
+        // VARIÁVEIS E SISTEMA DE ALERTA ROBUSTO
         let chamadosJaNotificados = new Set();
-        let momentoAberturaPagina = Date.now(); // Só notifica o que for criado DEPOIS que a pessoa abriu a tela
+        let chamadosConhecidos = new Set();
+        let primeiraCargaFeita = false;
+
+        // Gerador de Som Nativo (Web Audio API) - funciona 100% offline, sem links externos quebrados
+        let audioCtxGlobal = null;
+        function getAudioContext() {
+            if (!audioCtxGlobal) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) audioCtxGlobal = new AudioCtx();
+            }
+            if (audioCtxGlobal && audioCtxGlobal.state === 'suspended') {
+                audioCtxGlobal.resume();
+            }
+            return audioCtxGlobal;
+        }
+        ['click', 'touchstart', 'keydown'].forEach(evt => {
+            window.addEventListener(evt, () => getAudioContext(), { passive: true, once: false });
+        });
+
+        function tocarAlarmeSonoro() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const agora = ctx.currentTime;
+                // Sirene / Bipes de emergência potentes e nítidos
+                [0, 0.22, 0.44, 0.70, 0.92, 1.14].forEach((t, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                    osc.frequency.setValueAtTime(i % 2 === 0 ? 980 : 1250, agora + t);
+                    gain.gain.setValueAtTime(0.4, agora + t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, agora + t + 0.18);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(agora + t);
+                    osc.stop(agora + t + 0.19);
+                });
+            } catch(e) {
+                console.warn("Áudio suspenso ou bloqueado:", e);
+            }
+        }
+
+        // SISTEMA DE ALERTA VISUAL NA ABA DO NAVEGADOR & FAVICON
+        const originalTitle = document.title || "Suporte Comercial - Pricing";
+        const originalFavicon = "/favicon.png";
+        let tabAlertInterval = null;
+        let faviconComBadgeAtivo = false;
+
+        function setFaviconAlert(alertActive) {
+            if (alertActive === faviconComBadgeAtivo) return;
+            faviconComBadgeAtivo = alertActive;
+            
+            const favLinks = document.querySelectorAll("link[rel*='icon']");
+            if (!favLinks.length) return;
+
+            if (!alertActive) {
+                favLinks.forEach(l => l.href = originalFavicon);
+                return;
+            }
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = originalFavicon;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 32, 32);
+
+                // Bolinha vermelha com contorno branco no canto superior direito
+                ctx.beginPath();
+                ctx.arc(24, 8, 7, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ef4444';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                const dataUrl = canvas.toDataURL('image/png');
+                favLinks.forEach(l => l.href = dataUrl);
+            };
+            img.onerror = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(16, 16, 14, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 18px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('!', 16, 17);
+                const dataUrl = canvas.toDataURL('image/png');
+                favLinks.forEach(l => l.href = dataUrl);
+            };
+        }
+
+        function atualizarAlertaAba(tipoAlerta, qtd) {
+            if (tipoAlerta === 'nenhum' || qtd <= 0) {
+                if (tabAlertInterval) {
+                    clearInterval(tabAlertInterval);
+                    tabAlertInterval = null;
+                }
+                document.title = originalTitle;
+                setFaviconAlert(false);
+                return;
+            }
+
+            let msgAba = "";
+            if (tipoAlerta === 'venda_pontual') {
+                msgAba = `🚨 (${qtd}) VENDA PONTUAL!`;
+            } else if (tipoAlerta === 'tempo_esgotado') {
+                msgAba = `⏱️ (${qtd}) DERRUBAR PREÇO!`;
+            } else if (tipoAlerta === 'pendente') {
+                msgAba = `🔔 (${qtd}) NOVO CHAMADO!`;
+            }
+
+            if (tabAlertInterval) clearInterval(tabAlertInterval);
+            let alternar = false;
+            document.title = msgAba;
+            tabAlertInterval = setInterval(() => {
+                document.title = alternar ? msgAba : originalTitle;
+                alternar = !alternar;
+            }, 1000);
+            setFaviconAlert(true);
+        }
+
+        function notificarDesktop(titulo, corpo) {
+            if (!("Notification" in window)) return;
+            if (Notification.permission === "granted") {
+                new Notification(titulo, { body: corpo, icon: "/favicon.png" });
+            } else if (Notification.permission === "default") {
+                Notification.requestPermission().then(perm => {
+                    if (perm === "granted") {
+                        new Notification(titulo, { body: corpo, icon: "/favicon.png" });
+                    }
+                });
+            }
+        }
+
+        function isVendaPontual(tipo) {
+            if (!tipo) return false;
+            const t = String(tipo).toLowerCase();
+            return t.includes("3") || t.includes("pontual");
+        }
 
         window.showToast = function (msg, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -360,23 +508,28 @@
 
         // FUNÇÃO DE ALERTA GIGANTE E SONORO PARA PRICING
         window.dispararAlertaVendaPontual = function(chamado) {
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            audio.play().catch(e => console.log("Áudio bloqueado pelo navegador até o primeiro clique na tela."));
+            tocarAlarmeSonoro();
 
             const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const idExistente = document.getElementById(`toast-alerta-${chamado.id}`);
+            if (idExistente) return;
+
             const toast = document.createElement('div');
+            toast.id = `toast-alerta-${chamado.id}`;
             toast.className = `toast toast-urgente`;
             toast.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <strong style="font-size: 1.2rem; display: block; margin-bottom: 8px;">🚨 VENDA PONTUAL NA LOJA!</strong>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.2rem; font-weight: bold;">×</button>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                    <strong style="font-size: 1.15rem; display: block; margin-bottom: 8px;">🚨 VENDA PONTUAL NA LOJA!</strong>
+                    <button onclick="this.closest('.toast').remove()" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.3rem; font-weight: bold; line-height: 1;">×</button>
                 </div>
-                <div style="margin-bottom: 12px; font-size: 0.9rem;">
-                    <strong>Comprador:</strong> ${chamado.solicitante}<br>
-                    <strong>Loja:</strong> ${chamado.lojas}<br>
-                    <strong>Produto:</strong> ${chamado.produtoCod} - ${chamado.produtoDesc}
+                <div style="margin-bottom: 12px; font-size: 0.9rem; line-height: 1.4;">
+                    <strong>Comprador:</strong> ${chamado.solicitante || 'Não informado'}<br>
+                    <strong>Loja:</strong> ${chamado.lojas || '-'}<br>
+                    <strong>Produto:</strong> ${chamado.produtoCod || ''} - ${chamado.produtoDesc || ''}
                 </div>
-                <button onclick="this.parentElement.remove(); abrirDetalhes('${chamado.id}')" style="background: white; color: #ef4444; border: none; padding: 10px; border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">ANALISAR AGORA</button>
+                <button onclick="this.closest('.toast').remove(); abrirDetalhes('${chamado.id}')" style="background: white; color: #ef4444; border: none; padding: 10px; border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.95rem; text-transform: uppercase;">ANALISAR AGORA</button>
             `;
             container.appendChild(toast);
         }
@@ -572,20 +725,72 @@
                 chamadosGlobais = snapshot.exists() ? snapshot.val() : {};
                 arrayChamadosAtuais = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
                 
-                if(perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
+                const perfilNorm = (perfilUsuario || "").trim().toLowerCase();
+                const isPricingOuGestor = perfilNorm === "gestor" || perfilNorm === "pricing";
+
+                if (isPricingOuGestor) {
+                    const agora = Date.now();
+                    const abertosPontual = [];
+                    const novosPontuais = [];
+
                     arrayChamadosAtuais.forEach(c => {
-                        if (c.tipo.includes("3") && c.status === "Aberto" && c.dataCriacao > momentoAberturaPagina) {
+                        const ehPontual = isVendaPontual(c.tipo);
+                        const estaAberto = c.status === "Aberto";
+
+                        if (ehPontual && estaAberto) {
+                            abertosPontual.push(c);
                             if (!chamadosJaNotificados.has(c.id)) {
+                                novosPontuais.push(c);
                                 chamadosJaNotificados.add(c.id);
-                                dispararAlertaVendaPontual(c);
                             }
                         }
                     });
+
+                    // Primeira carga da página
+                    if (!primeiraCargaFeita) {
+                        primeiraCargaFeita = true;
+                        arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
+
+                        if (abertosPontual.length > 0) {
+                            tocarAlarmeSonoro();
+                            // Dispara alerta dos mais recentes
+                            abertosPontual.slice(0, 2).forEach(c => dispararAlertaVendaPontual(c));
+                            if (abertosPontual.length > 2) {
+                                showToast(`🚨 Há ${abertosPontual.length} Vendas Pontuais aguardando aprovação!`, "error");
+                            }
+                        }
+                    } else {
+                        // Tempo real: qualquer nova venda pontual que acabou de chegar
+                        if (novosPontuais.length > 0) {
+                            tocarAlarmeSonoro();
+                            novosPontuais.forEach(c => {
+                                dispararAlertaVendaPontual(c);
+                                notificarDesktop("🚨 Nova Venda Pontual Solicitada!", `Comprador: ${c.solicitante || 'Comercial'} | Loja: ${c.lojas || '-'}\n${c.produtoDesc || c.produtoCod || ''}`);
+                            });
+                        }
+                        arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
+                    }
+
+                    // Controle dos Alertas na Aba do Navegador
+                    const expirados = arrayChamadosAtuais.filter(c => isVendaPontual(c.tipo) && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm).length;
+                    const outrosAbertos = arrayChamadosAtuais.filter(c => !isVendaPontual(c.tipo) && (c.status === "Aberto" || c.status === "Em Análise")).length;
+
+                    if (abertosPontual.length > 0) {
+                        atualizarAlertaAba('venda_pontual', abertosPontual.length);
+                    } else if (expirados > 0) {
+                        atualizarAlertaAba('tempo_esgotado', expirados);
+                    } else if (outrosAbertos > 0) {
+                        atualizarAlertaAba('pendente', outrosAbertos);
+                    } else {
+                        atualizarAlertaAba('nenhum', 0);
+                    }
+
                 } else {
                     arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
+                    atualizarAlertaAba('nenhum', 0);
                 }
 
-                arrayChamadosAtuais.sort((a,b) => b.dataCriacao - a.dataCriacao);
+                arrayChamadosAtuais.sort((a,b) => (b.dataCriacao || 0) - (a.dataCriacao || 0));
                 aplicarFiltros();
             });
         }
