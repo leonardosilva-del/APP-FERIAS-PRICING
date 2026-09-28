@@ -44,7 +44,7 @@
         .topbar { background: var(--bg-surface); padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); z-index: 30; position: sticky; top: 0; }
         .topbar-left { display: flex; align-items: center; gap: 1.5rem; }
         .logo { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; color: var(--text-900); }
-        .logo img { height: 48px; object-fit: contain; } /* <-- TAMANHO DA LOGO AUMENTADO AQUI */
+        .logo img { height: 48px; object-fit: contain; } 
         .back-btn { text-decoration: none; color: var(--text-600); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-light); background-color: var(--bg-body); transition: 0.2s; }
         .back-btn:hover { background-color: var(--bg-surface); color: var(--text-900); border-color: var(--text-400); }
         
@@ -111,10 +111,15 @@
         .btn-cancel { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid var(--border-light); background: var(--bg-body); color: var(--text-600); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-cancel:hover { background: var(--border-light); color: var(--text-900); }
 
+        /* SISTEMA DE NOTIFICAÇÕES TOAST (ALERTA VISUAL) */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; animation: slideIn 0.3s forwards; }
+        .toast { pointer-events: auto; padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; animation: slideIn 0.3s forwards; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         
+        /* ANIMAÇÃO PARA O ALERTA CRÍTICO DE VENDA PONTUAL */
+        .toast-urgente { background-color: #ef4444; border: 2px solid white; animation: slideIn 0.3s forwards, pulsarForte 1.5s infinite !important; }
+        @keyframes pulsarForte { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); } 100% { transform: scale(1); } }
+
         html.dark-theme .modal-content input, html.dark-theme .modal-content select, html.dark-theme .modal-content textarea { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
     </style>
 </head>
@@ -168,7 +173,7 @@
             </div>
 
             <div id="box-alerta-timer" style="display: none; background: #fffbeb; color: #b45309; padding: 10px; border-radius: 6px; border: 1px dashed #f59e0b; font-size: 0.8rem; margin-top: 5px;">
-                ⏱️ <strong>Atenção:</strong> Ao aprovar esta venda pontual, o Pricing será alertado para derrubar o preço automaticamente <strong id="texto-alerta-timer-dinamico">60</strong> <strong>minutos</strong> após a conclusão.
+                ⏱️ <strong>Atenção:</strong> Ao solicitar venda pontual, o Pricing será alertado instantaneamente para aprovação!
             </div>
 
             <div id="box-analise" style="display: none;">
@@ -200,7 +205,6 @@
             <button class="modal-header-close" onclick="fecharModais()">×</button>
             <h2>⚙️ Configurações do Sistema</h2>
             
-            <!-- SEÇÃO TIMER -->
             <div style="margin-top: 10px;">
                 <h3 style="font-size: 1rem; color: var(--text-900); display: flex; align-items: center; gap: 5px;">⏱️ Timer da Venda Pontual</h3>
                 <p style="font-size: 0.85rem; color: var(--text-600); margin-bottom: 5px;">Defina o tempo padrão (em minutos) para o alerta de derrubar preço.</p>
@@ -212,7 +216,6 @@
 
             <hr style="border: 0; border-top: 1px dashed var(--border-light); margin: 15px 0;">
 
-            <!-- SEÇÃO BASE PRODUTOS -->
             <div>
                 <h3 style="font-size: 1rem; color: var(--text-900); display: flex; align-items: center; gap: 5px;">📦 Atualizar Base de Produtos</h3>
                 <p style="font-size: 0.85rem; color: var(--text-600);">Suba uma planilha Excel (.xlsx) ou .CSV contendo as colunas <strong>SEQPRODUTO</strong> e <strong>DESCPRODUTO</strong>.</p>
@@ -274,7 +277,6 @@
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 Voltar
             </a>
-            <!-- LOGO DA EMPRESA ADICIONADA E AJUSTADA AQUI -->
             <div class="logo">
                 <img src="/logo.png" alt="Dia a Dia">
                 🎧 Suporte Comercial
@@ -310,7 +312,6 @@
             <p style="color: var(--text-600);" id="subtitulo-painel">Acompanhe seus chamados. O que é concluído ou negado sai da fila principal.</p>
         </div>
 
-        <!-- BARRA DE FILTROS INTELIGENTE -->
         <div class="filters-container">
             <input type="text" id="filtro-busca" class="filter-input" placeholder="🔍 Buscar ID, Produto, Loja..." style="flex: 1; min-width: 200px;" oninput="aplicarFiltros()">
             
@@ -344,6 +345,10 @@
         let idChamadoAtivo = null;
         let timerPadraoMinutos = 60; 
 
+        // VARIÁVEIS DO SISTEMA DE ALERTA
+        let chamadosJaNotificados = new Set();
+        let momentoAberturaPagina = Date.now(); // Só notifica o que for criado DEPOIS que a pessoa abriu a tela
+
         window.showToast = function (msg, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -351,6 +356,31 @@
             toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#10b981';
             container.appendChild(toast);
             setTimeout(() => { toast.remove() }, 3000);
+        }
+
+        // FUNÇÃO DE ALERTA GIGANTE E SONORO PARA PRICING
+        window.dispararAlertaVendaPontual = function(chamado) {
+            // 1. Toca o som de alerta (Beep suave mas notável)
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            audio.play().catch(e => console.log("Áudio bloqueado pelo navegador até o primeiro clique na tela."));
+
+            // 2. Cria o Toast Vermelho que não some sozinho
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-urgente`;
+            toast.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <strong style="font-size: 1.2rem; display: block; margin-bottom: 8px;">🚨 VENDA PONTUAL NA LOJA!</strong>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.2rem; font-weight: bold;">×</button>
+                </div>
+                <div style="margin-bottom: 12px; font-size: 0.9rem;">
+                    <strong>Comprador:</strong> ${chamado.solicitante}<br>
+                    <strong>Loja:</strong> ${chamado.lojas}<br>
+                    <strong>Produto:</strong> ${chamado.produtoCod} - ${chamado.produtoDesc}
+                </div>
+                <button onclick="this.parentElement.remove(); abrirDetalhes('${chamado.id}')" style="background: white; color: #ef4444; border: none; padding: 10px; border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">ANALISAR AGORA</button>
+            `;
+            container.appendChild(toast);
         }
         
         window.fecharModais = function() {
@@ -374,7 +404,6 @@
                 perfilUsuario = dadosUsuario.perfil || "Colaborador";
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
 
-                // Restrição Corrigida: Gestor e Pricing podem ver configurações e fila geral
                 if (perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
                     document.getElementById('btn-config-base').style.display = 'block';
                     document.getElementById('subtitulo-painel').innerText = "Fila geral de atendimento do Comercial.";
@@ -393,8 +422,7 @@
             onValue(ref(db, 'configuracoes_sistema/timer_venda_pontual'), (snapshot) => { 
                 if (snapshot.exists()) {
                     timerPadraoMinutos = parseInt(snapshot.val());
-                    document.getElementById('config-timer-min').value = timerPadraoMinutos;
-                    document.getElementById('texto-alerta-timer-dinamico').innerText = timerPadraoMinutos;
+                    if(document.getElementById('config-timer-min')) document.getElementById('config-timer-min').value = timerPadraoMinutos;
                 }
             });
         }
@@ -540,14 +568,25 @@
             }).catch(e => showToast(e.message, "error"));
         }
 
-        // 4. CARREGAMENTO E FILTROS INTELIGENTES
+        // 4. CARREGAMENTO E FILTROS INTELIGENTES E ALERTAS
         function carregarChamados() {
             onValue(ref(db, 'chamados_comercial'), (snapshot) => {
                 chamadosGlobais = snapshot.exists() ? snapshot.val() : {};
                 arrayChamadosAtuais = Object.keys(chamadosGlobais).map(k => ({id: k, ...chamadosGlobais[k]}));
                 
-                // Restrição Corrigida: Comercial vê só o dele. Gestor e Pricing veem tudo.
-                if(perfilUsuario !== "Gestor" && perfilUsuario !== "Pricing") {
+                // SISTEMA DE ALERTA: Verifica se entrou uma venda pontual nova (Apenas para Gestor/Pricing)
+                if(perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
+                    arrayChamadosAtuais.forEach(c => {
+                        // Se é Venda Pontual + Está Aberto + Foi criado DEPOIS que eu abri a página
+                        if (c.tipo.includes("3") && c.status === "Aberto" && c.dataCriacao > momentoAberturaPagina) {
+                            if (!chamadosJaNotificados.has(c.id)) {
+                                chamadosJaNotificados.add(c.id);
+                                dispararAlertaVendaPontual(c);
+                            }
+                        }
+                    });
+                } else {
+                    // Comercial só vê o dele
                     arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
                 }
 
@@ -607,8 +646,14 @@
                     }
                 }
 
+                // Efeito visual no card para destacar a urgência
+                let destaqueStyle = "";
+                if(c.tipo.includes("3") && c.status === "Aberto") {
+                    destaqueStyle = "border: 2px solid #ef4444; background: #fef2f2;";
+                }
+
                 grid.innerHTML += `
-                    <div class="ticket-card" onclick="abrirDetalhes('${c.id}')">
+                    <div class="ticket-card" onclick="abrirDetalhes('${c.id}')" style="${destaqueStyle}">
                         <div class="ticket-header">
                             <span class="badge ${badgeClass}">${c.status}</span>
                             <span class="ticket-id">#${c.id.substring(c.id.length - 6).toUpperCase()}</span>
@@ -659,7 +704,6 @@
             
             areaResposta.style.display = 'none'; areaLeitura.style.display = 'none'; btnDerrubar.style.display = 'none';
 
-            // Restrição Corrigida: Gestor e Pricing podem responder.
             if(perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
                 areaResposta.style.display = 'block';
                 document.getElementById('resposta-status').value = c.status;
@@ -683,7 +727,6 @@
 
             let updates = { status: status, respostaTexto: texto, respondidoEm: Date.now() };
 
-            // USA O TEMPO VARIÁVEL DEFINIDO NAS CONFIGURAÇÕES
             if(c.tipo.includes("3") && status === "Aprovado" && !c.timerExpiraEm) {
                 updates.timerExpiraEm = Date.now() + (timerPadraoMinutos * 60 * 1000);
                 updates.timerResolvido = false;
