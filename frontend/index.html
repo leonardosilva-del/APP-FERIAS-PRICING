@@ -308,6 +308,13 @@
                         <span>Aprovar/Analisar:</span>
                         <span id="contador-analise" style="background: var(--bg-color); color: var(--text-muted); padding: 2px 10px; border-radius: 12px; transition: 0.3s;">0</span>
                     </div>
+                    
+                    <!-- NOVA LINHA DO TIMER: Oculta por padrão para não poluir -->
+                    <div id="linha-timer-rodando" style="display: none; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
+                        <span>Timer Ativo:</span>
+                        <span id="contador-rodando" style="background: #fffbeb; color: #b45309; padding: 2px 10px; border-radius: 12px; transition: 0.3s;">0</span>
+                    </div>
+                    
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
                         <span>Derrubar Preço:</span>
                         <span id="contador-derrubar" style="background: var(--bg-color); color: var(--text-muted); padding: 2px 10px; border-radius: 12px; transition: 0.3s;">0</span>
@@ -464,26 +471,29 @@
                 function atualizarBadgeChamados() {
                     let pendentesAprovacao = 0;
                     let expirados = 0;
+                    let rodando = 0;
                     const agora = Date.now();
                     
                     chamadosAtivosIndex.forEach(c => {
-                        // Contagem de pendentes (Fila de Análise)
                         if (c.status === "Aberto" || c.status === "Em Análise") {
                             pendentesAprovacao++;
                         }
-
-                        // Contagem de Timer (Para Derrubar)
-                        // AQUI ESTÁ A CORREÇÃO: Conta APENAS se o tempo estipulado JÁ EXPIROU
+                        
                         if (c.tipo && c.tipo.includes("3") && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido) {
                             if (agora > c.timerExpiraEm) {
                                 expirados++;
+                            } else {
+                                rodando++;
                             }
                         }
                     });
 
                     const contAnalise = document.getElementById('contador-analise');
                     const contDerrubar = document.getElementById('contador-derrubar');
+                    const linhaRodando = document.getElementById('linha-timer-rodando');
+                    const contRodando = document.getElementById('contador-rodando');
 
+                    // 1. Aprovar/Analisar
                     if (contAnalise) {
                         contAnalise.textContent = pendentesAprovacao;
                         if (pendentesAprovacao > 0) {
@@ -495,10 +505,19 @@
                         }
                     }
 
-                    // AQUI ESTÁ A ATUALIZAÇÃO VISUAL PARA MOSTRAR APENAS OS QUE DEVEM SER DERRUBADOS AGORA
+                    // 2. Timer Ativo (Venda Pontual Rodando) - SÓ APARECE QUANDO MAIOR QUE ZERO!
+                    if (linhaRodando && contRodando) {
+                        if (rodando > 0) {
+                            linhaRodando.style.display = 'flex'; // Revela a linha
+                            contRodando.textContent = rodando;
+                        } else {
+                            linhaRodando.style.display = 'none'; // Esconde a linha para não poluir
+                        }
+                    }
+
+                    // 3. Derrubar Preço (Timer Expirado)
                     if (contDerrubar) {
                         contDerrubar.textContent = expirados;
-                        
                         if (expirados > 0) {
                             contDerrubar.style.background = '#ef4444'; 
                             contDerrubar.style.color = '#ffffff';
