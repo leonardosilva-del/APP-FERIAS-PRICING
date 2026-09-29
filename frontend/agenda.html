@@ -1323,22 +1323,26 @@
                     Object.keys(data).forEach(uid => {
                         const u = data[uid];
                         u.uid = uid;
-                        listaUsuariosGlobal.push(u);
 
-                        // Popula o select do modal de tarefas
-                        if (perfilUsuario === "Gestor" || u.email === usuarioAtual.email) {
-                            const option = document.createElement('option');
-                            option.value = u.email || 'sem-email';
-                            option.textContent = u.nome || u.email || 'Sem Nome';
-                            selectColab.appendChild(option);
-                        }
+                        // Apenas Gestores e membros do Pricing aparecem na Agenda
+                        if (u.perfil === "Pricing" || u.perfil === "Gestor") {
+                            listaUsuariosGlobal.push(u);
 
-                        // Popula o select do Filtro na Topbar
-                        if (perfilUsuario === "Gestor") {
-                            const optionFiltro = document.createElement('option');
-                            optionFiltro.value = u.email || 'sem-email';
-                            optionFiltro.textContent = u.nome ? u.nome.split(' ')[0] : (u.email || 'Usuário');
-                            selectFiltro.appendChild(optionFiltro);
+                            // Popula o select do modal de tarefas
+                            if (perfilUsuario === "Gestor" || u.email === usuarioAtual.email) {
+                                const option = document.createElement('option');
+                                option.value = u.email || 'sem-email';
+                                option.textContent = u.nome ? u.nome.split(' ')[0] : (u.email || 'Sem Nome');
+                                selectColab.appendChild(option);
+                            }
+
+                            // Popula o select do Filtro na Topbar
+                            if (perfilUsuario === "Gestor") {
+                                const optionFiltro = document.createElement('option');
+                                optionFiltro.value = u.email || 'sem-email';
+                                optionFiltro.textContent = u.nome ? u.nome.split(' ')[0] : (u.email || 'Usuário');
+                                selectFiltro.appendChild(optionFiltro);
+                            }
                         }
                     });
                 }
