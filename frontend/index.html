@@ -10,14 +10,14 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="shortcut icon" type="image/png" href="/favicon.png">
 
-    <!-- METATAGS OPEN GRAPH -->
+    <!-- METATAGS OPEN GRAPH (ATUALIZADAS PARA O NOVO DOMÍNIO) -->
     <meta property="og:title" content="Intranet Pricing ;DD">
     <meta property="og:description" content="Portal interno de gestão, escalas, férias e demandas da equipe de Pricing.">
-    <meta property="og:image" content="https://app-ferias-pricing.onrender.com/logo.png">
+    <meta property="og:image" content="https://intranetpricing.onrender.com/logo.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="300">
     <meta property="og:image:height" content="300">
-    <meta property="og:url" content="https://app-ferias-pricing.onrender.com/">
+    <meta property="og:url" content="https://intranetpricing.onrender.com/">
     <meta property="og:type" content="website">
 
     <!-- SCRIPT DO MODO DARK GLOBAL -->
@@ -66,12 +66,6 @@
         html.dark-theme .card { border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
         html.dark-theme .input-login { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
         html.dark-theme .input-login:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
-
-        @keyframes pulseAlert {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.85; }
-            100% { transform: scale(1); opacity: 1; }
-        }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Roboto, sans-serif; }
 
@@ -303,20 +297,18 @@
             </a>
             
             <!-- CARD: SUPORTE COMERCIAL COM MINI-DASHBOARD (PRICING) -->
-            <a href="chamados.html" class="card" id="card-chamados" style="position: relative;">
-                <div id="badge-chamados-urgente" style="display: none; position: absolute; top: 12px; right: 12px; background: #ef4444; color: white; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 12px; animation: pulseAlert 1.5s infinite; box-shadow: 0 0 10px rgba(239, 68, 68, 0.7); z-index: 10;">🚨 VENDA PONTUAL!</div>
+            <a href="chamados.html" class="card" id="card-chamados">
                 <div class="icon-container" style="background: rgba(234, 88, 12, 0.1); color: #ea580c;">🎧</div>
                 <h2>Suporte Comercial</h2>
                 <p>Abra chamados para ajustes de preços e FIFO.</p>
                 
-                <!-- CONTAINER DO RESUMO (Ficará oculto para o setor Comercial) -->
+                <!-- CONTAINER DO RESUMO -->
                 <div id="resumo-chamados-pricing" style="display: none; width: 100%; margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px; flex-direction: column; gap: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
                         <span>Aprovar/Analisar:</span>
                         <span id="contador-analise" style="background: var(--bg-color); color: var(--text-muted); padding: 2px 10px; border-radius: 12px; transition: 0.3s;">0</span>
                     </div>
                     
-                    <!-- NOVA LINHA DO TIMER: Oculta por padrão para não poluir -->
                     <div id="linha-timer-rodando" style="display: none; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
                         <span>Timer Ativo:</span>
                         <span id="contador-rodando" style="background: #fffbeb; color: #b45309; padding: 2px 10px; border-radius: 12px; transition: 0.3s;">0</span>
@@ -355,7 +347,7 @@
     <script type="module">
         import { auth, provider, db } from "./firebase-config.js";
         import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, get, update, onValue, goOnline } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         document.addEventListener('DOMContentLoaded', () => {
             const isDark = localStorage.getItem('tema-intranet') === 'dark';
@@ -396,12 +388,11 @@
             const cardChamados = document.getElementById('card-chamados');
             const cardCriticas = document.getElementById('card-criticas');
 
-            // HIERARQUIA DE NÍVEIS
             if (perfilDoBanco === "Comercial") {
                 pricingCards.forEach(c => c.style.display = 'none');
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
-                if (cardCriticas) cardCriticas.style.display = 'flex'; // Comercial vê o card de Críticas
+                if (cardCriticas) cardCriticas.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Portal Comercial ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Acesse suas ferramentas abaixo.";
             } else if (perfilDoBanco === "Gestor") {
@@ -429,7 +420,6 @@
                 document.body.classList.add('auth-ready');
             }
 
-            // LÓGICA DO BADGE DE ANIVERSÁRIO
             if (perfilDoBanco !== "Comercial") {
                 const aniversariantesRef = ref(db, 'aniversariantes');
                 get(aniversariantesRef).then((snapshot) => {
@@ -457,263 +447,35 @@
                 });
             }
 
-            // LÓGICA DO DASHBOARD DE CHAMADOS (PRICING) E ALERTA NA ABA DO NAVEGADOR
-            const perfilNormIndex = (perfilDoBanco || "").trim().toLowerCase();
-            if (perfilNormIndex === "gestor" || perfilNormIndex === "pricing") {
+            if (perfilDoBanco === "Gestor" || perfilDoBanco === "Pricing") {
                 const resumoContainer = document.getElementById('resumo-chamados-pricing');
                 if (resumoContainer) resumoContainer.style.display = 'flex';
 
                 let chamadosAtivosIndex = [];
                 const chamadosRef = ref(db, 'chamados_comercial');
-                let chamadosJaNotificadosIndex = new Set();
-                let primeiraCargaIndex = false;
-
-                // Áudio Nativo via Web Audio API (sem dependência de links externos)
-                let audioCtxIndex = null;
-                function getAudioContextIndex() {
-                    if (!audioCtxIndex) {
-                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                        if (AudioCtx) audioCtxIndex = new AudioCtx();
-                    }
-                    if (audioCtxIndex && audioCtxIndex.state === 'suspended') {
-                        audioCtxIndex.resume();
-                    }
-                    return audioCtxIndex;
-                }
-                ['click', 'touchstart', 'keydown'].forEach(evt => {
-                    window.addEventListener(evt, () => getAudioContextIndex(), { passive: true, once: false });
-                });
-
-                function tocarAlarmeSonoroIndex() {
-                    try {
-                        const ctx = getAudioContextIndex();
-                        if (!ctx) return;
-                        const agora = ctx.currentTime;
-                        [0, 0.22, 0.44, 0.70, 0.92, 1.14].forEach((t, i) => {
-                            const osc = ctx.createOscillator();
-                            const gain = ctx.createGain();
-                            osc.type = i % 2 === 0 ? 'sine' : 'triangle';
-                            osc.frequency.setValueAtTime(i % 2 === 0 ? 980 : 1250, agora + t);
-                            gain.gain.setValueAtTime(0.4, agora + t);
-                            gain.gain.exponentialRampToValueAtTime(0.001, agora + t + 0.18);
-                            osc.connect(gain);
-                            gain.connect(ctx.destination);
-                            osc.start(agora + t);
-                            osc.stop(agora + t + 0.19);
-                        });
-                    } catch(e) {
-                        console.warn("Áudio suspenso:", e);
-                    }
-                }
-
-                // CONTROLE VISUAL DA ABA DO NAVEGADOR (TÍTULO E FAVICON)
-                const originalTitleIndex = document.title || "Intranet Pricing ;DD";
-                const originalFaviconIndex = "/favicon.png";
-                let tabAlertIntervalIndex = null;
-                let faviconBadgeIndexAtivo = false;
-
-                function setFaviconAlertIndex(alertActive) {
-                    if (alertActive === faviconBadgeIndexAtivo) return;
-                    faviconBadgeIndexAtivo = alertActive;
-                    
-                    const favLinks = document.querySelectorAll("link[rel*='icon']");
-                    if (!favLinks.length) return;
-
-                    if (!alertActive) {
-                        favLinks.forEach(l => l.href = originalFaviconIndex);
-                        return;
-                    }
-
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.src = originalFaviconIndex;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 32;
-                        canvas.height = 32;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, 32, 32);
-
-                        ctx.beginPath();
-                        ctx.arc(24, 8, 7, 0, 2 * Math.PI);
-                        ctx.fillStyle = '#ef4444';
-                        ctx.fill();
-                        ctx.lineWidth = 2;
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.stroke();
-
-                        const dataUrl = canvas.toDataURL('image/png');
-                        favLinks.forEach(l => l.href = dataUrl);
-                    };
-                    img.onerror = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 32;
-                        canvas.height = 32;
-                        const ctx = canvas.getContext('2d');
-                        ctx.fillStyle = '#ef4444';
-                        ctx.beginPath();
-                        ctx.arc(16, 16, 14, 0, 2 * Math.PI);
-                        ctx.fill();
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 18px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText('!', 16, 17);
-                        const dataUrl = canvas.toDataURL('image/png');
-                        favLinks.forEach(l => l.href = dataUrl);
-                    };
-                }
-
-                function atualizarAlertaAbaIndex(tipoAlerta, qtd) {
-                    if (tipoAlerta === 'nenhum' || qtd <= 0) {
-                        if (tabAlertIntervalIndex) {
-                            clearInterval(tabAlertIntervalIndex);
-                            tabAlertIntervalIndex = null;
-                        }
-                        document.title = originalTitleIndex;
-                        setFaviconAlertIndex(false);
-                        return;
-                    }
-
-                    let msgAba = "";
-                    if (tipoAlerta === 'venda_pontual') {
-                        msgAba = `🚨 (${qtd}) VENDA PONTUAL!`;
-                    } else if (tipoAlerta === 'tempo_esgotado') {
-                        msgAba = `⏱️ (${qtd}) DERRUBAR PREÇO!`;
-                    } else if (tipoAlerta === 'pendente') {
-                        msgAba = `🔔 (${qtd}) NOVO CHAMADO!`;
-                    }
-
-                    if (tabAlertIntervalIndex) clearInterval(tabAlertIntervalIndex);
-                    let alternar = false;
-                    document.title = msgAba;
-                    tabAlertIntervalIndex = setInterval(() => {
-                        document.title = alternar ? msgAba : originalTitleIndex;
-                        alternar = !alternar;
-                    }, 1000);
-                    setFaviconAlertIndex(true);
-                }
-
-                function notificarDesktopIndex(titulo, corpo) {
-                    if (!("Notification" in window)) return;
-                    if (Notification.permission === "granted") {
-                        new Notification(titulo, { body: corpo, icon: "/favicon.png" });
-                    } else if (Notification.permission === "default") {
-                        Notification.requestPermission().then(perm => {
-                            if (perm === "granted") {
-                                new Notification(titulo, { body: corpo, icon: "/favicon.png" });
-                            }
-                        });
-                    }
-                }
-
-                function isVendaPontualIndex(tipo) {
-                    if (!tipo) return false;
-                    const t = String(tipo).toLowerCase();
-                    return t.includes("3") || t.includes("pontual");
-                }
                 
-                function processarDadosChamadosIndex(snapshot) {
+                onValue(chamadosRef, (snapshot) => {
                     chamadosAtivosIndex = [];
-                    if (snapshot && snapshot.exists && snapshot.exists()) {
+                    if (snapshot.exists()) {
                         snapshot.forEach(child => {
-                            chamadosAtivosIndex.push({ id: child.key, ...child.val() });
+                            chamadosAtivosIndex.push(child.val());
                         });
                     }
-
-                    // Detecção de Vendas Pontuais
-                    let novosPontuais = [];
-                    chamadosAtivosIndex.forEach(c => {
-                        if (isVendaPontualIndex(c.tipo) && c.status === "Aberto") {
-                            if (!chamadosJaNotificadosIndex.has(c.id)) {
-                                novosPontuais.push(c);
-                                chamadosJaNotificadosIndex.add(c.id);
-                            }
-                        }
-                    });
-
-                    if (!primeiraCargaIndex) {
-                        primeiraCargaIndex = true;
-                        if (novosPontuais.length > 0) {
-                            tocarAlarmeSonoroIndex();
-                        }
-                    } else {
-                        if (novosPontuais.length > 0) {
-                            tocarAlarmeSonoroIndex();
-                            novosPontuais.forEach(c => {
-                                notificarDesktopIndex("🚨 Nova Venda Pontual Solicitada!", `Comprador: ${c.solicitante || 'Comercial'} | Loja: ${c.lojas || '-'}\n${c.produtoDesc || c.produtoCod || ''}`);
-                            });
-                        }
-                    }
-
                     atualizarBadgeChamados();
-                }
-
-                function forcarSincronizacaoIndex() {
-                    get(chamadosRef).then(snapshot => {
-                        processarDadosChamadosIndex(snapshot);
-                    }).catch(e => console.warn("Erro no polling index:", e));
-                }
-
-                // 1. Escuta WebSocket nativa do Firebase
-                onValue(chamadosRef, (snapshot) => {
-                    processarDadosChamadosIndex(snapshot);
                 });
-
-                // 2. Monitor de reconexão do Firebase
-                onValue(ref(db, '.info/connected'), (snap) => {
-                    const online = snap.val() === true;
-                    if (!online) {
-                        try { goOnline(db); } catch(e) {}
-                    }
-                });
-
-                // 3. Auto-sync ao focar na janela ou mudar visibilidade
-                document.addEventListener('visibilitychange', () => {
-                    if (!document.hidden) {
-                        try { goOnline(db); } catch(e) {}
-                        forcarSincronizacaoIndex();
-                    }
-                });
-                window.addEventListener('focus', () => {
-                    try { goOnline(db); } catch(e) {}
-                    forcarSincronizacaoIndex();
-                });
-
-                // 4. Web Worker Watchdog: polling contínuo a cada 3.5s mesmo em segundo plano
-                try {
-                    const workerScript = `
-                        setInterval(() => {
-                            postMessage('poll');
-                        }, 3500);
-                    `;
-                    const blob = new Blob([workerScript], { type: 'application/javascript' });
-                    const bgWorker = new Worker(URL.createObjectURL(blob));
-                    bgWorker.onmessage = () => {
-                        forcarSincronizacaoIndex();
-                    };
-                } catch(e) {
-                    setInterval(forcarSincronizacaoIndex, 3500);
-                }
 
                 function atualizarBadgeChamados() {
                     let pendentesAprovacao = 0;
                     let expirados = 0;
                     let rodando = 0;
-                    let abertosVendaPontual = 0;
                     const agora = Date.now();
                     
                     chamadosAtivosIndex.forEach(c => {
-                        const ehPontual = isVendaPontualIndex(c.tipo);
-
                         if (c.status === "Aberto" || c.status === "Em Análise") {
                             pendentesAprovacao++;
-                            if (ehPontual && c.status === "Aberto") {
-                                abertosVendaPontual++;
-                            }
                         }
                         
-                        if (ehPontual && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido) {
+                        if (c.tipo && c.tipo.includes("3") && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido) {
                             if (agora > c.timerExpiraEm) {
                                 expirados++;
                             } else {
@@ -726,10 +488,7 @@
                     const contDerrubar = document.getElementById('contador-derrubar');
                     const linhaRodando = document.getElementById('linha-timer-rodando');
                     const contRodando = document.getElementById('contador-rodando');
-                    const badgeUrgenteCard = document.getElementById('badge-chamados-urgente');
-                    const cardChamados = document.getElementById('card-chamados');
 
-                    // 1. Aprovar/Analisar
                     if (contAnalise) {
                         contAnalise.textContent = pendentesAprovacao;
                         if (pendentesAprovacao > 0) {
@@ -741,7 +500,6 @@
                         }
                     }
 
-                    // 2. Timer Ativo (Venda Pontual Rodando)
                     if (linhaRodando && contRodando) {
                         if (rodando > 0) {
                             linhaRodando.style.display = 'flex';
@@ -751,7 +509,6 @@
                         }
                     }
 
-                    // 3. Derrubar Preço (Timer Expirado)
                     if (contDerrubar) {
                         contDerrubar.textContent = expirados;
                         if (expirados > 0) {
@@ -763,33 +520,6 @@
                             contDerrubar.style.color = 'var(--text-muted)';
                             contDerrubar.style.boxShadow = 'none';
                         }
-                    }
-
-                    // 4. Badge visual de destaque no card do suporte
-                    if (badgeUrgenteCard) {
-                        if (abertosVendaPontual > 0) {
-                            badgeUrgenteCard.style.display = 'block';
-                            badgeUrgenteCard.textContent = `🚨 (${abertosVendaPontual}) VENDA PONTUAL!`;
-                            if (cardChamados) cardChamados.style.borderColor = '#ef4444';
-                        } else if (expirados > 0) {
-                            badgeUrgenteCard.style.display = 'block';
-                            badgeUrgenteCard.textContent = `⏱️ (${expirados}) TEMPO ESGOTADO!`;
-                            if (cardChamados) cardChamados.style.borderColor = '#ef4444';
-                        } else {
-                            badgeUrgenteCard.style.display = 'none';
-                            if (cardChamados) cardChamados.style.borderColor = '';
-                        }
-                    }
-
-                    // 5. Atualização da Aba do Navegador (Título piscante e favicon com badge)
-                    if (abertosVendaPontual > 0) {
-                        atualizarAlertaAbaIndex('venda_pontual', abertosVendaPontual);
-                    } else if (expirados > 0) {
-                        atualizarAlertaAbaIndex('tempo_esgotado', expirados);
-                    } else if (pendentesAprovacao > 0) {
-                        atualizarAlertaAbaIndex('pendente', pendentesAprovacao);
-                    } else {
-                        atualizarAlertaAbaIndex('nenhum', 0);
                     }
                 }
 
