@@ -24,11 +24,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- EMAILJS PARA DISPARO DE E-MAIL GRATUITO -->
+    <!-- EMAILJS PARA DISPARO DE E-MAIL GRATUITO E SHEETJS PARA EXCEL -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("v9Thm91vAnsKayEmy"); // API Key (Public Key) configurada!
+          emailjs.init("v9Thm91vAnsKayEmy"); // API Key configurada!
        })();
     </script>
 
@@ -55,209 +56,82 @@
 
         /* --- WIDGET DE PERFIL --- */
         .user-profile-widget {
-            position: absolute;
-            top: 24px;
-            right: 32px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #ffffff;
-            padding: 6px 16px 6px 6px;
-            border-radius: 50px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
-            z-index: 100;
+            position: absolute; top: 24px; right: 32px; display: flex; align-items: center; gap: 12px;
+            background: #ffffff; padding: 6px 16px 6px 6px; border-radius: 50px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; transition: all 0.2s ease; z-index: 100;
         }
+        .user-profile-widget:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); transform: translateY(-1px); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #26417E; object-fit: cover; }
+        .user-info-widget { display: flex; flex-direction: column; justify-content: center; }
+        .user-name-widget { font-size: 0.85rem; font-weight: 600; color: #2c3e50; line-height: 1.2; }
+        .user-role-widget { font-size: 0.7rem; color: #64748b; line-height: 1.2; }
+        .btn-logout-widget { background: transparent; border: none; color: #64748b; padding: 6px; margin-left: 4px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-logout-widget:hover { background: #fee2e2; color: #ef4444; }
 
-        .user-profile-widget:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            transform: translateY(-1px);
-        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #26417E; padding-bottom: 15px; margin-bottom: 20px; padding-right: 220px; }
+        .header-logo { height: 52px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05)); }
+        h1 { color: #2c3e50; font-weight: 500; margin: 0; font-size: 20px; letter-spacing: -0.2px; }
 
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 2px solid #26417E;
-            object-fit: cover;
-        }
+        .controls-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .action-bar { display: flex; gap: 15px; margin-bottom: 0; flex-wrap: wrap; align-items: center; }
 
-        .user-info-widget {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .user-name-widget {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #2c3e50;
-            line-height: 1.2;
-        }
-
-        .user-role-widget {
-            font-size: 0.7rem;
-            color: #64748b;
-            line-height: 1.2;
-        }
-
-        .btn-logout-widget {
-            background: transparent;
-            border: none;
-            color: #64748b;
-            padding: 6px;
-            margin-left: 4px;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .btn-logout-widget:hover {
-            background: #fee2e2;
-            color: #ef4444;
-        }
-
-        /* Cabeçalho Simplificado */
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #26417E;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            padding-right: 220px;
-        }
-
-        .header-logo {
-            height: 52px;
-            object-fit: contain;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
-        }
-
-        h1 {
-            color: #2c3e50;
-            font-weight: 500;
-            margin: 0;
-            font-size: 20px;
-            letter-spacing: -0.2px;
-        }
-
-        /* Container de Controles */
-        .controls-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .action-bar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 0;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .btn-add,
-        .btn-dash,
-        .btn-historico,
-        .btn-listas,
-        .btn-emails {
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-            font-size: 14px;
+        .btn-add, .btn-dash, .btn-historico, .btn-listas, .btn-emails {
+            color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px;
         }
 
         .btn-add { background-color: #26417E; display: none; }
         .btn-add:hover { background-color: #1a2d59; }
-
         .btn-dash { background-color: #f39c12; color: #fff; }
         .btn-dash:hover { background-color: #d68910; }
-
         .btn-historico { background-color: #8e44ad; color: #fff; display: none; padding: 12px 25px; font-size: 15px; }
         .btn-historico:hover { background-color: #732d91; }
-
-        /* BOTOES DE LISTAS E EMAILS */
         .btn-listas { background-color: #6366f1; color: white; }
         .btn-listas:hover { background-color: #4f46e5; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-        .btn-emails { background-color: #10b981; color: white; display: none; }
-        .btn-emails:hover { background-color: #059669; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-
-        /* MENU DROPDOWN IMPORTAR/EXPORTAR */
         .dropdown { position: relative; display: inline-block; display: none; }
         .dropbtn { background-color: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px; }
         .dropbtn:hover { background-color: #059669; }
-        
-        .dropdown-content {
-            display: none; position: absolute; background-color: #fff; min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); z-index: 100; border-radius: 6px;
-            overflow: hidden; top: 100%; right: 0; margin-top: 5px; border: 1px solid #e2e8f0;
-        }
+        .dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); z-index: 100; border-radius: 6px; overflow: hidden; top: 100%; right: 0; margin-top: 5px; border: 1px solid #e2e8f0; }
         .dropdown-content a { color: #334155; padding: 12px 16px; text-decoration: none; display: block; font-weight: 500; font-size: 14px; transition: background 0.2s; }
         .dropdown-content a:hover { background-color: #f8fafc; color: #10b981; }
         .show { display: block; }
 
-        /* Estilo dos Filtros */
         .filters-group { display: flex; gap: 20px; flex-wrap: wrap; }
         .filter-bar { display: flex; align-items: center; gap: 10px; }
         .filter-bar label { font-weight: 600; color: #475569; font-size: 14px; }
         .filter-bar select { width: auto; padding: 8px 15px; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;}
 
-        /* ÁREA DOS GRÁFICOS (DASHBOARD) */
-        .dashboard-container {
-            display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
-            margin-bottom: 25px; padding: 20px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;
-        }
+        .dashboard-container { display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; padding: 20px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
         .chart-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; justify-content: center; align-items: center; height: 280px; }
         .chart-box.wide { grid-column: 1 / -1; height: 320px; }
         .dashboard-footer { grid-column: 1 / -1; text-align: center; margin-top: 10px; }
 
-        /* Estilo da Lista de Histórico */
         .history-list { list-style: none; padding: 0; margin: 0; }
         .history-item { padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 5px; }
         .history-item:last-child { border-bottom: none; }
         .history-time { font-weight: 600; color: #26417E; font-size: 12px; }
         .history-action { font-weight: 500; color: #334155; }
 
-        /* CABEÇALHO CONGELADO (STICKY HEADER) */
         .table-wrapper { width: 100%; max-height: 65vh; overflow-y: auto; overflow-x: auto; border-radius: 8px 8px 0 0; -webkit-overflow-scrolling: touch; border-bottom: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; min-width: 1700px; }
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         thead { background: #26417E; position: sticky; top: 0; z-index: 20; box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1); }
         th { color: white; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; text-align: center; font-size: 12px; }
 
-        /* Larguras das Colunas */
         th:first-child, td:first-child { min-width: 90px; }
         th:nth-last-child(4), td:nth-last-child(4) { min-width: 250px; }
         th:nth-last-child(3), td:nth-last-child(3) { min-width: 170px; }
         th:nth-last-child(2), td:nth-last-child(2) { min-width: 180px; }
         th:nth-last-child(1), td:nth-last-child(1) { min-width: 130px; text-align: center; white-space: nowrap; }
 
-        /* SEMAFORIZAÇÃO DE LINHAS E STATUS */
         tbody tr { transition: background-color 0.2s; }
         tbody tr:hover { background-color: #f8fafc; }
         tr.row-atencao { background-color: #fef3c7; }
-        tr.row-atencao:hover { background-color: #fde68a; }
         tr.row-atrasado { background-color: #fee2e2; }
-        tr.row-atrasado:hover { background-color: #fecaca; }
         tr.row-concluido { background-color: #f1f5f9; opacity: 0.85; }
-        tr.row-concluido:hover { background-color: #e2e8f0; }
 
         select { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; width: 100%; font-size: 13px; font-weight: 500; cursor: pointer; background-color: rgba(255, 255, 255, 0.8); transition: border-color 0.2s; outline: none; }
         select:focus { border-color: #26417E; box-shadow: 0 0 0 3px rgba(38,65,126,0.1); }
-        select:disabled { cursor: not-allowed; opacity: 0.6; }
 
         .textarea-inline {
             padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; width: 100%;
@@ -265,10 +139,7 @@
             transition: height 0.3s ease, border-color 0.2s; line-height: 1.4; background-color: rgba(255, 255, 255, 0.8);
         }
         .textarea-inline:focus { height: 100px; overflow-y: auto; border-color: #26417E; outline: none; z-index: 10; position: relative; background-color: #fff; box-shadow: 0 0 0 3px rgba(38,65,126,0.1); }
-        .textarea-inline[readonly] { background-color: transparent; cursor: pointer; color: #64748b; border-color: transparent; }
-        .textarea-inline[readonly]:focus { border-color: #cbd5e1; background-color: #fff; }
 
-        /* Cores das Etapas e Status (Tons mais modernos e limpos) */
         .status-select.preenchimento-ofertas { background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; }
         .status-select.diagramacao { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         .status-select.aprovacao-comercial { background-color: #dcfce7; color: #047857; border-color: #a7f3d0; }
@@ -281,212 +152,65 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
-        /* --- ESTILO DOS MODAIS GLOBAIS (REFORMULADO E CLEAN) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
-            display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box;
-            backdrop-filter: blur(2px);
+            display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; backdrop-filter: blur(2px);
         }
         .modal-content {
             background: white; padding: 32px; border-radius: 12px; width: 100%; max-width: 450px;
-            display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); box-sizing: border-box;
-            border: 1px solid #e2e8f0;
-            max-height: 95vh; /* TRAVA QUE CORRIGE O BUG DA TELA CORTADA */
-            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); box-sizing: border-box;
+            border: 1px solid #e2e8f0; max-height: 95vh; overflow-y: auto;
         }
         .modal-content.large { max-width: 600px; }
-        .modal-content.extra-large { max-width: 800px; }
-        
+        .modal-content.extra-large { max-width: 1000px; }
         .modal-content h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem; font-weight: 600; text-align: center; }
-        
-        .modal-header-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: transparent;
-            border: none;
-            font-size: 1.5rem;
-            color: #94a3b8;
-            cursor: pointer;
-        }
+        .modal-header-close { position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
         .modal-header-close:hover { color: #0f172a; }
-
-        /* CORREÇÃO DO CORTE DAS PALAVRAS NAS LABELS DO MODAL */
-        .modal-content label { 
-            font-size: 13px; 
-            color: #475569; 
-            font-weight: 600; 
-            margin-bottom: 6px; 
-            margin-top: 8px; 
-            text-align: left; 
-            display: block; 
-        }
-
-        .modal-content input, .modal-content textarea, .modal-content select { 
-            padding: 10px 14px; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 6px; 
-            font-family: inherit; 
-            font-size: 14px; 
-            width: 100%; 
-            box-sizing: border-box; 
-            color: #334155;
-            transition: all 0.2s;
-            outline: none;
-            background: #f8fafc;
-        }
-        .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus {
-            border-color: #26417E;
-            box-shadow: 0 0 0 3px rgba(38,65,126,0.1);
-            background: #ffffff;
-        }
+        .modal-content label { font-size: 13px; color: #475569; font-weight: 600; margin-bottom: 6px; margin-top: 8px; display: block; }
+        .modal-content input, .modal-content textarea, .modal-content select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 14px; width: 100%; box-sizing: border-box; outline: none; background: #f8fafc; }
+        .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus { border-color: #26417E; box-shadow: 0 0 0 3px rgba(38,65,126,0.1); background: #ffffff; }
         
         .modal-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
-        .modal-buttons button { flex: none; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
-        
-        /* Botões Clean do Modal */
-        .btn-save { background-color: #10b981; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .modal-buttons button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .btn-save { background-color: #10b981; color: white; }
         .btn-save:hover { background-color: #059669; }
         .btn-cancel { background-color: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
-        .btn-cancel:hover { background-color: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
+        .btn-cancel:hover { background-color: #f1f5f9; color: #0f172a; }
 
-        .btn-action { background: transparent; border: none; cursor: pointer; font-size: 16px; transition: transform 0.2s; display: none; margin: 0 3px; padding: 0; }
-        .btn-action:hover:not(:disabled) { transform: scale(1.2); }
-        .btn-action:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        /* --- ESTILO CORPORATIVO - BASE DE LISTAS --- */
-        .corp-panel {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .corp-panel h3 {
-            font-size: 15px;
-            color: #1e293b;
-            margin-top: 0;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .corp-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-        .corp-group {
-            flex: 1;
-            min-width: 200px;
-            display: flex;
-            flex-direction: column;
-        }
+        .corp-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .corp-panel h3 { font-size: 15px; color: #1e293b; margin-top: 0; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; }
+        .corp-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end; }
+        .corp-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; }
         .corp-group label { margin-top: 0; }
-        
-        .btn-corp-primary {
-            background: #26417E;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            height: 42px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-        .btn-corp-primary:hover {
-            background: #1e3362;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .btn-corp-primary { background: #26417E; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s; height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .btn-corp-primary:hover { background: #1e3362; }
 
-        /* ITENS DA LISTA (PLANILHAS) */
-        .item-lista-corp {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 16px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            transition: all 0.2s;
-        }
-        .item-lista-corp:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            background: #f8fafc;
-        }
-        .item-lista-info { display: flex; flex-direction: column; gap: 6px; }
-        .item-lista-titulo { 
-            font-weight: 600; 
-            font-size: 14px; 
-            color: #0f172a; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        .item-lista-meta { font-size: 12px; color: #64748b; }
-        .item-lista-acoes { display: flex; gap: 8px; align-items: center; }
-        
-        .btn-dl-corp { 
-            background: #f1f5f9; 
-            color: #0f172a; 
-            border: 1px solid #cbd5e1; 
-            padding: 8px 14px; 
-            text-decoration: none; 
-            border-radius: 6px; 
-            font-size: 12px; 
-            font-weight: 600; 
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn-dl-corp:hover { background: #e2e8f0; border-color: #94a3b8; }
-        
-        .btn-del-corp { 
-            background: #fef2f2; 
-            color: #ef4444; 
-            border: 1px solid #fecaca; 
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-del-corp:hover { background: #fee2e2; border-color: #fca5a5; }
+        /* KPIS Margem */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        .kpi-card { background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-top: 4px solid #2563eb; }
+        .kpi-title { font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .kpi-value { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
+        .kpi-card.warning { border-top-color: #f59e0b; }
+        .kpi-card.danger { border-top-color: #ef4444; background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(255,255,255,0) 100%); }
+        .kpi-card.purple { border-top-color: #8b5cf6; }
 
-        /* ESTILOS NOVOS: ABAS, CLUSTERS E SELEÇÃO DE LOJAS */
-        .tabs-container { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
-        .tab-btn { flex: 1; background: none; border: none; padding: 12px; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.2s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-        .tab-btn:hover { color: #26417E; background: #f8fafc; }
-        .tab-btn.active { color: #26417E; border-bottom-color: #26417E; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: slideIn 0.3s forwards; }
-        
-        .store-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; max-height: 180px; overflow-y: auto; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; }
-        .custom-checkbox-store { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; cursor: pointer; }
-        .custom-checkbox-store input { width: 16px; height: 16px; accent-color: #26417E; cursor: pointer; }
-        
-        .chip-cluster { background: #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; transition: 0.2s; white-space: nowrap; }
-        .chip-cluster:hover { background: #cbd5e1; }
-        .chip-cluster.selected { background: #26417E; color: white; border-color: #1e3362; }
+        /* Tabela BI Estilizada */
+        .bi-table-container { overflow-x: auto; margin-top: 10px; }
+        .bi-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: #475569; font-weight: 700; padding: 12px; border-bottom: 2px solid #e2e8f0; white-space: nowrap;}
+        .bi-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; color: #0f172a; font-weight: 500; }
+        .bi-table tr:hover td { background: rgba(37, 99, 235, 0.03); }
+        .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: #f8fafc; display: inline-block; text-align: center; min-width: 40px;}
 
-        /* NOTIFICAÇÕES TOAST */
+        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
+        .btn-expand { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; color: #475569; font-weight: 800; cursor: pointer; display: inline-block; transition: 0.2s;}
+        
+        .sub-table-wrapper { padding: 15px; background: #f8fafc; border-left: 4px solid #8b5cf6; margin-bottom: 10px; border-radius: 0 0 8px 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .sub-table-scroll { max-height: 320px; overflow-y: auto; border-radius: 6px; border: 1px solid #e2e8f0; position: relative; background: #ffffff; }
+        .sub-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #ffffff; }
+        .sub-table th { position: sticky; top: 0; z-index: 20; background: #f8fafc; font-size: 0.75rem; padding: 10px 12px; color: #475569; border-bottom: 1px solid #e2e8f0; white-space: nowrap; text-transform: uppercase; }
+        .sub-table td { padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid #e2e8f0; color: #0f172a;}
+
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { padding: 15px 20px; border-radius: 6px; color: white; font-weight: 500; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); opacity: 0; transform: translateX(100%); animation: slideIn 0.3s forwards; pointer-events: auto; }
         .toast.success { background-color: #10b981; border-left: 5px solid #059669; }
@@ -494,7 +218,6 @@
         .toast.warning { background-color: #f59e0b; border-left: 5px solid #d97706; }
         .toast.info { background-color: #3b82f6; border-left: 5px solid #2563eb; }
         @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
     </style>
 </head>
 
@@ -502,7 +225,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- WIDGET DE PERFIL DO USUÁRIO -->
     <div class="user-profile-widget">
         <img id="user-photo" src="" class="user-avatar" alt="Foto">
         <div class="user-info-widget">
@@ -511,9 +233,7 @@
         </div>
         <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                </path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
         </button>
     </div>
@@ -521,16 +241,8 @@
     <div class="container">
         <div class="header-top">
             <div style="display: flex; align-items: center; gap: 18px;">
-                <a href="/"
-                    style="text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"
-                    onmouseover="this.style.backgroundColor='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#e2e8f0';"
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#64748b'; this.style.borderColor='transparent';"
-                    title="Voltar ao Menu Principal">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
+                <a href="/" style="text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'; this.style.color='#0f172a';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#64748b';">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Voltar
                 </a>
                 <img src="/logo.png" alt="Dia a Dia" class="header-logo">
@@ -546,15 +258,15 @@
                 <div class="dropdown" id="menu-import-export">
                     <button class="dropbtn" onclick="toggleMenuDados()">📁 Importar / Exportar ▼</button>
                     <div id="dropdownDados" class="dropdown-content">
-                        <a href="#"
-                            onclick="document.getElementById('csv-file').click(); toggleMenuDados(); return false;">📥
-                            Importar Planilha CSV</a>
+                        <a href="#" onclick="document.getElementById('csv-file').click(); toggleMenuDados(); return false;">📥 Importar Planilha CSV</a>
                         <a href="#" onclick="exportarCSV(); toggleMenuDados(); return false;">📤 Exportar para Excel</a>
                     </div>
                 </div>
                 
-                <!-- BOTÃO BASE DE LISTAS -->
                 <button id="btn-listas" class="btn-listas" onclick="abrirModalListas()">📂 Base de Listas</button>
+                
+                <!-- BOTÃO DE VALIDAÇÃO DE MARGENS -->
+                <button id="btn-analise-margem" class="btn-listas" style="background-color: #8b5cf6;" onclick="abrirModalMargem()">📉 Validação de Margens</button>
 
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" onchange="processarCSV(event)">
             </div>
@@ -588,21 +300,16 @@
             </div>
         </div>
 
-        <!-- DASHBOARD -->
         <div id="dashboard" class="dashboard-container">
             <div class="chart-box"><canvas id="graficoStatus"></canvas></div>
             <div class="chart-box"><canvas id="graficoEtapas"></canvas></div>
             <div class="chart-box"><canvas id="graficoResponsaveis"></canvas></div>
-
             <div class="chart-box wide"><canvas id="graficoRaioX"></canvas></div>
-
             <div class="dashboard-footer">
-                <button id="btn-historico-dash" class="btn-historico" onclick="abrirModalHistorico()">🕒 Ver Histórico
-                    de Alterações</button>
+                <button id="btn-historico-dash" class="btn-historico" onclick="abrirModalHistorico()">🕒 Ver Histórico de Alterações</button>
             </div>
         </div>
 
-        <!-- TABELA -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -611,8 +318,8 @@
                         <th>Campanha</th>
                         <th>Lojas Participantes</th>
                         <th>Vigência da Campanha</th>
-                        <th>Início Preenchimento (Comercial)</th>
-                        <th>Final Preenchimento (Comercial)</th>
+                        <th>Início Preenchimento</th>
+                        <th>Final Preenchimento</th>
                         <th>Prazo Final (MKT)</th>
                         <th>Responsável</th>
                         <th>Etapa</th>
@@ -621,39 +328,90 @@
                         <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="corpo-tabela">
-                    <!-- Gerado via Firebase/Backend -->
-                </tbody>
+                <tbody id="corpo-tabela"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Modais -->
+    <!-- MODAL DASHBOARD DE MARGENS -->
+    <div id="modalMargem" class="modal-overlay" style="display: none; z-index: 1060;">
+        <div class="modal-content extra-large" style="max-width: 1000px; background-color: #f8fafc;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    📉 Dashboard: Validação de Margens
+                </h2>
+                <button class="btn-cancel" onclick="fecharModalMargem()" style="padding: 8px 16px;">✕ Fechar</button>
+            </div>
+
+            <div class="corp-panel" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3 style="margin-bottom: 5px;">Importar Planilha de Validação</h3>
+                    <p style="font-size: 13px; color: #64748b; margin: 0;">Faça o upload do Excel do sistema para auditar (Comprador, Loja, Produto, Preço e Margens).</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <!-- NOVO BOTÃO DE EXPORTAR EXCEL (INICIA ESCONDIDO) -->
+                    <button id="btn-exportar-margens" class="btn-corp-primary" style="background: #10b981; display: none;" onclick="exportarMargensExcel()">📤 Exportar Abaixo da Margem</button>
+                    
+                    <label class="btn-corp-primary" style="cursor: pointer; background: #8b5cf6;">
+                        📁 Selecionar Excel
+                        <input type="file" id="upload-margens" accept=".xlsx, .xls" style="display:none;" onchange="processarPlanilhaMargens(event)">
+                    </label>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid" id="kpi-margens" style="display: none; margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="kpi-card warning">
+                    <div class="kpi-title">Abaixo da Margem</div>
+                    <div class="kpi-value" id="kpi-qtd-abaixo">0</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">Produtos com Praticada < Objetiva</div>
+                </div>
+                <div class="kpi-card danger">
+                    <div class="kpi-title">Maior Ofensor (Comprador)</div>
+                    <div class="kpi-value" id="kpi-maior-ofensor" style="font-size: 1.5rem;">-</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">Com mais ofertas negativas</div>
+                </div>
+                <div class="kpi-card purple">
+                    <div class="kpi-title">Produto Mais Crítico</div>
+                    <div class="kpi-value" id="kpi-pior-produto" style="font-size: 1.1rem; line-height: 1.2;">-</div>
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 5px;" id="kpi-pior-detalhe">Loja: - | Margem: -</div>
+                </div>
+            </div>
+
+            <!-- Tabela BI -->
+            <div class="bi-table-container" id="tabela-margens-container" style="display: none; background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 15px;">
+                <table class="bi-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Comprador</th>
+                            <th style="text-align: center;">Total Analisado</th>
+                            <th style="text-align: center; color: #ef4444;">Qtd Abaixo Margem</th>
+                            <th style="text-align: center;">Pior Margem (Gap)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-margens"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Base de Listas -->
     <div id="modalListas" class="modal-overlay" style="display: none; z-index: 1000;">
         <div class="modal-content extra-large" style="background-color: #f4f7f6;">
-            
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
-                    📂 Base de Listas (Excel)
-                </h2>
+                <h2 style="margin: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">📂 Base de Listas (Excel)</h2>
                 <div style="display: flex; gap: 10px;">
                     <button id="btn-gerenciar-emails" class="btn-corp-primary" onclick="abrirModalEmails()" style="display: none; background: #8b5cf6; border: none; color: white;">⚙️ Lojas & Clusters</button>
                     <button class="btn-cancel" onclick="fecharModalListas()" style="padding: 8px 16px; min-height: 42px;">✕ Fechar</button>
                 </div>
             </div>
             
-            <!-- Área de Upload de Links Inteligente -->
             <div id="area-upload-listas" class="corp-panel" style="display: none;">
-                <h3>
-                    <svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
-                    Salvar Novo Link de Planilha
-                </h3>
-                
+                <h3><svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Salvar Novo Link de Planilha</h3>
                 <div class="corp-row">
                     <div class="corp-group" style="flex: 2;">
                         <label>Nome da Campanha</label>
-                        <!-- AQUI ESTÁ A TRAVA AUTOMÁTICA QUE CONVERTE BARRAS EM PONTOS -->
                         <input type="text" id="nome-lista" placeholder="Ex: Fim de Semana das Carnes" oninput="this.value = this.value.replace(/[\/\\]/g, '.')">
                     </div>
                     <div class="corp-group" style="flex: 1;">
@@ -661,230 +419,111 @@
                         <input type="text" id="regiao-lista" placeholder="Ex: Todas as Lojas, DF e GO...">
                     </div>
                 </div>
-                
-                <!-- SELEÇÃO INTELIGENTE DE DESTINATÁRIOS -->
                 <div class="corp-group" style="margin-bottom: 16px;">
                     <label>Selecione quem vai receber a notificação por e-mail:</label>
-                    
                     <div style="display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px;" id="botoes-clusters-upload">
-                        <!-- Injetado via JS -->
                         <span style="font-size: 13px; color: #94a3b8;">Carregando clusters...</span>
                     </div>
-
-                    <div class="store-checkbox-grid" id="grid-checkboxes-lojas-upload">
-                        <!-- Injetado via JS -->
-                    </div>
+                    <div class="store-checkbox-grid" id="grid-checkboxes-lojas-upload"></div>
                 </div>
-
                 <div class="corp-row" style="align-items: flex-end; margin-bottom: 0;">
                     <div class="corp-group" style="flex: 1;">
                         <label>Link da Planilha (Drive/OneDrive)</label>
                         <input type="url" id="link-lista" placeholder="Cole o link de compartilhamento aqui" required>
                     </div>
-                    <button class="btn-corp-primary" onclick="salvarLinkLista()" id="btn-upload-lista">
-                        📥 Salvar e Notificar
-                    </button>
+                    <button class="btn-corp-primary" onclick="salvarLinkLista()" id="btn-upload-lista">📥 Salvar e Notificar</button>
                 </div>
             </div>
 
-            <!-- Lista de Arquivos -->
             <div class="corp-panel" style="margin-bottom: 0;">
-                <h3>
-                    <svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg> 
-                    Planilhas Disponíveis
-                </h3>
-                
-                <div id="grid-listas" style="display: flex; flex-direction: column; min-height: 100px; max-height: 250px; overflow-y: auto;">
-                    <!-- JS Injeta os itens aqui -->
-                </div>
+                <h3><svg width="18" height="18" fill="none" stroke="#26417E" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg> Planilhas Disponíveis</h3>
+                <div id="grid-listas" style="display: flex; flex-direction: column; min-height: 100px; max-height: 250px; overflow-y: auto;"></div>
             </div>
-
         </div>
     </div>
 
-    <!-- Novo Modal Gerenciar Lojas e Clusters -->
+    <!-- Modal Gerenciar Lojas e Clusters -->
     <div id="modalEmails" class="modal-overlay" style="display: none; z-index: 1050;">
         <div class="modal-content large">
             <h2>⚙️ Lojas & Clusters</h2>
-            
             <div class="tabs-container">
                 <button class="tab-btn active" id="btn-tab-lojas" onclick="window.switchTab('lojas')">🏬 Gerenciar Lojas</button>
                 <button class="tab-btn" id="btn-tab-clusters" onclick="window.switchTab('clusters')">🏷️ Criar Clusters</button>
             </div>
 
-            <!-- ABA 1: LOJAS -->
             <div id="tab-lojas" class="tab-content active">
-                <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px;">Cadastre as lojas e vincule o e-mail do gerente. (Use vírgula para múltiplos e-mails).</p>
-
+                <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px;">Cadastre as lojas e vincule o e-mail do gerente.</p>
                 <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px;">
-                    <div style="flex: 1;">
-                        <label>Nome / Código da Loja</label>
-                        <input type="text" id="nova-loja-nome" placeholder="Ex: Loja 1001 - SIA">
-                    </div>
-                    <div style="flex: 2;">
-                        <label>E-mail(s) da Gerência</label>
-                        <input type="text" id="nova-loja-emails" placeholder="Ex: joao@atacadao..., maria@...">
-                    </div>
+                    <div style="flex: 1;"><label>Nome / Código</label><input type="text" id="nova-loja-nome" placeholder="Ex: 1001"></div>
+                    <div style="flex: 2;"><label>E-mail(s) da Gerência</label><input type="text" id="nova-loja-emails" placeholder="Ex: joao@..."></div>
                     <button class="btn-save" onclick="window.adicionarLoja()">➕ Add</button>
                 </div>
-
-                <div id="lista-lojas-cadastradas" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
-                    <!-- Lojas renderizadas aqui -->
-                </div>
+                <div id="lista-lojas-cadastradas" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;"></div>
             </div>
 
-            <!-- ABA 2: CLUSTERS -->
             <div id="tab-clusters" class="tab-content">
-                <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px;">Crie grupos (clusters) para selecionar rapidamente várias lojas na hora do envio.</p>
-
+                <p style="font-size: 13px; color: #64748b; margin-top: -5px; margin-bottom: 10px;">Crie grupos (clusters) para selecionar rapidamente várias lojas.</p>
                 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
                     <label>Nome do Cluster</label>
                     <input type="text" id="novo-cluster-nome" placeholder="Ex: Cluster DF Entorno">
-                    
-                    <label>Selecione as Lojas deste Cluster:</label>
-                    <div class="store-checkbox-grid" id="grid-checkboxes-criacao-cluster" style="max-height: 120px;">
-                        <!-- Checkboxes injetados via JS -->
-                    </div>
-
+                    <label>Selecione as Lojas:</label>
+                    <div class="store-checkbox-grid" id="grid-checkboxes-criacao-cluster" style="max-height: 120px;"></div>
                     <button class="btn-save" onclick="window.adicionarCluster()" style="width: 100%;">🏷️ Salvar Cluster</button>
                 </div>
-
-                <div id="lista-clusters-cadastrados" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
-                    <!-- Clusters renderizados aqui -->
-                </div>
+                <div id="lista-clusters-cadastrados" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;"></div>
             </div>
-
-            <div class="modal-buttons" style="margin-top: 15px;">
-                <button class="btn-cancel" onclick="fecharModalEmails()" style="width: 100%;">Fechar Janela</button>
-            </div>
+            <div class="modal-buttons" style="margin-top: 15px;"><button class="btn-cancel" onclick="fecharModalEmails()" style="width: 100%;">Fechar Janela</button></div>
         </div>
     </div>
 
-    <!-- Modal Nova Campanha -->
+    <!-- Outros Modais (Nova Campanha, Editar, Historico) -->
     <div id="modalNovo" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="modal-header-close" onclick="fecharModalNova()">×</button>
             <h2>Cadastrar Nova Campanha</h2>
-
             <label>Mês de Referência:</label>
-            <select id="nova-mes">
-                <option value="" disabled selected>Selecione o Mês</option>
-                <option value="Janeiro">Janeiro</option>
-                <option value="Fevereiro">Fevereiro</option>
-                <option value="Março">Março</option>
-                <option value="Abril">Abril</option>
-                <option value="Maio">Maio</option>
-                <option value="Junho">Junho</option>
-                <option value="Julho">Julho</option>
-                <option value="Agosto">Agosto</option>
-                <option value="Setembro">Setembro</option>
-                <option value="Outubro">Outubro</option>
-                <option value="Novembro">Novembro</option>
-                <option value="Dezembro">Dezembro</option>
-            </select>
-
-            <label>Nome da Campanha:</label>
-            <input type="text" id="nova-campanha" placeholder="Ex: Especial Fim de Semana">
-
-            <label>Lojas Participantes:</label>
-            <input type="text" id="novas-lojas" placeholder="Ex: Todas as Lojas">
-
+            <select id="nova-mes"><option value="" disabled selected>Selecione o Mês</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select>
+            <label>Nome da Campanha:</label><input type="text" id="nova-campanha" placeholder="Ex: Especial Fim de Semana">
+            <label>Lojas Participantes:</label><input type="text" id="novas-lojas" placeholder="Ex: Todas as Lojas">
             <label>Vigência da Campanha (Início e Fim):</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="date" id="nova-inicio" style="flex: 1;">
-                <span style="font-weight: 500; color: #64748b; font-size: 14px;">até</span>
-                <input type="date" id="nova-fim" style="flex: 1;">
-            </div>
-
-            <label>Início do Preenchimento (Comercial):</label>
-            <input type="datetime-local" id="nova-inicio-preenchimento">
-
-            <label>Final do Preenchimento (Comercial):</label>
-            <input type="datetime-local" id="nova-final-preenchimento">
-
-            <label>Prazo Final com o Marketing:</label>
-            <input type="datetime-local" id="nova-prazo-mkt">
-
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModalNova()">Cancelar</button>
-                <button class="btn-save" onclick="salvarCampanha()">Salvar Campanha</button>
-            </div>
+            <div style="display: flex; gap: 10px; align-items: center;"><input type="date" id="nova-inicio" style="flex: 1;"><span style="font-weight: 500; color: #64748b; font-size: 14px;">até</span><input type="date" id="nova-fim" style="flex: 1;"></div>
+            <label>Início do Preenchimento (Comercial):</label><input type="datetime-local" id="nova-inicio-preenchimento">
+            <label>Final do Preenchimento (Comercial):</label><input type="datetime-local" id="nova-final-preenchimento">
+            <label>Prazo Final com o Marketing:</label><input type="datetime-local" id="nova-prazo-mkt">
+            <div class="modal-buttons"><button class="btn-cancel" onclick="fecharModalNova()">Cancelar</button><button class="btn-save" onclick="salvarCampanha()">Salvar Campanha</button></div>
         </div>
     </div>
 
-    <!-- Modal Editar -->
     <div id="modalEditar" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="modal-header-close" onclick="fecharModalEditar()">×</button>
             <h2>Editar Campanha</h2>
-
             <label>Mês de Referência:</label>
-            <select id="edit-mes">
-                <option value="Janeiro">Janeiro</option>
-                <option value="Fevereiro">Fevereiro</option>
-                <option value="Março">Março</option>
-                <option value="Abril">Abril</option>
-                <option value="Maio">Maio</option>
-                <option value="Junho">Junho</option>
-                <option value="Julho">Julho</option>
-                <option value="Agosto">Agosto</option>
-                <option value="Setembro">Setembro</option>
-                <option value="Outubro">Outubro</option>
-                <option value="Novembro">Novembro</option>
-                <option value="Dezembro">Dezembro</option>
-                <option value="Não Informado">Não Informado</option>
-            </select>
-
-            <label>Nome da Campanha:</label>
-            <input type="text" id="edit-campanha" placeholder="Ex: Especial Fim de Semana">
-
-            <label>Lojas Participantes:</label>
-            <input type="text" id="edit-lojas" placeholder="Ex: Todas as Lojas">
-
-            <label>Vigência da Campanha (Início e Fim):</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="date" id="edit-inicio" style="flex: 1;">
-                <span style="font-weight: 500; color: #64748b; font-size: 14px;">até</span>
-                <input type="date" id="edit-fim" style="flex: 1;">
-            </div>
-
-            <label>Início do Preenchimento (Comercial):</label>
-            <input type="datetime-local" id="edit-inicio-preenchimento">
-
-            <label>Final do Preenchimento (Comercial):</label>
-            <input type="datetime-local" id="edit-final-preenchimento">
-
-            <label>Prazo Final com o Marketing:</label>
-            <input type="datetime-local" id="edit-prazo-mkt">
-
-            <label>Responsável em Atraso (Opcional):</label>
-            <textarea id="edit-atrasados" placeholder="Digite quem está travando a etapa..."
-                style="height: 60px; resize: none;"></textarea>
-
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModalEditar()">Cancelar</button>
-                <button class="btn-save" onclick="salvarEdicao()">Salvar Alterações</button>
-            </div>
+            <select id="edit-mes"><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option><option value="Não Informado">Não Informado</option></select>
+            <label>Nome da Campanha:</label><input type="text" id="edit-campanha" placeholder="Ex: Especial Fim de Semana">
+            <label>Lojas Participantes:</label><input type="text" id="edit-lojas" placeholder="Ex: Todas as Lojas">
+            <label>Vigência (Início e Fim):</label>
+            <div style="display: flex; gap: 10px; align-items: center;"><input type="date" id="edit-inicio" style="flex: 1;"><span style="font-weight: 500; color: #64748b; font-size: 14px;">até</span><input type="date" id="edit-fim" style="flex: 1;"></div>
+            <label>Início do Preenchimento:</label><input type="datetime-local" id="edit-inicio-preenchimento">
+            <label>Final do Preenchimento:</label><input type="datetime-local" id="edit-final-preenchimento">
+            <label>Prazo Final com o Marketing:</label><input type="datetime-local" id="edit-prazo-mkt">
+            <label>Responsável em Atraso (Opcional):</label><textarea id="edit-atrasados" placeholder="Digite quem está travando a etapa..." style="height: 60px; resize: none;"></textarea>
+            <div class="modal-buttons"><button class="btn-cancel" onclick="fecharModalEditar()">Cancelar</button><button class="btn-save" onclick="salvarEdicao()">Salvar Alterações</button></div>
         </div>
     </div>
 
-    <!-- MODAL DE HISTÓRICO DE AUDITORIA -->
     <div id="modalHistorico" class="modal-overlay" style="display: none;">
         <div class="modal-content large">
             <button class="modal-header-close" onclick="fecharModalHistorico()">×</button>
             <h2>🕒 Histórico de Alterações</h2>
             <div style="overflow-y: auto; max-height: 400px; padding-right: 10px; margin-top: 15px;">
-                <ul id="lista-historico" class="history-list">
-                    <!-- Preenchido via Backend -->
-                </ul>
+                <ul id="lista-historico" class="history-list"></ul>
             </div>
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="fecharModalHistorico()" style="width: 100%;">Fechar Histórico</button>
-            </div>
+            <div class="modal-buttons"><button class="btn-cancel" onclick="fecharModalHistorico()" style="width: 100%;">Fechar Histórico</button></div>
         </div>
     </div>
 
-    <!-- CONEXÃO COM O FIREBASE E MAKE.COM -->
+    <!-- SCRIPT PRINCIPAL -->
     <script type="module">
         import { db, auth } from "./firebase-config.js";
         import { ref, push, onValue, remove, update, set, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
@@ -893,13 +532,10 @@
         const tabelaRef = ref(db, 'campanhas_oficiais_v3');
         const historicoRef = ref(db, 'historico_auditoria_v3');
         const listasRef = ref(db, 'base_listas_excel'); 
-        
-        // NOVAS REFERÊNCIAS PARA LOJAS E CLUSTERS
         const lojasRef = ref(db, 'configuracoes_sistema/lojas'); 
         const clustersRef = ref(db, 'configuracoes_sistema/clusters'); 
 
         const corpoTabela = document.getElementById('corpo-tabela');
-        let usuarioLogado = false;
         let perfilUsuario = "Colaborador";
         let dadosAtuais = null;
         let idSendoEditado = null;
@@ -914,19 +550,13 @@
 
         let graficoStatus, graficoEtapas, graficoResponsaveis, graficoRaioX;
 
-        // VERIFICAÇÃO DE AUTENTICAÇÃO E PERFIL
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = "/";
-                return;
-            }
+            if (!user) { window.location.href = "/"; return; }
 
-            usuarioLogado = true;
             document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
             document.getElementById('user-name').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
-            const userRef = ref(db, 'usuarios/' + user.uid);
-            get(userRef).then((snapshot) => {
+            get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     perfilUsuario = snapshot.val().perfil || "Colaborador";
                     if (snapshot.val().nome) {
@@ -935,19 +565,13 @@
                 }
                 document.getElementById('user-role').textContent = perfilUsuario;
 
-                // TODOS podem enviar os links e criar campanhas
                 document.getElementById('area-upload-listas').style.display = 'block';
                 document.getElementById('btn-nova-campanha').style.display = 'inline-block';
 
-                // Apenas Gestor vê botões de configuração pesada
                 if (perfilUsuario === "Gestor") {
                     document.getElementById('btn-historico-dash').style.display = 'inline-block';
                     document.getElementById('menu-import-export').style.display = 'inline-block';
                     document.getElementById('btn-gerenciar-emails').style.display = 'inline-flex';
-                } else {
-                    document.getElementById('btn-historico-dash').style.display = 'none';
-                    document.getElementById('menu-import-export').style.display = 'none';
-                    document.getElementById('btn-gerenciar-emails').style.display = 'none';
                 }
 
                 renderizarTabela(dadosAtuais);
@@ -955,31 +579,287 @@
             });
         });
 
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => { window.location.href = "/"; });
-        });
+        document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "/"; }); });
 
         window.enviarParaMake = function (dadosCampanha) {
             const webhookUrl = "https://hook.us2.make.com/q4gat8dg77pd8m8tm651ffqg1k7yqboy";
             fetch(webhookUrl, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dadosCampanha)
-            }).catch(err => console.error("Erro silencioso:", err));
+            }).catch(err => console.error(err));
         };
 
         window.showToast = function (message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerText = message;
+            toast.className = `toast ${type}`; toast.innerText = message;
             container.appendChild(toast);
             setTimeout(() => { toast.style.animation = 'fadeOut 0.3s forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
         };
 
         // ==========================================
-        // NOVO SISTEMA DE LOJAS E CLUSTERS
+        // ANÁLISE DE MARGEM (NOVO DASHBOARD COM EXPORTAÇÃO EXCEL)
         // ==========================================
-        
+        window.dadosMargemExportacao = []; // Variável global para armazenar os dados do Excel
+
+        window.abrirModalMargem = function() {
+            document.getElementById('modalMargem').style.display = 'flex';
+        }
+        window.fecharModalMargem = function() {
+            document.getElementById('modalMargem').style.display = 'none';
+        }
+
+        window.processarPlanilhaMargens = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast("Analisando margens...", "info");
+            document.getElementById('btn-exportar-margens').style.display = 'none'; // Esconde botão até processar
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+
+                    analisarDadosMargem(json);
+                } catch (error) {
+                    console.error(error);
+                    showToast("Erro ao ler a planilha.", "error");
+                }
+            };
+            reader.readAsBinaryString(file);
+            event.target.value = ''; // reseta o input
+        }
+
+        function analisarDadosMargem(dados) {
+            if (!dados || dados.length === 0) {
+                showToast("A planilha está vazia.", "warning");
+                return;
+            }
+
+            let qtdAbaixo = 0;
+            let compradores = {};
+            let piorProduto = null;
+            let piorGapGlobal = 0; // Valor negativo do GAP
+            window.dadosMargemExportacao = []; // Resetando para nova exportação
+
+            // Procura os cabeçalhos de forma flexível
+            let keys = Object.keys(dados[0]);
+            let keyPrat = keys.find(k => k.toUpperCase().includes('MARGEM PRATICADA') || k.toUpperCase() === 'MARGEM' || k.toUpperCase() === 'MG') || 'MARGEM';
+            let keyObj = keys.find(k => k.toUpperCase().includes('CATEG') || k.toUpperCase() === 'MARGEM OBJETIVA') || 'MARGEMCATEG';
+            let keyComp = keys.find(k => k.toUpperCase().includes('COMPRADOR')) || 'COMPRADOR';
+            let keyLoja = keys.find(k => k.toUpperCase().includes('EMPRESA') || k.toUpperCase().includes('LOJA')) || 'NROEMPRESA';
+            let keyCod = keys.find(k => k.toUpperCase().includes('PRD_C5') || k.toUpperCase().includes('CODIGO') || k.toUpperCase().includes('SEQPRODUTO')) || 'PRD_C5';
+            let keyDesc = keys.find(k => k.toUpperCase().includes('DESCCOMPLETA') || k.toUpperCase().includes('DESCRICAO')) || 'DESCCOMPLETA';
+            let keyPreco = keys.find(k => k.toUpperCase().includes('PRECOPROMOCIONAL') || k.toUpperCase().includes('PRECO')) || 'PRECOPROMOCIONAL';
+
+            dados.forEach(row => {
+                let loja = row[keyLoja] || "-";
+                let prdC5 = row[keyCod] || "-";
+                let desc = row[keyDesc] || "-";
+                let comprador = row[keyComp] || "Sem Comprador";
+                
+                // Converte string para float caso venha como texto na planilha
+                let margemPraticada = parseFloat(String(row[keyPrat]).replace(',', '.')) || 0;
+                let margemObjetiva = parseFloat(String(row[keyObj]).replace(',', '.')) || 0;
+                let preco = parseFloat(String(row[keyPreco]).replace(',', '.')) || 0;
+
+                let gap = margemPraticada - margemObjetiva;
+
+                if (!compradores[comprador]) {
+                    compradores[comprador] = { total: 0, abaixo: 0, piorGap: 0, itens: [] };
+                }
+
+                compradores[comprador].total++;
+
+                // Se a margem na planilha for apresentada em %, não multiplicamos por 100.
+                let mult = 100;
+                if(margemObjetiva > 1) mult = 1; // Ajuste se já estiver em 18% (18.0)
+
+                let mPratFmt = (margemPraticada * mult).toFixed(2) + "%";
+                let mObjFmt = (margemObjetiva * mult).toFixed(2) + "%";
+                let gapFmt = (gap * mult).toFixed(2) + "%";
+                let preFmt = "R$ " + preco.toFixed(2).replace('.', ',');
+
+                let itemData = { loja, prdC5, desc, mPratFmt, mObjFmt, gap, gapFmt, preFmt, precoRaw: preco };
+
+                // Condição para considerar Abaixo da Margem
+                if (gap < -0.0001) { 
+                    qtdAbaixo++;
+                    compradores[comprador].abaixo++;
+                    compradores[comprador].itens.push(itemData);
+
+                    if (gap < compradores[comprador].piorGap) {
+                        compradores[comprador].piorGap = gap;
+                    }
+
+                    if (gap < piorGapGlobal) {
+                        piorGapGlobal = gap;
+                        piorProduto = {
+                            desc: desc,
+                            loja: loja,
+                            mPrat: mPratFmt,
+                            mObj: mObjFmt,
+                            preco: preFmt,
+                            gap: gapFmt
+                        };
+                    }
+                }
+            });
+
+            // Definir Maior Ofensor
+            let maiorOfensor = "-";
+            let maxAbaixo = 0;
+            for (let c in compradores) {
+                if (compradores[c].abaixo > maxAbaixo) {
+                    maxAbaixo = compradores[c].abaixo;
+                    maiorOfensor = c;
+                }
+                compradores[c].itens.sort((a, b) => a.gap - b.gap); // Ordena piores primeiro
+            }
+
+            // Preenche os KPIs
+            document.getElementById('kpi-qtd-abaixo').textContent = qtdAbaixo;
+            document.getElementById('kpi-maior-ofensor').textContent = maxAbaixo > 0 ? maiorOfensor : "Nenhum";
+            
+            if (piorProduto) {
+                document.getElementById('kpi-pior-produto').textContent = piorProduto.desc.substring(0, 30) + "...";
+                document.getElementById('kpi-pior-detalhe').textContent = `Loja: ${piorProduto.loja} | Praticada: ${piorProduto.mPrat} | Obj: ${piorProduto.mObj} | Preço: ${piorProduto.preco}`;
+            } else {
+                document.getElementById('kpi-pior-produto').textContent = "Tudo OK ✅";
+                document.getElementById('kpi-pior-detalhe').textContent = "Nenhum produto abaixo da margem.";
+            }
+
+            document.getElementById('kpi-margens').style.display = 'grid';
+
+            // Preenche Tabela BI e Array de Exportação Excel
+            const tbody = document.getElementById('tbody-margens');
+            tbody.innerHTML = '';
+
+            let arrCompradores = Object.keys(compradores).map(k => ({ nome: k, ...compradores[k] }));
+            arrCompradores.sort((a, b) => b.abaixo - a.abaixo);
+
+            arrCompradores.forEach((c, idx) => {
+                if (c.abaixo === 0) return; // Não renderiza quem está 100% OK para limpar a visão
+
+                // 1. Popula o Array de Exportação para o Excel
+                c.itens.forEach(item => {
+                    window.dadosMargemExportacao.push({
+                        "Comprador": c.nome,
+                        "Loja": item.loja,
+                        "PRD C5": item.prdC5,
+                        "Descrição": item.desc,
+                        "Preço Promo": item.preFmt,
+                        "Margem Praticada": item.mPratFmt,
+                        "Margem Objetiva": item.mObjFmt,
+                        "GAP (Prejuízo na Margem)": item.gapFmt
+                    });
+                });
+
+                // 2. Monta a Tabela Visual (HTML)
+                let trPai = document.createElement('tr');
+                trPai.className = 'clickable-row';
+                trPai.onclick = () => window.toggleSubTableMargens(idx);
+                
+                // Formata o Pior Gap para exibição
+                let mult = (c.piorGap > -1 && c.piorGap < 1) ? 100 : 1;
+                let piorGapStr = (c.piorGap * mult).toFixed(2) + "%";
+
+                trPai.innerHTML = `
+                    <td style="text-align: center;"><span class="btn-expand" id="icon-mrg-${idx}">+</span></td>
+                    <td style="font-weight: 700;">${c.nome}</td>
+                    <td style="text-align: center;"><span class="badge-bi" style="background: var(--border-light);">${c.total}</span></td>
+                    <td style="text-align: center;"><span class="badge-bi" style="background: #fef2f2; color: #ef4444;">${c.abaixo}</span></td>
+                    <td style="text-align: center;"><span class="badge-bi" style="background: #fff7ed; color: #ea580c;">${piorGapStr}</span></td>
+                `;
+                tbody.appendChild(trPai);
+
+                let trFilho = document.createElement('tr');
+                trFilho.id = `subrow-mrg-${idx}`;
+                trFilho.style.display = 'none';
+
+                let detalhesHTML = `
+                    <td colspan="5" style="padding: 0; border: none;">
+                        <div class="sub-table-wrapper">
+                            <h4 style="margin-bottom: 8px; font-size: 0.85rem; color: #475569;">📋 Itens Abaixo da Margem: ${c.nome}</h4>
+                            <div class="sub-table-scroll">
+                                <table class="sub-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 60px;">Loja</th>
+                                            <th style="text-align: center; width: 80px;">PRD C5</th>
+                                            <th>Descrição do Produto</th>
+                                            <th style="text-align: center;">Preço Promo</th>
+                                            <th style="text-align: center;">Margem Praticada</th>
+                                            <th style="text-align: center;">Margem Objetiva</th>
+                                            <th style="text-align: center;">GAP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+
+                c.itens.forEach(item => {
+                    detalhesHTML += `
+                        <tr>
+                            <td style="text-align: center; font-weight: 600;">${item.loja}</td>
+                            <td style="text-align: center;">${item.prdC5}</td>
+                            <td>${item.desc}</td>
+                            <td style="text-align: center; font-weight: 600;">${item.preFmt}</td>
+                            <td style="text-align: center; color: #ef4444; font-weight: 600;">${item.mPratFmt}</td>
+                            <td style="text-align: center; color: #0f172a; font-weight: 600;">${item.mObjFmt}</td>
+                            <td style="text-align: center; color: #ef4444; font-weight: 800;">${item.gapFmt}</td>
+                        </tr>
+                    `;
+                });
+
+                detalhesHTML += `</tbody></table></div></div></td>`;
+                trFilho.innerHTML = detalhesHTML;
+                tbody.appendChild(trFilho);
+            });
+
+            document.getElementById('tabela-margens-container').style.display = 'block';
+            
+            if (window.dadosMargemExportacao.length > 0) {
+                document.getElementById('btn-exportar-margens').style.display = 'inline-flex';
+            }
+            
+            showToast("Análise de Margem concluída!", "success");
+        }
+
+        window.toggleSubTableMargens = function(index) {
+            const subrow = document.getElementById(`subrow-mrg-${index}`);
+            const icon = document.getElementById(`icon-mrg-${index}`);
+            if (subrow.style.display === 'none') {
+                subrow.style.display = 'table-row';
+                icon.textContent = '-';
+                icon.style.background = '#2563eb';
+                icon.style.color = 'white';
+                icon.style.borderColor = '#2563eb';
+            } else {
+                subrow.style.display = 'none';
+                icon.textContent = '+';
+                icon.style.background = '#f8fafc';
+                icon.style.color = '#475569';
+                icon.style.borderColor = '#cbd5e1';
+            }
+        }
+
+        window.exportarMargensExcel = function() {
+            if (!window.dadosMargemExportacao || window.dadosMargemExportacao.length === 0) {
+                showToast("Não há dados abaixo da margem para exportar.", "warning");
+                return;
+            }
+            const worksheet = XLSX.utils.json_to_sheet(window.dadosMargemExportacao);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Itens_Abaixo_Margem");
+            XLSX.writeFile(workbook, "Relatorio_Validacao_Margens.xlsx");
+            showToast("Excel exportado com sucesso!", "success");
+        }
+        // ==========================================
+
         onValue(lojasRef, (snapshot) => {
             globLojas = snapshot.exists() ? snapshot.val() : {};
             window.renderizarLojasTab();
@@ -992,18 +872,15 @@
             window.renderizarClustersUpload();
         });
 
-        // Controle de Abas no Modal
         window.switchTab = function(tabName) {
             document.getElementById('btn-tab-lojas').classList.remove('active');
             document.getElementById('btn-tab-clusters').classList.remove('active');
             document.getElementById('tab-lojas').classList.remove('active');
             document.getElementById('tab-clusters').classList.remove('active');
-            
             document.getElementById('btn-tab-' + tabName).classList.add('active');
             document.getElementById('tab-' + tabName).classList.add('active');
         };
 
-        // --- ABA LOJAS ---
         window.renderizarLojasTab = function() {
             const divLojas = document.getElementById('lista-lojas-cadastradas');
             const divCheckboxes = document.getElementById('grid-checkboxes-criacao-cluster');
@@ -1018,11 +895,9 @@
                 return;
             }
 
-            // Ordenar alfabeticamente pelo nome da loja
             const arrayLojas = chaves.map(k => ({id: k, ...globLojas[k]})).sort((a,b) => a.nome.localeCompare(b.nome));
 
             arrayLojas.forEach(loja => {
-                // Linha na listagem (Aba Lojas)
                 divLojas.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1;">
                         <div style="display:flex; flex-direction:column; gap:3px;">
@@ -1032,8 +907,6 @@
                         <button onclick="window.removerLoja('${loja.id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding: 4px;" title="Remover">🗑️</button>
                     </div>
                 `;
-
-                // Checkbox para a Aba Clusters
                 divCheckboxes.innerHTML += `
                     <label class="custom-checkbox-store">
                         <input type="checkbox" class="chk-loja-cluster" value="${loja.id}">
@@ -1053,7 +926,7 @@
                 document.getElementById('nova-loja-nome').value = '';
                 document.getElementById('nova-loja-emails').value = '';
                 showToast("Loja adicionada!", "success");
-            }).catch(e => showToast("Erro: " + e.message, "error"));
+            });
         };
 
         window.removerLoja = function(id) {
@@ -1062,7 +935,6 @@
             }
         };
 
-        // --- ABA CLUSTERS ---
         window.renderizarClustersTab = function() {
             const divClusters = document.getElementById('lista-clusters-cadastrados');
             if(!divClusters) return;
@@ -1106,7 +978,7 @@
         };
 
         window.removerCluster = function(id) {
-            if(confirm("Deseja remover este cluster? As lojas NÃO serão excluídas, apenas o atalho do grupo.")) {
+            if(confirm("Deseja remover este cluster?")) {
                 remove(ref(db, `configuracoes_sistema/clusters/${id}`)).then(() => showToast("Cluster removido", "success"));
             }
         };
@@ -1114,8 +986,6 @@
         window.abrirModalEmails = function() { document.getElementById('modalEmails').style.display = 'flex'; }
         window.fecharModalEmails = function() { document.getElementById('modalEmails').style.display = 'none'; }
 
-
-        // --- ÁREA DE UPLOAD (SELEÇÃO DE DESTINATÁRIOS) ---
         window.renderizarLojasUpload = function() {
             const container = document.getElementById('grid-checkboxes-lojas-upload');
             if(!container) return;
@@ -1153,29 +1023,15 @@
             });
         };
 
-        window.limparSelecaoLojas = function() {
-            document.querySelectorAll('.chk-loja-upload').forEach(cb => cb.checked = false);
-        };
-        
-        window.selecionarTodasLojas = function() {
-            document.querySelectorAll('.chk-loja-upload').forEach(cb => cb.checked = true);
-        };
-
+        window.limparSelecaoLojas = function() { document.querySelectorAll('.chk-loja-upload').forEach(cb => cb.checked = false); };
+        window.selecionarTodasLojas = function() { document.querySelectorAll('.chk-loja-upload').forEach(cb => cb.checked = true); };
         window.selecionarClusterUpload = function(clusterId) {
             const cluster = globClusters[clusterId];
             if(!cluster || !cluster.lojasIds) return;
-            
-            // Marca as lojas que pertencem a este cluster (sem desmarcar as outras se o usuário quiser somar clusters)
             const checkboxes = document.querySelectorAll('.chk-loja-upload');
-            checkboxes.forEach(cb => {
-                if(cluster.lojasIds.includes(cb.value)) {
-                    cb.checked = true;
-                }
-            });
+            checkboxes.forEach(cb => { if(cluster.lojasIds.includes(cb.value)) { cb.checked = true; } });
         };
 
-
-        // --- SISTEMA DE LISTAS COM AUTO-EXCLUSÃO EM 20 DIAS E BOTÃO DE DELETE ---
         onValue(listasRef, (snapshot) => {
             listasGlobaisValidas = [];
             const agora = Date.now();
@@ -1184,7 +1040,6 @@
             if (snapshot.exists()) {
                 snapshot.forEach(child => { 
                     const arq = { id: child.key, ...child.val() }; 
-                    
                     let tempoCriacao = arq.timestampCriacao;
                     if (!tempoCriacao && arq.dataCriacao) {
                         const p = arq.dataCriacao.split('/');
@@ -1213,7 +1068,6 @@
 
             [...listasGlobaisValidas].reverse().forEach(arq => {
                 let btnDel = (perfilUsuario === "Gestor") ? `<button class="btn-del-corp" onclick="window.deletarLista('${arq.id}')" title="Excluir Planilha">🗑️</button>` : '';
-                
                 grid.innerHTML += `
                     <div class="item-lista-corp">
                         <div class="item-lista-info">
@@ -1235,11 +1089,9 @@
         };
 
         window.salvarLinkLista = function() {
-            // HIGIENIZAÇÃO SEGURA NO BACKEND DO NOME DA CAMPANHA (NENHUMA BARRA ENTRA NO BANCO)
             const nomeRaw = document.getElementById('nome-lista').value.trim();
             const nome = nomeRaw.replace(/[\/\\]/g, '.');
-
-            const regiao = document.getElementById('regiao-lista').value.trim() || 'Todas as Lojas'; // Campo livre
+            const regiao = document.getElementById('regiao-lista').value.trim() || 'Todas as Lojas'; 
             const link = document.getElementById('link-lista').value.trim();
 
             if (!nome || !link) { showToast("Preencha o nome da campanha e cole o link.", "error"); return; }
@@ -1248,10 +1100,8 @@
             btnUpload.disabled = true;
             btnUpload.innerHTML = "Aguarde...";
 
-            // 1. CAPTURAR LOJAS SELECIONADAS E MONTAR E-MAILS
             const chksSelecionados = document.querySelectorAll('.chk-loja-upload:checked');
             let emailsRawArray = [];
-            
             chksSelecionados.forEach(cb => {
                 const lojaId = cb.value;
                 if(globLojas[lojaId] && globLojas[lojaId].emails) {
@@ -1259,13 +1109,12 @@
                 }
             });
 
-            // 2. HIGIENIZADOR INTELIGENTE (Anti-Spam / Anti-Duplicação)
             let todosEmailsString = emailsRawArray.join(',');
             let listaLimpa = todosEmailsString.split(/[,;]+/)
                 .map(e => e.trim().toLowerCase())
-                .filter(e => e !== "" && e.includes('@')); // Remove vazios e strings inválidas
+                .filter(e => e !== "" && e.includes('@')); 
                 
-            let emailsUnicos = [...new Set(listaLimpa)]; // Remove duplicatas automagicamente
+            let emailsUnicos = [...new Set(listaLimpa)]; 
             let destinatariosFinais = emailsUnicos.join(',');
 
             push(listasRef, {
@@ -1284,26 +1133,14 @@
                 btnUpload.disabled = false;
                 btnUpload.innerHTML = "📥 Salvar e Notificar";
                 
-                // DISPARO DE E-MAIL DINÂMICO PARA A LISTA PROCESSADA
                 if (emailsUnicos.length > 0) {
-                    console.log("Disparando para " + emailsUnicos.length + " e-mails únicos:", destinatariosFinais);
-
-                    const templateParams = { 
-                        campanha_nome: nome, 
-                        campanha_regiao: regiao, 
-                        link_acesso: link,
-                        to_email: destinatariosFinais
-                    };
-                    
+                    const templateParams = { campanha_nome: nome, campanha_regiao: regiao, link_acesso: link, to_email: destinatariosFinais };
                     emailjs.send("service_2t7n75j", "template_ceff8i3", templateParams)
                         .then(function(res) { 
                             window.showToast(`E-mails enviados para ${emailsUnicos.length} gerentes!`, "info");
                         }, function(err) { 
-                            console.error('Erro envio email API', err); 
-                            window.showToast("Planilha salva, mas falha ao notificar a equipe (Erro 422).", "warning");
+                            window.showToast("Planilha salva, mas falha ao notificar a equipe.", "warning");
                         });
-                } else {
-                    window.showToast("Nenhuma loja com e-mail válido foi selecionada para envio.", "warning");
                 }
             });
         };
@@ -1316,8 +1153,6 @@
                 }).catch(err => { showToast("Erro: " + err.message, "error"); });
             }
         };
-        // --- FIM SISTEMA DE LISTAS ---
-
 
         function registrarHistorico(acao, detalhes) {
             if (perfilUsuario !== "Gestor") return;
@@ -1372,18 +1207,7 @@
             dash.style.display = dash.style.display === 'grid' ? 'none' : 'grid';
         };
 
-        window.toggleMenuDados = function () {
-            document.getElementById("dropdownDados").classList.toggle("show");
-        };
-
-        window.onclick = function (event) {
-            if (!event.target.matches('.dropbtn')) {
-                var dropdowns = document.getElementsByClassName("dropdown-content");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
-                }
-            }
-        };
+        window.toggleMenuDados = function () { document.getElementById("dropdownDados").classList.toggle("show"); };
 
         window.aplicarFiltro = function () {
             filtroMesAtual = document.getElementById('filtro-mes').value;
@@ -1394,7 +1218,6 @@
 
         onValue(tabelaRef, (snapshot) => {
             let dadosLidos = snapshot.val();
-
             if (dadosLidos) {
                 let atualizacoesRobo = {};
                 let fezAlgumaAlteracao = false;
@@ -1402,7 +1225,6 @@
 
                 for (let id in dadosLidos) {
                     let camp = dadosLidos[id];
-
                     if (camp.status !== 'concluido' && camp.status !== 'atrasado') {
                         if (camp.status === 'em-andamento' && camp.travarAndamento) {
                         } else {
@@ -1426,12 +1248,10 @@
                         }
                     }
                 }
-
                 if (fezAlgumaAlteracao && perfilUsuario === "Gestor") {
                     update(ref(db, 'campanhas_oficiais_v3'), atualizacoesRobo);
                 }
             }
-
             dadosAtuais = dadosLidos;
             renderizarTabela(dadosAtuais);
         });
@@ -1535,7 +1355,6 @@
                 return;
             }
 
-            // Liberado para todos interagirem com os status e edições
             const statusBloqueio = "";
             const statusReadonly = "";
             const statusAcoes = "inline-block";
@@ -1562,7 +1381,6 @@
             let listaFiltrada = listaGlobal.filter(camp => {
                 const textoMes = camp.mes ? camp.mes.trim() : "Não Informado";
                 const textoCampanha = camp.nome ? camp.nome.trim() : "-";
-
                 if (filtroMesAtual !== "todos" && textoMes !== filtroMesAtual) return false;
                 if (filtroCampanhaAtual !== "todas" && textoCampanha !== filtroCampanhaAtual) return false;
                 if (filtroStatusAtual !== "todas" && camp.status !== filtroStatusAtual) return false;
@@ -1582,7 +1400,6 @@
             listaFiltrada.forEach((camp) => {
                 const textoMes = camp.mes ? camp.mes.trim() : "Não Informado";
                 const textoCampanha = camp.nome ? camp.nome.trim() : "-";
-
                 const textoInicio = camp.inicio ? formatarDataVisivel(camp.inicio) : '';
                 const textoFim = camp.fim ? formatarDataVisivel(camp.fim) : '';
                 let textoVigencia = textoInicio && textoFim ? `${textoInicio} a ${textoFim}` : (camp.periodo ? camp.periodo : '-');
@@ -1843,23 +1660,19 @@
         // ==========================================
         // EVENT LISTENERS GLOBAIS (UX MODAIS)
         // ==========================================
-        
-        // Fechar modais ao clicar no fundo escuro
         window.addEventListener('click', function(event) {
-            const modais = ['modalListas', 'modalEmails', 'modalNovo', 'modalEditar', 'modalHistorico'];
+            const modais = ['modalMargem', 'modalListas', 'modalEmails', 'modalNovo', 'modalEditar', 'modalHistorico'];
             modais.forEach(modalId => {
                 const modal = document.getElementById(modalId);
-                // Se o clique for exatamente no fundo escuro e não dentro da caixa branca
                 if (event.target === modal) {
                     modal.style.display = 'none';
                 }
             });
         });
 
-        // Fechar modais ao pressionar a tecla ESC
         window.addEventListener('keydown', function(event) {
             if (event.key === 'Escape' || event.key === 'Esc') {
-                const modais = ['modalListas', 'modalEmails', 'modalNovo', 'modalEditar', 'modalHistorico'];
+                const modais = ['modalMargem', 'modalListas', 'modalEmails', 'modalNovo', 'modalEditar', 'modalHistorico'];
                 modais.forEach(modalId => {
                     const modal = document.getElementById(modalId);
                     if (modal && modal.style.display === 'flex') {
