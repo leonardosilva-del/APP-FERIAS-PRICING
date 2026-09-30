@@ -21,7 +21,7 @@
     <meta property="og:url" content="https://intranetpricing.onrender.com/ofertas.html">
     <meta property="og:type" content="website">
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- EMAILJS PARA DISPARO DE E-MAIL GRATUITO E SHEETJS PARA EXCEL -->
@@ -152,6 +152,7 @@
         .status-prazo.atrasado { background-color: #ef4444; color: white; border-color: #dc2626; }
         .status-prazo.concluido { background-color: #64748b; color: white; border-color: #475569; }
 
+        /* --- ESTILOS PADRÃO MODAIS --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
             display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; backdrop-filter: blur(2px);
@@ -163,6 +164,7 @@
         }
         .modal-content.large { max-width: 600px; }
         .modal-content.extra-large { max-width: 1000px; }
+        
         .modal-content h2 { margin: 0 0 10px 0; color: #1e293b; font-size: 1.25rem; font-weight: 600; text-align: center; }
         .modal-header-close { position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
         .modal-header-close:hover { color: #0f172a; }
@@ -185,32 +187,50 @@
         .btn-corp-primary { background: #26417E; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s; height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
         .btn-corp-primary:hover { background: #1e3362; }
 
-        /* KPIS Margem */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
-        .kpi-card { background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-top: 4px solid #2563eb; }
-        .kpi-title { font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        /* --- DASHBOARD DE MARGENS (ESTILOS MELHORADOS) --- */
+        #modalMargem .modal-content {
+            width: 95%; max-width: 1400px; height: 95vh; padding: 0; display: flex; flex-direction: column; overflow: hidden; background-color: #f8fafc;
+        }
+        
+        .modal-header-fixed {
+            padding: 20px 30px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; z-index: 10;
+        }
+
+        .modal-body-scroll {
+            padding: 24px 30px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .kpi-card { background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-top: 4px solid #2563eb; }
+        .kpi-title { font-size: 0.85rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
         .kpi-value { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
         .kpi-card.warning { border-top-color: #f59e0b; }
         .kpi-card.danger { border-top-color: #ef4444; background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(255,255,255,0) 100%); }
         .kpi-card.purple { border-top-color: #8b5cf6; }
 
-        /* Tabela BI Estilizada */
-        .bi-table-container { overflow-x: auto; margin-top: 10px; }
+        /* Tabela BI Estilizada no Modal */
+        .table-bi-wrapper {
+            background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 400px;
+        }
+        .table-bi-scroll { overflow-y: auto; flex: 1; }
+        
         .bi-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .bi-table th { background: rgba(0,0,0,0.02); font-size: 0.75rem; text-transform: uppercase; color: #475569; font-weight: 700; padding: 12px; border-bottom: 2px solid #e2e8f0; white-space: nowrap;}
-        .bi-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; color: #0f172a; font-weight: 500; }
-        .bi-table tr:hover td { background: rgba(37, 99, 235, 0.03); }
-        .badge-bi { padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; background: #f8fafc; display: inline-block; text-align: center; min-width: 40px;}
+        .bi-table th { position: sticky; top: 0; background: #f1f5f9; font-size: 0.8rem; text-transform: uppercase; color: #475569; font-weight: 700; padding: 14px 16px; border-bottom: 2px solid #cbd5e1; white-space: nowrap; z-index: 10;}
+        .bi-table td { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem; color: #0f172a; font-weight: 500; }
+        .bi-table tr:hover td { background: #f8fafc; }
+        .badge-bi { padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; background: #f1f5f9; display: inline-block; text-align: center; min-width: 45px;}
 
         .clickable-row { cursor: pointer; transition: background-color 0.2s; }
         .btn-expand { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; color: #475569; font-weight: 800; cursor: pointer; display: inline-block; transition: 0.2s;}
         
-        .sub-table-wrapper { padding: 15px; background: #f8fafc; border-left: 4px solid #8b5cf6; margin-bottom: 10px; border-radius: 0 0 8px 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .sub-table-scroll { max-height: 320px; overflow-y: auto; border-radius: 6px; border: 1px solid #e2e8f0; position: relative; background: #ffffff; }
+        .sub-table-wrapper { padding: 0; background: #f8fafc; border-left: 4px solid #8b5cf6; }
+        .sub-table-header-info { padding: 12px 16px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; color: #475569; font-weight: 600; display: flex; align-items: center; gap: 8px;}
         .sub-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #ffffff; }
-        .sub-table th { position: sticky; top: 0; z-index: 20; background: #f8fafc; font-size: 0.75rem; padding: 10px 12px; color: #475569; border-bottom: 1px solid #e2e8f0; white-space: nowrap; text-transform: uppercase; }
-        .sub-table td { padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid #e2e8f0; color: #0f172a;}
+        .sub-table th { background: #ffffff; font-size: 0.75rem; padding: 10px 16px; color: #64748b; border-bottom: 1px solid #e2e8f0; white-space: nowrap; text-transform: uppercase; position: static; }
+        .sub-table td { padding: 10px 16px; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; color: #334155;}
+        .sub-table tr:last-child td { border-bottom: none; }
 
+        /* Toasts */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { padding: 15px 20px; border-radius: 6px; color: white; font-weight: 500; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); opacity: 0; transform: translateX(100%); animation: slideIn 0.3s forwards; pointer-events: auto; }
         .toast.success { background-color: #10b981; border-left: 5px solid #059669; }
@@ -333,72 +353,81 @@
         </div>
     </div>
 
-    <!-- MODAL DASHBOARD DE MARGENS -->
+    <!-- MODAL DASHBOARD DE MARGENS (UX DESIGN MELHORADO) -->
     <div id="modalMargem" class="modal-overlay" style="display: none; z-index: 1060;">
-        <div class="modal-content extra-large" style="max-width: 1000px; background-color: #f8fafc;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="modal-content">
+            
+            <div class="modal-header-fixed">
                 <h2 style="margin: 0; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                    📉 Dashboard: Validação de Margens
+                    <svg width="24" height="24" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                    Dashboard: Validação de Margens
                 </h2>
-                <button class="btn-cancel" onclick="fecharModalMargem()" style="padding: 8px 16px;">✕ Fechar</button>
+                <button class="btn-cancel" onclick="fecharModalMargem()" style="padding: 8px 16px; margin: 0;">✕ Fechar</button>
             </div>
 
-            <div class="corp-panel" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-                <div>
-                    <h3 style="margin-bottom: 5px;">Importar Planilha de Validação</h3>
-                    <p style="font-size: 13px; color: #64748b; margin: 0;">Faça o upload do Excel do sistema para auditar (Comprador, Loja, Produto, Preço e Margens).</p>
+            <div class="modal-body-scroll">
+                <div class="corp-panel" style="margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h3 style="margin-bottom: 5px; border: none; padding: 0;">Importar Planilha de Validação</h3>
+                        <p style="font-size: 13.5px; color: #64748b; margin: 0;">Faça o upload do Excel do sistema para auditar (Comprador, Loja, Produto, Preço e Margens).</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button id="btn-exportar-margens" class="btn-corp-primary" style="background: #10b981; display: none;" onclick="exportarMargensExcel()">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Exportar Abaixo da Margem
+                        </button>
+                        
+                        <label class="btn-corp-primary" style="cursor: pointer; background: #8b5cf6;">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Selecionar Excel
+                            <input type="file" id="upload-margens" accept=".xlsx, .xls" style="display:none;" onchange="processarPlanilhaMargens(event)">
+                        </label>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <!-- NOVO BOTÃO DE EXPORTAR EXCEL (INICIA ESCONDIDO) -->
-                    <button id="btn-exportar-margens" class="btn-corp-primary" style="background: #10b981; display: none;" onclick="exportarMargensExcel()">📤 Exportar Abaixo da Margem</button>
-                    
-                    <label class="btn-corp-primary" style="cursor: pointer; background: #8b5cf6;">
-                        📁 Selecionar Excel
-                        <input type="file" id="upload-margens" accept=".xlsx, .xls" style="display:none;" onchange="processarPlanilhaMargens(event)">
-                    </label>
-                </div>
-            </div>
 
-            <!-- KPIs -->
-            <div class="kpi-grid" id="kpi-margens" style="display: none; margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                <div class="kpi-card warning">
-                    <div class="kpi-title">Abaixo da Margem</div>
-                    <div class="kpi-value" id="kpi-qtd-abaixo">0</div>
-                    <div style="font-size: 0.75rem; color: #64748b;">Produtos com Praticada < Objetiva</div>
+                <!-- KPIs -->
+                <div class="kpi-grid" id="kpi-margens" style="display: none;">
+                    <div class="kpi-card warning">
+                        <div class="kpi-title">Abaixo da Margem</div>
+                        <div class="kpi-value" id="kpi-qtd-abaixo">0</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Produtos com Praticada < Objetiva</div>
+                    </div>
+                    <div class="kpi-card danger">
+                        <div class="kpi-title">Maior Ofensor (Comprador)</div>
+                        <div class="kpi-value" id="kpi-maior-ofensor" style="font-size: 1.8rem;">-</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Com mais ofertas negativas</div>
+                    </div>
+                    <div class="kpi-card purple">
+                        <div class="kpi-title">Produto Mais Crítico</div>
+                        <div class="kpi-value" id="kpi-pior-produto" style="font-size: 1.2rem; line-height: 1.3;">-</div>
+                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 5px;" id="kpi-pior-detalhe">Loja: - | Margem: -</div>
+                    </div>
                 </div>
-                <div class="kpi-card danger">
-                    <div class="kpi-title">Maior Ofensor (Comprador)</div>
-                    <div class="kpi-value" id="kpi-maior-ofensor" style="font-size: 1.5rem;">-</div>
-                    <div style="font-size: 0.75rem; color: #64748b;">Com mais ofertas negativas</div>
-                </div>
-                <div class="kpi-card purple">
-                    <div class="kpi-title">Produto Mais Crítico</div>
-                    <div class="kpi-value" id="kpi-pior-produto" style="font-size: 1.1rem; line-height: 1.2;">-</div>
-                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 5px;" id="kpi-pior-detalhe">Loja: - | Margem: -</div>
-                </div>
-            </div>
 
-            <!-- Tabela BI -->
-            <div class="bi-table-container" id="tabela-margens-container" style="display: none; background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 15px;">
-                <table class="bi-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;"></th>
-                            <th>Comprador</th>
-                            <th style="text-align: center;">Total Analisado</th>
-                            <th style="text-align: center; color: #ef4444;">Qtd Abaixo Margem</th>
-                            <th style="text-align: center;">Pior Margem (Gap)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-margens"></tbody>
-                </table>
+                <!-- Tabela BI Flexível -->
+                <div class="table-bi-wrapper" id="tabela-margens-container" style="display: none;">
+                    <div class="table-bi-scroll">
+                        <table class="bi-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px; text-align: center;"></th>
+                                    <th>Comprador</th>
+                                    <th style="text-align: center;">Total Analisado</th>
+                                    <th style="text-align: center; color: #ef4444;">Qtd Abaixo Margem</th>
+                                    <th style="text-align: center;">Pior Margem (Gap)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-margens"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Modal Base de Listas -->
     <div id="modalListas" class="modal-overlay" style="display: none; z-index: 1000;">
-        <div class="modal-content extra-large" style="background-color: #f4f7f6;">
+        <div class="modal-content extra-large" style="background-color: #f4f7f6; height: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin: 0; color: #1e293b; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">📂 Base de Listas (Excel)</h2>
                 <div style="display: flex; gap: 10px;">
@@ -444,7 +473,7 @@
 
     <!-- Modal Gerenciar Lojas e Clusters -->
     <div id="modalEmails" class="modal-overlay" style="display: none; z-index: 1050;">
-        <div class="modal-content large">
+        <div class="modal-content large" style="height: auto;">
             <h2>⚙️ Lojas & Clusters</h2>
             <div class="tabs-container">
                 <button class="tab-btn active" id="btn-tab-lojas" onclick="window.switchTab('lojas')">🏬 Gerenciar Lojas</button>
@@ -478,7 +507,7 @@
 
     <!-- Outros Modais (Nova Campanha, Editar, Historico) -->
     <div id="modalNovo" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content" style="height: auto;">
             <button class="modal-header-close" onclick="fecharModalNova()">×</button>
             <h2>Cadastrar Nova Campanha</h2>
             <label>Mês de Referência:</label>
@@ -495,7 +524,7 @@
     </div>
 
     <div id="modalEditar" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content" style="height: auto;">
             <button class="modal-header-close" onclick="fecharModalEditar()">×</button>
             <h2>Editar Campanha</h2>
             <label>Mês de Referência:</label>
@@ -513,7 +542,7 @@
     </div>
 
     <div id="modalHistorico" class="modal-overlay" style="display: none;">
-        <div class="modal-content large">
+        <div class="modal-content large" style="height: auto;">
             <button class="modal-header-close" onclick="fecharModalHistorico()">×</button>
             <h2>🕒 Histórico de Alterações</h2>
             <div style="overflow-y: auto; max-height: 400px; padding-right: 10px; margin-top: 15px;">
@@ -600,7 +629,7 @@
         // ==========================================
         // ANÁLISE DE MARGEM (NOVO DASHBOARD COM EXPORTAÇÃO EXCEL)
         // ==========================================
-        window.dadosMargemExportacao = []; // Variável global para armazenar os dados do Excel
+        window.dadosMargemExportacao = []; 
 
         window.abrirModalMargem = function() {
             document.getElementById('modalMargem').style.display = 'flex';
@@ -614,7 +643,7 @@
             if (!file) return;
 
             showToast("Analisando margens...", "info");
-            document.getElementById('btn-exportar-margens').style.display = 'none'; // Esconde botão até processar
+            document.getElementById('btn-exportar-margens').style.display = 'none'; 
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -631,7 +660,7 @@
                 }
             };
             reader.readAsBinaryString(file);
-            event.target.value = ''; // reseta o input
+            event.target.value = ''; 
         }
 
         function analisarDadosMargem(dados) {
@@ -643,10 +672,9 @@
             let qtdAbaixo = 0;
             let compradores = {};
             let piorProduto = null;
-            let piorGapGlobal = 0; // Valor negativo do GAP
-            window.dadosMargemExportacao = []; // Resetando para nova exportação
+            let piorGapGlobal = 0; 
+            window.dadosMargemExportacao = []; 
 
-            // Procura os cabeçalhos de forma flexível
             let keys = Object.keys(dados[0]);
             let keyPrat = keys.find(k => k.toUpperCase().includes('MARGEM PRATICADA') || k.toUpperCase() === 'MARGEM' || k.toUpperCase() === 'MG') || 'MARGEM';
             let keyObj = keys.find(k => k.toUpperCase().includes('CATEG') || k.toUpperCase() === 'MARGEM OBJETIVA') || 'MARGEMCATEG';
@@ -662,7 +690,6 @@
                 let desc = row[keyDesc] || "-";
                 let comprador = row[keyComp] || "Sem Comprador";
                 
-                // Converte string para float caso venha como texto na planilha
                 let margemPraticada = parseFloat(String(row[keyPrat]).replace(',', '.')) || 0;
                 let margemObjetiva = parseFloat(String(row[keyObj]).replace(',', '.')) || 0;
                 let preco = parseFloat(String(row[keyPreco]).replace(',', '.')) || 0;
@@ -675,9 +702,8 @@
 
                 compradores[comprador].total++;
 
-                // Se a margem na planilha for apresentada em %, não multiplicamos por 100.
                 let mult = 100;
-                if(margemObjetiva > 1) mult = 1; // Ajuste se já estiver em 18% (18.0)
+                if(margemObjetiva > 1) mult = 1; 
 
                 let mPratFmt = (margemPraticada * mult).toFixed(2) + "%";
                 let mObjFmt = (margemObjetiva * mult).toFixed(2) + "%";
@@ -686,7 +712,6 @@
 
                 let itemData = { loja, prdC5, desc, mPratFmt, mObjFmt, gap, gapFmt, preFmt, precoRaw: preco };
 
-                // Condição para considerar Abaixo da Margem
                 if (gap < -0.0001) { 
                     qtdAbaixo++;
                     compradores[comprador].abaixo++;
@@ -710,7 +735,6 @@
                 }
             });
 
-            // Definir Maior Ofensor
             let maiorOfensor = "-";
             let maxAbaixo = 0;
             for (let c in compradores) {
@@ -718,10 +742,9 @@
                     maxAbaixo = compradores[c].abaixo;
                     maiorOfensor = c;
                 }
-                compradores[c].itens.sort((a, b) => a.gap - b.gap); // Ordena piores primeiro
+                compradores[c].itens.sort((a, b) => a.gap - b.gap); 
             }
 
-            // Preenche os KPIs
             document.getElementById('kpi-qtd-abaixo').textContent = qtdAbaixo;
             document.getElementById('kpi-maior-ofensor').textContent = maxAbaixo > 0 ? maiorOfensor : "Nenhum";
             
@@ -735,7 +758,6 @@
 
             document.getElementById('kpi-margens').style.display = 'grid';
 
-            // Preenche Tabela BI e Array de Exportação Excel
             const tbody = document.getElementById('tbody-margens');
             tbody.innerHTML = '';
 
@@ -743,9 +765,8 @@
             arrCompradores.sort((a, b) => b.abaixo - a.abaixo);
 
             arrCompradores.forEach((c, idx) => {
-                if (c.abaixo === 0) return; // Não renderiza quem está 100% OK para limpar a visão
+                if (c.abaixo === 0) return; 
 
-                // 1. Popula o Array de Exportação para o Excel
                 c.itens.forEach(item => {
                     window.dadosMargemExportacao.push({
                         "Comprador": c.nome,
@@ -759,12 +780,10 @@
                     });
                 });
 
-                // 2. Monta a Tabela Visual (HTML)
                 let trPai = document.createElement('tr');
                 trPai.className = 'clickable-row';
                 trPai.onclick = () => window.toggleSubTableMargens(idx);
                 
-                // Formata o Pior Gap para exibição
                 let mult = (c.piorGap > -1 && c.piorGap < 1) ? 100 : 1;
                 let piorGapStr = (c.piorGap * mult).toFixed(2) + "%";
 
@@ -784,7 +803,7 @@
                 let detalhesHTML = `
                     <td colspan="5" style="padding: 0; border: none;">
                         <div class="sub-table-wrapper">
-                            <h4 style="margin-bottom: 8px; font-size: 0.85rem; color: #475569;">📋 Itens Abaixo da Margem: ${c.nome}</h4>
+                            <div class="sub-table-header-info">📋 Itens Abaixo da Margem: ${c.nome}</div>
                             <div class="sub-table-scroll">
                                 <table class="sub-table">
                                     <thead>
@@ -820,7 +839,7 @@
                 tbody.appendChild(trFilho);
             });
 
-            document.getElementById('tabela-margens-container').style.display = 'block';
+            document.getElementById('tabela-margens-container').style.display = 'flex';
             
             if (window.dadosMargemExportacao.length > 0) {
                 document.getElementById('btn-exportar-margens').style.display = 'inline-flex';
@@ -1467,7 +1486,7 @@
                 </td>
                 <td style="text-align: center; white-space: nowrap;">
                     <button class="btn-action" style="display: ${statusAcoes};" title="Editar" onclick="window.abrirModalEditar('${id}')">✏️</button>
-                    <button class="btn-action" style="display: ${statusAcoes};" title="Excluir" onclick="window.deletarCampanha('${id}')">🗑️</button>
+                    <button class="btn-action" style="display: ${statusAcoes};" title="Excluir" onclick="window.deletarCampanha('${id}')">🗑️️</button>
                     <button class="btn-action" style="display: ${statusAcoes};" onclick="window.moverLinha('${id}', -1)">⬆️</button>
                     <button class="btn-action" style="display: ${statusAcoes};" onclick="window.moverLinha('${id}', 1)">⬇️</button>
                 </td>
