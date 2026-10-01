@@ -134,6 +134,162 @@
         @keyframes pulsarTimer { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 16px rgba(234, 88, 12, 0.85); } 100% { transform: scale(1); } }
 
         html.dark-theme .modal-content input, html.dark-theme .modal-content select, html.dark-theme .modal-content textarea { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
+
+        /* --- ESTILOS MODERNOS DO MODAL DE DETALHES / APROVAÇÃO --- */
+        .modal-detalhe-content {
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            max-width: 520px;
+        }
+        .detalhe-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 6px;
+        }
+        .detalhe-badge-status {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .detalhes-info-card {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        html.dark-theme .detalhes-info-card {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-color: #334155;
+        }
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-900);
+            line-height: 1.4;
+        }
+        .info-label {
+            font-weight: 700;
+            color: var(--text-600);
+            min-width: 85px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .info-value {
+            font-weight: 600;
+            color: var(--text-900);
+            flex: 1;
+        }
+        .info-pills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 4px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-light);
+        }
+        .info-pill {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        html.dark-theme .info-pill {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .info-pill-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-600);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .info-pill-val {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #2563eb;
+            margin-top: 2px;
+        }
+
+        /* --- DESTAQUE DISCRETO NO SELETOR DE STATUS --- */
+        .select-status-wrapper {
+            position: relative;
+            margin-top: 4px;
+        }
+        .select-status-destaque {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 10px;
+            border: 2px solid #3b82f6;
+            background: #ffffff;
+            color: #1e3a8a;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+        .select-status-destaque:hover {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.22), 0 3px 8px rgba(37, 99, 235, 0.15);
+            transform: translateY(-1px);
+        }
+        .select-status-destaque:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.25);
+        }
+        html.dark-theme .select-status-destaque {
+            background-color: #1e293b;
+            color: #93c5fd;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .label-acao-destaque {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-900);
+            margin-top: 10px;
+        }
+        .badge-acao-dica {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #bfdbfe;
+        }
+        html.dark-theme .badge-acao-dica {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+            border-color: #1e40af;
+        }
     </style>
 </head>
 
@@ -240,45 +396,63 @@
 
     <!-- MODAL DETALHES / RESPOSTA -->
     <div id="modalDetalhe" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content modal-detalhe-content">
             <button class="modal-header-close" onclick="fecharModais()">×</button>
-            <h2 id="detalhe-titulo">Detalhes do Chamado</h2>
+            <div class="detalhe-header">
+                <h2 id="detalhe-titulo" style="font-size: 1.25rem; font-weight: 800; color: var(--text-900); margin: 0;">Detalhes do Chamado</h2>
+                <span id="detalhe-status-badge" class="badge aberto" style="font-size: 0.8rem; padding: 4px 10px;">Aberto</span>
+            </div>
             
-            <div style="background: var(--bg-body); padding: 15px; border-radius: 8px; border: 1px solid var(--border-light); font-size: 0.9rem; display: flex; flex-direction: column; gap: 8px;">
-                <p><strong>Solicitante:</strong> <span id="detalhe-solicitante"></span></p>
-                <p><strong>Produto:</strong> <span id="detalhe-produto"></span></p>
-                <p><strong>Loja(s):</strong> <span id="detalhe-loja"></span></p>
-                <div id="detalhe-extras" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-light);">
-                    <!-- Campos dinâmicos entram aqui -->
+            <div class="detalhes-info-card">
+                <div class="info-row">
+                    <span class="info-label">Solicitante:</span>
+                    <span class="info-value" id="detalhe-solicitante"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Produto:</span>
+                    <span class="info-value" id="detalhe-produto" style="color: #2563eb;"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Loja(s):</span>
+                    <span class="info-value" id="detalhe-loja"></span>
+                </div>
+                
+                <div id="detalhe-extras">
+                    <!-- Valores dinâmicos e métricas entram aqui em grid moderno -->
                 </div>
             </div>
 
-            <!-- ÁREA PRICING -->
-            <div id="area-resposta-pricing" style="display: none; margin-top: 10px;">
-                <label>Alterar Status:</label>
-                <select id="resposta-status">
-                    <option value="Aberto">Aberto (Na Fila)</option>
-                    <option value="Em Análise">Em Análise</option>
-                    <option value="Aprovado">Aprovado (Mantém na Fila / Inicia Timer)</option>
-                    <option value="Concluído">Concluído / Derrubado (Sai da Fila)</option>
-                    <option value="Negado">Negado (Sai da Fila)</option>
-                </select>
+            <!-- ÁREA PRICING / APROVAÇÃO -->
+            <div id="area-resposta-pricing" style="display: none; margin-top: 4px;">
+                <div class="label-acao-destaque">
+                    <span>Decisão / Ação:</span>
+                    <span class="badge-acao-dica">Selecione para aprovar ou reprovar</span>
+                </div>
+                <div class="select-status-wrapper">
+                    <select id="resposta-status" class="select-status-destaque">
+                        <option value="Aberto">⚪ Aberto (Manter na fila)</option>
+                        <option value="Em Análise">🟡 Em Análise (Aguardando verificação)</option>
+                        <option value="Aprovado">🟢 Aprovado (Autorizar Venda & Iniciar Timer)</option>
+                        <option value="Concluído">🔵 Concluído / Derrubado (Finalizar e arquivar)</option>
+                        <option value="Negado">🔴 Negado (Recusar solicitação)</option>
+                    </select>
+                </div>
 
-                <label>Resposta / Comentário do Pricing:</label>
-                <textarea id="resposta-texto" rows="3" placeholder="Deixe um comentário para o comprador..."></textarea>
+                <label style="margin-top: 12px; display: block; font-weight: 600; font-size: 0.85rem; color: var(--text-600);">Resposta / Observação do Pricing:</label>
+                <textarea id="resposta-texto" rows="3" placeholder="Insira aqui uma justificativa ou orientação para o solicitante..."></textarea>
                 
-                <button class="btn-primary" onclick="salvarResposta()" style="width: 100%; justify-content: center; margin-top: 10px;">Salvar Atualização</button>
+                <button class="btn-primary" onclick="salvarResposta()" style="width: 100%; justify-content: center; margin-top: 14px; padding: 12px; font-weight: 700; border-radius: 8px;">💾 Salvar e Aplicar Decisão</button>
             </div>
             
             <!-- VISÃO COMPRADOR -->
-            <div id="area-leitura-resposta" style="display: none; margin-top: 10px; background: #e0f2fe; padding: 15px; border-radius: 8px; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.9rem;">
-                <strong>Resposta do Pricing:</strong>
-                <p id="leitura-resposta-texto" style="margin-top: 5px;"></p>
+            <div id="area-leitura-resposta" style="display: none; margin-top: 10px; background: #e0f2fe; padding: 15px; border-radius: 10px; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.9rem;">
+                <strong>💬 Resposta do Pricing:</strong>
+                <p id="leitura-resposta-texto" style="margin-top: 5px; color: #0c4a6e; font-weight: 500;"></p>
             </div>
 
-            <div class="modal-buttons" id="botoes-detalhe">
+            <div class="modal-buttons" id="botoes-detalhe" style="margin-top: 8px;">
                 <button class="btn-cancel" onclick="fecharModais()" style="width: 100%;">Fechar Janela</button>
-                <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none; flex: 2;">✅ Preço Derrubado (Finalizar)</button>
+                <button class="btn-cancel" id="btn-derrubar-preco" onclick="confirmarDerrubadaTimer()" style="display: none; background: #ef4444; color: white; border: none; flex: 2; font-weight: 700;">✅ Preço Derrubado (Finalizar)</button>
             </div>
         </div>
     </div>
@@ -1132,12 +1306,62 @@
             document.getElementById('detalhe-produto').innerText = `${c.produtoCod} - ${c.produtoDesc}`;
             document.getElementById('detalhe-loja').innerText = c.lojas;
 
+            // Atualiza badge de status no topo do modal
+            const statusBadge = document.getElementById('detalhe-status-badge');
+            if (statusBadge) {
+                let badgeClass = "aberto";
+                if(c.status === "Em Análise") badgeClass = "analise";
+                if(c.status === "Aprovado") badgeClass = "aprovado";
+                if(c.status === "Concluído") badgeClass = "concluido";
+                if(c.status === "Negado") badgeClass = "negado";
+                statusBadge.className = `badge ${badgeClass} detalhe-badge-status`;
+                statusBadge.innerText = c.status || 'Aberto';
+            }
+
             let extras = '';
-            if(c.preco) extras += `<p><strong>Preço da Oferta:</strong> R$ ${c.preco}</p>`;
-            if(c.quantidade) extras += `<p><strong>Quantidade da Venda:</strong> ${c.quantidade} un</p>`;
-            if(c.justificativa) extras += `<p><strong>Justificativa:</strong> ${c.justificativa}</p>`;
-            if(c.analise) extras += `<p><strong>Análise Solicitada:</strong> ${c.analise}</p>`;
-            if(c.codPromo) extras += `<p><strong>Promo:</strong> ${c.codPromo} | <strong>De:</strong> ${c.dataIni} <strong>Até:</strong> ${c.dataFim}</p>`;
+            let temPills = false;
+            let pillsHtml = '<div class="info-pills-grid">';
+
+            if(c.preco) {
+                temPills = true;
+                pillsHtml += `
+                    <div class="info-pill">
+                        <span class="info-pill-title">Preço da Oferta</span>
+                        <span class="info-pill-val" style="color: #16a34a;">R$ ${c.preco}</span>
+                    </div>`;
+            }
+            if(c.quantidade) {
+                temPills = true;
+                pillsHtml += `
+                    <div class="info-pill">
+                        <span class="info-pill-title">Qtd. Solicitada</span>
+                        <span class="info-pill-val" style="color: #2563eb;">${c.quantidade} un</span>
+                    </div>`;
+            }
+            pillsHtml += '</div>';
+
+            if(temPills) extras += pillsHtml;
+
+            if(c.justificativa) {
+                extras += `
+                    <div style="margin-top: 10px; padding: 10px 12px; background: rgba(0,0,0,0.03); border-radius: 8px; border-left: 3px solid #3b82f6;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-600); text-transform: uppercase;">Justificativa do Comprador:</span>
+                        <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: var(--text-900); font-style: italic;">"${c.justificativa}"</p>
+                    </div>`;
+            }
+            if(c.analise) {
+                extras += `
+                    <div style="margin-top: 10px; padding: 10px 12px; background: rgba(0,0,0,0.03); border-radius: 8px; border-left: 3px solid #8b5cf6;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-600); text-transform: uppercase;">Análise Solicitada:</span>
+                        <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: var(--text-900);">${c.analise}</p>
+                    </div>`;
+            }
+            if(c.codPromo) {
+                extras += `
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-600);">
+                        <strong>Promoção:</strong> ${c.codPromo} | <strong>Vigência:</strong> ${c.dataIni} até ${c.dataFim}
+                    </div>`;
+            }
             document.getElementById('detalhe-extras').innerHTML = extras;
 
             const areaResposta = document.getElementById('area-resposta-pricing');
