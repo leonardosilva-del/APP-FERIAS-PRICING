@@ -129,7 +129,9 @@
         
         /* ANIMAÇÃO PARA O ALERTA CRÍTICO DE VENDA PONTUAL */
         .toast-urgente { background-color: #ef4444; border: 2px solid white; animation: slideIn 0.3s forwards, pulsarForte 1.5s infinite !important; }
+        .toast-timer { background-color: #ea580c; border: 2px solid #fed7aa; animation: slideIn 0.3s forwards, pulsarTimer 1.6s infinite !important; }
         @keyframes pulsarForte { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); } 100% { transform: scale(1); } }
+        @keyframes pulsarTimer { 0% { transform: scale(1); } 50% { transform: scale(1.02); box-shadow: 0 0 16px rgba(234, 88, 12, 0.85); } 100% { transform: scale(1); } }
 
         html.dark-theme .modal-content input, html.dark-theme .modal-content select, html.dark-theme .modal-content textarea { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
     </style>
@@ -360,37 +362,49 @@
 
         // VARIÁVEIS E SISTEMA DE ALERTA ROBUSTO
         let chamadosJaNotificados = new Set();
+        let chamadosTimerNotificados = new Set(); // Para alertas sonoros e toasts de timer extrapolado
         let chamadosConhecidos = new Set();
         let primeiraCargaFeita = false;
 
         // Gerador de Som Nativo (Web Audio API) - funciona 100% offline, sem links externos quebrados
         let audioCtxGlobal = null;
-        function getAudioContext() {
-            if (!audioCtxGlobal) {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (AudioCtx) audioCtxGlobal = new AudioCtx();
-            }
-            if (audioCtxGlobal && audioCtxGlobal.state === 'suspended') {
-                audioCtxGlobal.resume();
+        async function getAudioContext() {
+            try {
+                if (!audioCtxGlobal) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) audioCtxGlobal = new AudioCtx();
+                }
+                if (audioCtxGlobal && audioCtxGlobal.state === 'suspended') {
+                    await audioCtxGlobal.resume();
+                }
+            } catch (err) {
+                console.warn("Aviso ao inicializar AudioContext:", err);
             }
             return audioCtxGlobal;
         }
-        ['click', 'touchstart', 'keydown'].forEach(evt => {
-            window.addEventListener(evt, () => getAudioContext(), { passive: true, once: false });
+
+        // Desbloqueia áudio imediatamente ao primeiro toque/clique em qualquer lugar da tela
+        ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+            window.addEventListener(evt, () => {
+                getAudioContext();
+            }, { passive: true });
         });
 
-        function tocarAlarmeSonoro() {
+        async function tocarAlarmeSonoro() {
             try {
-                const ctx = getAudioContext();
+                const ctx = await getAudioContext();
                 if (!ctx) return;
+                if (ctx.state === 'suspended') {
+                    await ctx.resume();
+                }
                 const agora = ctx.currentTime;
-                // Sirene / Bipes de emergência potentes e nítidos
+                // Sirene / Bipes de emergência potentes e nítidos (Venda Pontual Solicitada)
                 [0, 0.22, 0.44, 0.70, 0.92, 1.14].forEach((t, i) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = i % 2 === 0 ? 'sine' : 'triangle';
                     osc.frequency.setValueAtTime(i % 2 === 0 ? 980 : 1250, agora + t);
-                    gain.gain.setValueAtTime(0.4, agora + t);
+                    gain.gain.setValueAtTime(0.45, agora + t);
                     gain.gain.exponentialRampToValueAtTime(0.001, agora + t + 0.18);
                     osc.connect(gain);
                     gain.connect(ctx.destination);
@@ -399,6 +413,32 @@
                 });
             } catch(e) {
                 console.warn("Áudio suspenso ou bloqueado:", e);
+            }
+        }
+
+        async function tocarAlarmeTimerExtrapolado() {
+            try {
+                const ctx = await getAudioContext();
+                if (!ctx) return;
+                if (ctx.state === 'suspended') {
+                    await ctx.resume();
+                }
+                const agora = ctx.currentTime;
+                // Bip duplo grave/agudo característico de tempo esgotado / atenção
+                [0, 0.25, 0.50, 0.75].forEach((t, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(i % 2 === 0 ? 650 : 880, agora + t);
+                    gain.gain.setValueAtTime(0.35, agora + t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, agora + t + 0.20);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(agora + t);
+                    osc.stop(agora + t + 0.21);
+                });
+            } catch(e) {
+                console.warn("Áudio timer bloqueado:", e);
             }
         }
 
@@ -543,6 +583,34 @@
                     <strong>Produto:</strong> ${chamado.produtoCod || ''} - ${chamado.produtoDesc || ''}
                 </div>
                 <button onclick="this.closest('.toast').remove(); abrirDetalhes('${chamado.id}')" style="background: white; color: #ef4444; border: none; padding: 10px; border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.95rem; text-transform: uppercase;">ANALISAR AGORA</button>
+            `;
+            container.appendChild(toast);
+        }
+
+        // NOVO: ALERTA PARA QUANDO O TIMER FOR EXTRAPOLADO (GESTOR E QUEM APROVOU)
+        window.dispararAlertaTimerExtrapolado = function(chamado) {
+            tocarAlarmeTimerExtrapolado();
+
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const idExistente = document.getElementById(`toast-timer-${chamado.id}`);
+            if (idExistente) return;
+
+            const toast = document.createElement('div');
+            toast.id = `toast-timer-${chamado.id}`;
+            toast.className = `toast toast-timer`;
+            toast.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                    <strong style="font-size: 1.12rem; display: block; margin-bottom: 8px;">⏱️ TEMPO ESGOTADO - DERRUBAR PREÇO!</strong>
+                    <button onclick="this.closest('.toast').remove()" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.3rem; font-weight: bold; line-height: 1;">×</button>
+                </div>
+                <div style="margin-bottom: 12px; font-size: 0.9rem; line-height: 1.4;">
+                    <strong>Produto:</strong> ${chamado.produtoCod || ''} - ${chamado.produtoDesc || ''}<br>
+                    <strong>Loja:</strong> ${chamado.lojas || '-'}<br>
+                    <strong>Aprovado por:</strong> ${chamado.aprovadoPor || 'Pricing/Gestor'}
+                </div>
+                <button onclick="this.closest('.toast').remove(); abrirDetalhes('${chamado.id}')" style="background: white; color: #ea580c; border: none; padding: 10px; border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.95rem; text-transform: uppercase;">DERRUBAR PREÇO AGORA</button>
             `;
             container.appendChild(toast);
         }
@@ -805,6 +873,32 @@
                     arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
                 }
 
+                // Alerta para quando o timer é extrapolado (apenas Gestor ou quem aprovou)
+                const novosExpirados = [];
+                arrayChamadosAtuais.forEach(c => {
+                    const ehPontual = isVendaPontual(c.tipo);
+                    const estaExpirado = c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm;
+                    if (ehPontual && estaExpirado) {
+                        const ehGestorOuPricing = perfilNorm === "gestor" || perfilNorm === "pricing";
+                        const ehQuemAprovou = c.aprovadoPorUid === auth.currentUser.uid;
+                        if (ehGestorOuPricing || ehQuemAprovou) {
+                            if (!chamadosTimerNotificados.has(c.id)) {
+                                chamadosTimerNotificados.add(c.id);
+                                novosExpirados.push(c);
+                            }
+                        }
+                    }
+                });
+
+                if (novosExpirados.length > 0) {
+                    // Toca o alarme de timer extrapolado
+                    tocarAlarmeTimerExtrapolado();
+                    novosExpirados.forEach(c => {
+                        dispararAlertaTimerExtrapolado(c);
+                        notificarDesktop("⏱️ TEMPO ESGOTADO - Venda Pontual!", `Produto: ${c.produtoCod} - ${c.produtoDesc}\nDerrubar preço imediatamente no sistema!`);
+                    });
+                }
+
                 // Controle dos Alertas na Aba do Navegador
                 const expirados = arrayChamadosAtuais.filter(c => isVendaPontual(c.tipo) && c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm).length;
                 const outrosAbertos = arrayChamadosAtuais.filter(c => !isVendaPontual(c.tipo) && (c.status === "Aberto" || c.status === "Em Análise")).length;
@@ -820,6 +914,28 @@
                 }
 
             } else {
+                // Usuário comum (Comprador/Colaborador)
+                // Se ele por acaso for quem aprovou algum chamado, também verifica se o timer extrapolou
+                const agora = Date.now();
+                const meusExpiradosAprovados = [];
+                arrayChamadosAtuais.forEach(c => {
+                    const ehPontual = isVendaPontual(c.tipo);
+                    const estaExpirado = c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm;
+                    if (ehPontual && estaExpirado && c.aprovadoPorUid === auth.currentUser.uid) {
+                        if (!chamadosTimerNotificados.has(c.id)) {
+                            chamadosTimerNotificados.add(c.id);
+                            meusExpiradosAprovados.push(c);
+                        }
+                    }
+                });
+                if (meusExpiradosAprovados.length > 0) {
+                    tocarAlarmeTimerExtrapolado();
+                    meusExpiradosAprovados.forEach(c => {
+                        dispararAlertaTimerExtrapolado(c);
+                        notificarDesktop("⏱️ TEMPO ESGOTADO - Venda Pontual!", `Produto: ${c.produtoCod} - ${c.produtoDesc}\nDerrubar preço imediatamente no sistema!`);
+                    });
+                }
+
                 arrayChamadosAtuais = arrayChamadosAtuais.filter(c => c.solicitanteId === auth.currentUser.uid);
                 atualizarAlertaAba('nenhum', 0);
             }
@@ -937,7 +1053,10 @@
                 if(c.status === "Negado") badgeClass = "negado";
                 
                 let htmlAlertaTimer = '';
-                if (c.timerExpiraEm && !c.timerResolvido && (perfilUsuario === "Gestor" || perfilUsuario === "Pricing")) {
+                const ehGestorOuPricing = perfilUsuario === "Gestor" || perfilUsuario === "Pricing";
+                const ehQuemAprovou = c.aprovadoPorUid === auth.currentUser?.uid;
+
+                if (c.timerExpiraEm && !c.timerResolvido && (ehGestorOuPricing || ehQuemAprovou)) {
                     if (agora > c.timerExpiraEm) {
                         htmlAlertaTimer = `<div class="alerta-timer-card">⚠️ TEMPO ESGOTADO - DERRUBAR PREÇO AGORA!</div>`;
                     } else {
@@ -977,6 +1096,34 @@
 
         setInterval(() => {
             if (arrayChamadosAtuais.length > 0) {
+                // Checa se algum chamado teve seu timer esgotado neste intervalo
+                const agora = Date.now();
+                const perfilNorm = (perfilUsuario || "").trim().toLowerCase();
+                const ehGestorOuPricing = perfilNorm === "gestor" || perfilNorm === "pricing";
+                const novosExpiradosNoTick = [];
+
+                arrayChamadosAtuais.forEach(c => {
+                    const ehPontual = isVendaPontual(c.tipo);
+                    const estaExpirado = c.status === "Aprovado" && c.timerExpiraEm && !c.timerResolvido && agora > c.timerExpiraEm;
+                    if (ehPontual && estaExpirado) {
+                        const ehQuemAprovou = c.aprovadoPorUid === auth.currentUser?.uid;
+                        if (ehGestorOuPricing || ehQuemAprovou) {
+                            if (!chamadosTimerNotificados.has(c.id)) {
+                                chamadosTimerNotificados.add(c.id);
+                                novosExpiradosNoTick.push(c);
+                            }
+                        }
+                    }
+                });
+
+                if (novosExpiradosNoTick.length > 0) {
+                    tocarAlarmeTimerExtrapolado();
+                    novosExpiradosNoTick.forEach(c => {
+                        dispararAlertaTimerExtrapolado(c);
+                        notificarDesktop("⏱️ TEMPO ESGOTADO - Venda Pontual!", `Produto: ${c.produtoCod} - ${c.produtoDesc}\nDerrubar preço imediatamente no sistema!`);
+                    });
+                }
+
                 aplicarFiltros();
             }
         }, 10000);
@@ -1005,7 +1152,10 @@
             
             areaResposta.style.display = 'none'; areaLeitura.style.display = 'none'; btnDerrubar.style.display = 'none';
 
-            if(perfilUsuario === "Gestor" || perfilUsuario === "Pricing") {
+            const ehGestorOuPricing = perfilUsuario === "Gestor" || perfilUsuario === "Pricing";
+            const ehQuemAprovou = c.aprovadoPorUid === auth.currentUser?.uid;
+
+            if(ehGestorOuPricing || ehQuemAprovou) {
                 areaResposta.style.display = 'block';
                 document.getElementById('resposta-status').value = c.status;
                 document.getElementById('resposta-texto').value = c.respostaTexto || '';
@@ -1031,6 +1181,8 @@
             if(c.tipo.includes("3") && status === "Aprovado" && !c.timerExpiraEm) {
                 updates.timerExpiraEm = Date.now() + (timerPadraoMinutos * 60 * 1000);
                 updates.timerResolvido = false;
+                updates.aprovadoPor = dadosUsuario.nome || auth.currentUser.displayName || auth.currentUser.email;
+                updates.aprovadoPorUid = auth.currentUser.uid;
                 showToast(`Venda aprovada! O timer de ${timerPadraoMinutos} min começou.`, "success");
             } else {
                 showToast("Resposta salva com sucesso!");
