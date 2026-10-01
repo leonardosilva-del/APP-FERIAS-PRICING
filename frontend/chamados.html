@@ -560,8 +560,8 @@
         }
 
         // FUNÇÃO DE ALERTA GIGANTE E SONORO PARA PRICING
-        window.dispararAlertaVendaPontual = function(chamado) {
-            tocarAlarmeSonoro();
+        window.dispararAlertaVendaPontual = function(chamado, tocarSom = true) {
+            if (tocarSom) tocarAlarmeSonoro();
 
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -588,8 +588,8 @@
         }
 
         // NOVO: ALERTA PARA QUANDO O TIMER FOR EXTRAPOLADO (GESTOR E QUEM APROVOU)
-        window.dispararAlertaTimerExtrapolado = function(chamado) {
-            tocarAlarmeTimerExtrapolado();
+        window.dispararAlertaTimerExtrapolado = function(chamado, tocarSom = true) {
+            if (tocarSom) tocarAlarmeTimerExtrapolado();
 
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -853,20 +853,14 @@
                 if (!primeiraCargaFeita) {
                     primeiraCargaFeita = true;
                     arrayChamadosAtuais.forEach(c => chamadosConhecidos.add(c.id));
-
-                    if (abertosPontual.length > 0) {
-                        tocarAlarmeSonoro();
-                        abertosPontual.slice(0, 2).forEach(c => dispararAlertaVendaPontual(c));
-                        if (abertosPontual.length > 2) {
-                            showToast(`🚨 Há ${abertosPontual.length} Vendas Pontuais aguardando aprovação!`, "error");
-                        }
-                    }
+                    // Marca os chamados em aberto atuais como já conhecidos, para não apitar novamente se o usuário já viu em outra tela
+                    abertosPontual.forEach(c => chamadosJaNotificados.add(c.id));
                 } else {
-                    // Tempo real (WebSocket ou Polling de Segundo Plano)
+                    // Tempo real: apenas novos chamados que chegarem enquanto a tela de chamados já estiver aberta
                     if (novosPontuais.length > 0) {
                         tocarAlarmeSonoro();
                         novosPontuais.forEach(c => {
-                            dispararAlertaVendaPontual(c);
+                            dispararAlertaVendaPontual(c, false);
                             notificarDesktop("🚨 Nova Venda Pontual Solicitada!", `Comprador: ${c.solicitante || 'Comercial'} | Loja: ${c.lojas || '-'}\n${c.produtoDesc || c.produtoCod || ''}`);
                         });
                     }
