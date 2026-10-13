@@ -12,7 +12,7 @@
 
     <!-- METATAGS OPEN GRAPH -->
     <meta property="og:title" content="Cronograma de Inauguração - Pricing ;DD">
-    <meta property="og:description" content="Acompanhe o checklist, contagem regressiva e checkpoints das inaugurações.">
+    <meta property="og:description" content="Checklist sequencial de inauguração com contagem regressiva e progresso em tempo real.">
     <meta property="og:image" content="https://intranetpricing.onrender.com/logo.png">
     <meta property="og:url" content="https://intranetpricing.onrender.com/inauguracao.html">
 
@@ -49,6 +49,8 @@
             --border-subtle: #f1f5f9;
             --ring-focus: rgba(37, 99, 235, 0.15);
             --pill-bg: #f1f5f9;
+            --table-hover: #f8fafc;
+            --table-header: #f1f5f9;
         }
 
         html.dark-theme {
@@ -60,6 +62,8 @@
             --border-subtle: #1e293b;
             --ring-focus: rgba(96, 165, 250, 0.2);
             --pill-bg: #0f172a;
+            --table-hover: #17255420;
+            --table-header: #0f172a;
         }
 
         * {
@@ -337,7 +341,7 @@
 
         .progress-track {
             position: relative;
-            height: 12px;
+            height: 14px;
             background: rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             overflow: visible;
@@ -441,171 +445,116 @@
             margin-top: 3px;
         }
 
-        /* SEÇÃO DE CHECKLIST E FASES */
-        .checklist-container {
+        /* TABELA ÚNICA DE CHECKLIST (TABELÃO EXECUTIVO) */
+        .table-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
         }
 
-        .checklist-header {
+        .table-card-header {
+            padding: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.01);
         }
 
-        .section-title {
+        .table-title-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .table-title {
             font-size: 1.3rem;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .fase-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
-            overflow: hidden;
-            transition: border-color 0.2s;
-        }
-
-        .fase-card.destaque-critico {
-            border-left: 5px solid #2563eb;
-        }
-
-        .fase-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem 1.5rem;
-            background: rgba(0, 0, 0, 0.015);
-            border-bottom: 1px solid var(--border);
-            user-select: none;
-            transition: background 0.2s;
-        }
-
-        .fase-header:hover {
-            background: rgba(0, 0, 0, 0.03);
-        }
-
-        html.dark-theme .fase-header {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        html.dark-theme .fase-header:hover {
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .fase-title-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .fase-badge {
-            background: var(--pill-bg);
+        .table-subtitle {
+            font-size: 0.85rem;
             color: var(--text-muted);
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            white-space: nowrap;
         }
 
-        .fase-badge.badge-pricing {
-            background: #dbeafe;
-            color: #1e40af;
-            border-color: #bfdbfe;
-        }
-
-        html.dark-theme .fase-badge.badge-pricing {
-            background: #1e3a8a;
-            color: #93c5fd;
-            border-color: #2563eb;
-        }
-
-        .fase-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .btn-edit-fase {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
-        }
-
-        .btn-edit-fase:hover {
-            background: var(--pill-bg);
-            color: var(--primary);
-            border-color: var(--border);
-        }
-
-        .fase-right-actions {
+        .table-actions {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .fase-progress-pill {
-            font-size: 0.8rem;
+        .btn-add-primary {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.88rem;
             font-weight: 600;
-            color: var(--text-muted);
-            display: flex;
+            cursor: pointer;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
         }
 
-        /* LISTA DE CHECKPOINTS */
-        .checkpoints-list {
-            display: flex;
-            flex-direction: column;
+        .btn-add-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
         }
 
-        .checkpoint-item {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.5rem;
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .checklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .checklist-table th {
+            background: var(--table-header);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 12px 18px;
             border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .checklist-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+            vertical-align: middle;
             transition: background 0.15s;
         }
 
-        .checkpoint-item:last-child {
-            border-bottom: none;
+        .checklist-table tbody tr:hover td {
+            background-color: var(--table-hover);
         }
 
-        .checkpoint-item:hover {
-            background: rgba(0, 0, 0, 0.01);
+        .checklist-table tbody tr.concluido td {
+            background-color: rgba(16, 185, 129, 0.03);
         }
 
-        html.dark-theme .checkpoint-item:hover {
-            background: rgba(255, 255, 255, 0.015);
-        }
-
-        .checkpoint-item.concluido {
-            opacity: 0.75;
-        }
-
-        .checkpoint-item.concluido .checkpoint-titulo {
+        .checklist-table tbody tr.concluido .task-title {
             text-decoration: line-through;
             color: var(--text-muted);
         }
@@ -622,6 +571,7 @@
             position: relative;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             background: var(--card-bg);
+            display: block;
         }
 
         .custom-checkbox:hover {
@@ -645,38 +595,40 @@
             transform: rotate(45deg);
         }
 
-        .checkpoint-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        .col-seq {
+            font-weight: 700;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            width: 50px;
+            text-align: center;
         }
 
-        .checkpoint-titulo {
-            font-size: 0.95rem;
+        .task-title {
             font-weight: 600;
             color: var(--text-main);
-            transition: color 0.2s;
-        }
-
-        .checkpoint-sub {
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
+        }
+
+        .task-details {
             font-size: 0.75rem;
             color: var(--text-muted);
+            margin-top: 4px;
         }
 
         .pill-setor {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
             font-size: 0.72rem;
             background: var(--pill-bg);
             border: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         .pill-setor.pricing {
@@ -691,17 +643,39 @@
             border-color: #3b82f6;
         }
 
-        .checkpoint-meta {
-            display: flex;
+        .pill-status {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
         }
 
-        .checkpoint-date {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            white-space: nowrap;
+        .pill-status.pendente {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .pill-status.concluido {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        html.dark-theme .pill-status.pendente {
+            background: #78350f30;
+            color: #fde68a;
+            border-color: #78350f;
+        }
+
+        html.dark-theme .pill-status.concluido {
+            background: #064e3b30;
+            color: #a7f3d0;
+            border-color: #064e3b;
         }
 
         .btn-action-cp {
@@ -709,15 +683,13 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            padding: 5px;
+            padding: 6px;
             border-radius: 6px;
-            font-size: 0.85rem;
-            opacity: 0.6;
+            font-size: 0.95rem;
             transition: 0.2s;
         }
 
         .btn-action-cp:hover {
-            opacity: 1;
             color: var(--primary);
             background: var(--pill-bg);
         }
@@ -725,65 +697,6 @@
         .btn-action-cp.delete:hover {
             color: var(--danger);
             background: #fee2e2;
-        }
-
-        /* DIÁRIO DE PREÇO ZERO (ROUTINE SPECIAL CARD) */
-        .diario-zero-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 10px;
-            padding: 1rem 1.5rem;
-            background: var(--pill-bg);
-            border-top: 1px dashed var(--border);
-        }
-
-        .dia-zero-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .dia-zero-item:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary);
-        }
-
-        .dia-zero-item.feito {
-            background: #ecfdf5;
-            border-color: #a7f3d0;
-        }
-
-        html.dark-theme .dia-zero-item.feito {
-            background: #064e3b;
-            border-color: #059669;
-        }
-
-        .dia-zero-tag {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .dia-zero-status {
-            font-size: 0.68rem;
-            color: var(--text-muted);
-        }
-
-        .dia-zero-item.feito .dia-zero-status {
-            color: #059669;
-            font-weight: 700;
-        }
-
-        html.dark-theme .dia-zero-item.feito .dia-zero-status {
-            color: #a7f3d0;
         }
 
         /* MODAL GERAL */
@@ -914,8 +827,6 @@
             body { padding: 1rem; }
             .cockpit-card { padding: 1.25rem; }
             .countdown-num { font-size: 1.6rem; }
-            .checkpoint-item { grid-template-columns: auto 1fr; }
-            .checkpoint-meta { grid-column: span 2; justify-content: flex-end; }
         }
     </style>
 </head>
@@ -1002,11 +913,11 @@
                 </div>
             </div>
 
-            <!-- LINHA DO TEMPO / PROGRESSO -->
+            <!-- LINHA DO TEMPO / PROGRESSO VIVO -->
             <div class="timeline-section">
                 <div class="timeline-header-info">
-                    <span><strong>Progresso Geral dos Checkpoints</strong></span>
-                    <span id="lbl-progresso-percent">0% Concluído</span>
+                    <span><strong>Progresso Geral do Checklist de Inauguração</strong></span>
+                    <span id="lbl-progresso-percent" style="font-size: 1.1rem; font-weight: 800; color: #38bdf8;">0% Concluído</span>
                 </div>
                 <div class="progress-track">
                     <div id="bar-progresso-fill" class="progress-fill" style="width: 0%;"></div>
@@ -1015,7 +926,7 @@
                     <div id="ms-d30" class="milestone-item">
                         <span class="milestone-dot"></span>
                         <span>D - 30</span>
-                        <small style="opacity: 0.7;">Prévia</small>
+                        <small style="opacity: 0.7;">Planejamento</small>
                     </div>
                     <div id="ms-d7" class="milestone-item">
                         <span class="milestone-dot"></span>
@@ -1047,7 +958,7 @@
                 <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">✅</div>
                 <div class="stat-info">
                     <span id="stat-total-concluido" class="stat-value">0</span>
-                    <span class="stat-label">Checkpoints Concluídos</span>
+                    <span class="stat-label">Tarefas Concluídas</span>
                 </div>
             </div>
 
@@ -1055,160 +966,83 @@
                 <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">⏳</div>
                 <div class="stat-info">
                     <span id="stat-total-pendente" class="stat-value">0</span>
-                    <span class="stat-label">Tarefas em Aberto</span>
+                    <span class="stat-label">Demandas em Aberto</span>
                 </div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #dc2626;">🚨</div>
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">📊</div>
                 <div class="stat-info">
-                    <span id="stat-total-zero" class="stat-value">0/7</span>
-                    <span class="stat-label">Rotinas Preço Zero OK</span>
+                    <span id="stat-total-tarefas" class="stat-value">0</span>
+                    <span class="stat-label">Total de Demandas</span>
                 </div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">🏷️</div>
+                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">📈</div>
                 <div class="stat-info">
-                    <span id="stat-total-ofertas" class="stat-value">0%</span>
-                    <span class="stat-label">Ofertas & Sistema</span>
+                    <span id="stat-taxa-conclusao" class="stat-value">0%</span>
+                    <span class="stat-label">Taxa de Conclusão</span>
                 </div>
             </div>
         </section>
 
-        <!-- SEÇÃO PRINCIPAL DE CHECKLISTS -->
-        <section class="checklist-container">
-            <div class="checklist-header">
-                <h2 class="section-title">
-                    <span>📋 Checkpoints Operacionais de Precificação</span>
-                </h2>
-                <div style="display: flex; gap: 8px;">
-                    <button id="btn-add-checkpoint" class="btn-nav">
-                        + Adicionar Tarefa
+        <!-- 📋 TABELÃO ÚNICO SEQUENCIAL DE CHECKLIST -->
+        <section class="table-card">
+            <div class="table-card-header">
+                <div class="table-title-box">
+                    <h2 class="table-title">
+                        <span>📋 Checklist Oficial de Inauguração</span>
+                    </h2>
+                    <p class="table-subtitle">Tabela sequencial de atividades, prazos e controle de entrega da filial.</p>
+                </div>
+                <div class="table-actions">
+                    <button id="btn-add-checkpoint" class="btn-add-primary">
+                        + Nova Demanda / Tarefa
                     </button>
                 </div>
             </div>
 
-            <!-- FASE 1: PREPARAÇÃO PRÉVIA -->
-            <div class="fase-card">
-                <div class="fase-header">
-                    <div class="fase-title-group">
-                        <span class="fase-badge">Fase 1</span>
-                        <span id="fase-1-titulo" class="fase-title">1. Planejamento & Cadastro Base (D-30 ao D-8)</span>
-                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_1')" title="Editar Nome da Etapa">
-                            ✏️ Editar Etapa
-                        </button>
-                    </div>
-                    <div class="fase-right-actions">
-                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-1-list')">
-                            <span id="prog-fase-1">0/3</span>
-                            <span>▼</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="fase-1-list" class="checkpoints-list">
-                    <!-- Renderizado dinamicamente -->
-                </div>
+            <div class="table-responsive">
+                <table class="checklist-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px; text-align: center;">Status</th>
+                            <th class="col-seq">#</th>
+                            <th>Atividade / Demanda</th>
+                            <th>Setor</th>
+                            <th>Prazo / Data Limite</th>
+                            <th>Conclusão</th>
+                            <th style="width: 80px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-checkpoints">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Carregando atividades da filial...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-
-            <!-- FASE 2: SEMANA CRÍTICA DE PRECIFICAÇÃO (1 SEMANA ANTES & PREÇO ZERO DIÁRIO) -->
-            <div class="fase-card destaque-critico">
-                <div class="fase-header">
-                    <div class="fase-title-group">
-                        <span class="fase-badge badge-pricing">⭐ Semana Crítica Pricing (D-7 ao D-1)</span>
-                        <span id="fase-2-titulo" class="fase-title">2. Precificação Geral & Rotina Diária de Preço Zero</span>
-                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_2')" title="Editar Nome da Etapa">
-                            ✏️ Editar Etapa
-                        </button>
-                    </div>
-                    <div class="fase-right-actions">
-                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-2-list')">
-                            <span id="prog-fase-2">0/5</span>
-                            <span>▼</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- DIÁRIO D-7 A D-1 PARA PRODUTOS PREÇO ZERO -->
-                <div style="padding: 1rem 1.5rem 0.5rem 1.5rem;">
-                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 4px;">
-                        🎯 Rotina Diária: Varredura de Produtos com Preço Zero (Consinco)
-                    </span>
-                    <span style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 10px;">
-                        Todos os dias a partir de 1 semana antes da inauguração, a base de itens com preço zerado deve ser auditada e saneada.
-                    </span>
-                </div>
-                <div id="grid-preco-zero" class="diario-zero-grid">
-                    <!-- Cards D-7 até D-1 -->
-                </div>
-
-                <div id="fase-2-list" class="checkpoints-list">
-                    <!-- Itens adicionais da Fase 2 -->
-                </div>
-            </div>
-
-            <!-- FASE 3: OFERTAS E PROGRAMAÇÃO DE PREÇOS -->
-            <div class="fase-card">
-                <div class="fase-header">
-                    <div class="fase-title-group">
-                        <span class="fase-badge">Fase 3</span>
-                        <span id="fase-3-titulo" class="fase-title">3. Ofertas de Inauguração & Programação no Sistema</span>
-                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_3')" title="Editar Nome da Etapa">
-                            ✏️ Editar Etapa
-                        </button>
-                    </div>
-                    <div class="fase-right-actions">
-                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-3-list')">
-                            <span id="prog-fase-3">0/4</span>
-                            <span>▼</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="fase-3-list" class="checkpoints-list">
-                    <!-- Renderizado dinamicamente -->
-                </div>
-            </div>
-
-            <!-- FASE 4: VIRADA DE LOJA & CARGA FINAL PDV -->
-            <div class="fase-card">
-                <div class="fase-header">
-                    <div class="fase-title-group">
-                        <span class="fase-badge">Fase 4</span>
-                        <span id="fase-4-titulo" class="fase-title">4. Auditoria Final, Carga PDV & Abertura (D-1 e D-0)</span>
-                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_4')" title="Editar Nome da Etapa">
-                            ✏️ Editar Etapa
-                        </button>
-                    </div>
-                    <div class="fase-right-actions">
-                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-4-list')">
-                            <span id="prog-fase-4">0/4</span>
-                            <span>▼</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="fase-4-list" class="checkpoints-list">
-                    <!-- Renderizado dinamicamente -->
-                </div>
-            </div>
-
         </section>
 
     </main>
 
-    <!-- MODAL DE CRIAR/EDITAR NOVA INAUGURAÇÃO -->
+    <!-- MODAL DE CRIAR NOVA INAUGURAÇÃO -->
     <div id="modal-loja" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title">Cadastrar Inauguração de Filial</h3>
             <div class="form-group">
                 <label class="form-label">Nome da Filial / Loja *</label>
-                <input type="text" id="inp-loja-nome" class="form-input" placeholder="Ex: Loja 52 - Samambaia Norte">
+                <input type="text" id="inp-loja-nome" class="form-input" placeholder="Ex: 1068 - Sobradinho 2">
             </div>
             <div class="form-group">
                 <label class="form-label">Data da Inauguração *</label>
                 <input type="date" id="inp-loja-data" class="form-input">
             </div>
             <div class="form-group">
-                <label class="form-label">Horário de Abertura dos Portões (Opcional)</label>
+                <label class="form-label">Horário de Abertura dos Portões</label>
                 <input type="time" id="inp-loja-hora" class="form-input" value="08:00">
             </div>
             <div class="form-group">
@@ -1222,26 +1056,17 @@
         </div>
     </div>
 
-    <!-- MODAL ADICIONAR / EDITAR CHECKPOINT -->
+    <!-- MODAL ADICIONAR / EDITAR TAREFA DO TABELÃO -->
     <div id="modal-checkpoint" class="modal-overlay">
         <div class="modal-content">
-            <h3 id="modal-cp-titulo-header" class="modal-title">Novo Checkpoint</h3>
+            <h3 id="modal-cp-titulo-header" class="modal-title">Nova Atividade / Demanda</h3>
             <input type="hidden" id="inp-cp-edit-id" value="">
             <div class="form-group">
-                <label class="form-label">Fase do Checkpoint</label>
-                <select id="inp-cp-fase" class="form-input">
-                    <option value="fase_1">Fase 1</option>
-                    <option value="fase_2">Fase 2 (Semana Crítica)</option>
-                    <option value="fase_3">Fase 3 (Ofertas & Sistema)</option>
-                    <option value="fase_4">Fase 4 (Virada de Loja & PDV)</option>
-                </select>
+                <label class="form-label">Título da Atividade / Demanda *</label>
+                <input type="text" id="inp-cp-titulo" class="form-input" placeholder="Ex: Carga de preços no Consinco e verificação de Preço Zero">
             </div>
             <div class="form-group">
-                <label class="form-label">Título da Atividade *</label>
-                <input type="text" id="inp-cp-titulo" class="form-input" placeholder="Ex: Conferir etiquetas de frios e laticínios">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Setor Envolvido</label>
+                <label class="form-label">Setor Responsável</label>
                 <select id="inp-cp-setor" class="form-input">
                     <option value="Pricing">📊 Pricing</option>
                     <option value="Comercial">🛒 Comercial</option>
@@ -1256,23 +1081,7 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="window.fecharModalCp()">Cancelar</button>
-                <button type="button" class="btn-primary" id="btn-salvar-cp">Salvar Tarefa</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL EDITAR NOME DA FASE/ETAPA -->
-    <div id="modal-fase" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="modal-title">Editar Nome da Etapa</h3>
-            <input type="hidden" id="inp-fase-key" value="">
-            <div class="form-group">
-                <label class="form-label">Título Personalizado da Etapa *</label>
-                <input type="text" id="inp-fase-titulo" class="form-input" placeholder="Ex: 1. Planejamento & Cadastro Base (D-30 ao D-8)">
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" onclick="window.fecharModalFase()">Cancelar</button>
-                <button type="button" class="btn-primary" id="btn-salvar-fase">Atualizar Etapa</button>
+                <button type="button" class="btn-primary" id="btn-salvar-cp">Salvar Demanda</button>
             </div>
         </div>
     </div>
@@ -1292,40 +1101,6 @@
         let lojaAtivaId = null;
         let countdownTimer = null;
 
-        // FASES PADRÃO
-        const NOMES_FASES_PADRAO = {
-            "fase_1": "1. Planejamento & Cadastro Base (D-30 ao D-8)",
-            "fase_2": "2. Precificação Geral & Rotina Diária de Preço Zero",
-            "fase_3": "3. Ofertas de Inauguração & Programação no Sistema",
-            "fase_4": "4. Auditoria Final, Carga PDV & Abertura (D-1 e D-0)"
-        };
-
-        // CHECKPOINTS PADRÃO BASEADOS NA ROTINA DE PRICING E INAUGURAÇÃO
-        const CHECKPOINTS_PADRAO = {
-            "fase_1": [
-                { id: "cp_1_1", titulo: "Definição do raio de concorrência e concorrentes-alvo", setor: "Pricing", diasAntes: 25 },
-                { id: "cp_1_2", titulo: "Pesquisa de preços pré-inauguração concluída", setor: "Pricing", diasAntes: 20 },
-                { id: "cp_1_3", titulo: "Parametrização inicial de tributação e margens da nova filial", setor: "Pricing", diasAntes: 15 }
-            ],
-            "fase_2": [
-                { id: "cp_2_1", titulo: "Abertura oficial da tabela de preços da nova filial no Consinco", setor: "Pricing", diasAntes: 7, critico: true },
-                { id: "cp_2_2", titulo: "Carga das regras de markup e margens meta por setor", setor: "Pricing", diasAntes: 6 },
-                { id: "cp_2_3", titulo: "Validação de itens com custo zerado ou pendente de entrada", setor: "Pricing", diasAntes: 4 }
-            ],
-            "fase_3": [
-                { id: "cp_3_1", titulo: "Recebimento da lista de ofertas de inauguração (Comercial)", setor: "Comercial", diasAntes: 7, critico: true },
-                { id: "cp_3_2", titulo: "Simulação de margem e impacto financeiro das ofertas", setor: "Pricing", diasAntes: 5 },
-                { id: "cp_3_3", titulo: "Programação e digitação das ofertas no sistema Consinco", setor: "Pricing", diasAntes: 3, critico: true },
-                { id: "cp_3_4", titulo: "Conferência final entre Encarte Gráfico x Sistema Consinco", setor: "Pricing", diasAntes: 2, critico: true }
-            ],
-            "fase_4": [
-                { id: "cp_4_1", titulo: "Disparo da Carga Geral de Preços para os servidores da nova loja", setor: "TI", diasAntes: 1, critico: true },
-                { id: "cp_4_2", titulo: "Varredura Final Preço Zero (Tolerância Zero antes da abertura)", setor: "Pricing", diasAntes: 1, critico: true },
-                { id: "cp_4_3", titulo: "Bipagem de amostra nos caixas (Conferência PDV x Gôndola)", setor: "Pricing", diasAntes: 1 },
-                { id: "cp_4_4", titulo: "Liberação do sinal verde de precificação para abertura dos portões", setor: "Pricing", diasAntes: 0, critico: true }
-            ]
-        };
-
         // TOAST
         window.showToast = (msg) => {
             const container = document.getElementById("toast-container");
@@ -1339,14 +1114,6 @@
             }, 3000);
         };
 
-        // TOGGLE ACORDEÃO
-        window.toggleFase = (listId) => {
-            const list = document.getElementById(listId);
-            if (list) {
-                list.style.display = list.style.display === "none" ? "flex" : "none";
-            }
-        };
-
         // SELETOR DE LOJA ATIVA
         const selectLojaEl = document.getElementById("select-loja-ativa");
         selectLojaEl.addEventListener("change", (e) => {
@@ -1354,62 +1121,32 @@
             renderLojaAtiva();
         });
 
-        // ESCUTAR NÓ DE INAUGURAÇÕES NO FIREBASE COM TRATAMENTO DE PERMISSÃO
+        // ESCUTAR NÓ DE INAUGURAÇÕES NO FIREBASE
         const inauguracoesRef = ref(db, 'inauguracoes');
         onValue(inauguracoesRef, (snapshot) => {
             lojasData = snapshot.val() || {};
-            
-            // Se o nó ainda estiver vazio no banco
-            if (Object.keys(lojasData).length === 0) {
-                // Tenta criar demonstração se for gestor/pricing, caso contrário exibe template local
-                criarLojaInicialDemonstracao();
-                return;
-            }
-
             popularSelectLojas();
             renderLojaAtiva();
         }, (error) => {
-            console.warn("Aviso de permissão Firebase no nó inauguracoes:", error);
-            // Se as regras do Firebase ainda não liberaram o nó 'inauguracoes', usar template local para não travar
-            if (!lojasData || Object.keys(lojasData).length === 0) {
-                lojasData = {
-                    "demo_local": {
-                        nome: "Loja 52 - Samambaia Norte (Modo Demonstração)",
-                        data_inauguracao: new Date(Date.now() + 14*86400000).toISOString(),
-                        gestor: window.userName || "Pricing",
-                        status: "Em Andamento",
-                        nomes_fases: NOMES_FASES_PADRAO,
-                        checkpoints: {},
-                        rotina_preco_zero: {
-                            "d_7": { feito: false, responsavel: "", data: "" },
-                            "d_6": { feito: false, responsavel: "", data: "" },
-                            "d_5": { feito: false, responsavel: "", data: "" },
-                            "d_4": { feito: false, responsavel: "", data: "" },
-                            "d_3": { feito: false, responsavel: "", data: "" },
-                            "d_2": { feito: false, responsavel: "", data: "" },
-                            "d_1": { feito: false, responsavel: "", data: "" }
-                        }
-                    }
-                };
-                Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
-                    CHECKPOINTS_PADRAO[faseKey].forEach(item => {
-                        lojasData["demo_local"].checkpoints[item.id] = {
-                            titulo: item.titulo,
-                            fase: faseKey,
-                            setor: item.setor,
-                            concluido: false,
-                            critico: !!item.critico
-                        };
-                    });
-                });
-                popularSelectLojas();
-                renderLojaAtiva();
-            }
+            console.warn("Aviso ao ler nó inauguracoes:", error);
+            lojasData = {};
+            popularSelectLojas();
+            renderLojaAtiva();
         });
 
         function popularSelectLojas() {
             selectLojaEl.innerHTML = "";
             const keys = Object.keys(lojasData);
+
+            if (keys.length === 0) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Nenhuma inauguração cadastrada";
+                selectLojaEl.appendChild(opt);
+                lojaAtivaId = null;
+                return;
+            }
+
             keys.forEach((key) => {
                 const opt = document.createElement("option");
                 opt.value = key;
@@ -1417,80 +1154,47 @@
                 selectLojaEl.appendChild(opt);
             });
 
+            // Se a loja ativa atual não existir mais na lista, seleciona a primeira disponível
             if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
                 lojaAtivaId = keys[0];
             }
             selectLojaEl.value = lojaAtivaId;
         }
 
-        // CRIA UMA LOJA DEMONSTRATIVA CASO O BANCO ESTEJA VAZIO
-        async function criarLojaInicialDemonstracao() {
-            const dataInaug = new Date();
-            dataInaug.setDate(dataInaug.getDate() + 14); // Em 14 dias
-            dataInaug.setHours(8, 0, 0, 0);
-
-            const novaLojaRef = push(inauguracoesRef);
-            const lojaDemo = {
-                nome: "Loja 52 - Samambaia Norte (Inauguração)",
-                data_inauguracao: dataInaug.toISOString(),
-                gestor: "Leonardo Silva",
-                status: "Em Andamento",
-                nomes_fases: NOMES_FASES_PADRAO,
-                checkpoints: {},
-                rotina_preco_zero: {
-                    "d_7": { feito: false, responsavel: "", data: "" },
-                    "d_6": { feito: false, responsavel: "", data: "" },
-                    "d_5": { feito: false, responsavel: "", data: "" },
-                    "d_4": { feito: false, responsavel: "", data: "" },
-                    "d_3": { feito: false, responsavel: "", data: "" },
-                    "d_2": { feito: false, responsavel: "", data: "" },
-                    "d_1": { feito: false, responsavel: "", data: "" }
-                }
-            };
-
-            // Adiciona checkpoints padrão
-            Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
-                CHECKPOINTS_PADRAO[faseKey].forEach(item => {
-                    lojaDemo.checkpoints[item.id] = {
-                        titulo: item.titulo,
-                        fase: faseKey,
-                        setor: item.setor,
-                        concluido: false,
-                        critico: !!item.critico,
-                        concluidoPor: "",
-                        concluidoEm: ""
-                    };
-                });
-            });
-
-            await set(novaLojaRef, lojaDemo);
-        }
-
         // RENDERIZAR A LOJA ATUALMENTE SELECIONADA
         function renderLojaAtiva() {
-            if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
+            if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
+                document.getElementById("loja-detalhes-sub").innerHTML = "Nenhuma inauguração selecionada. Clique em <strong>+ Nova Loja</strong> para começar.";
+                const badgeStatus = document.getElementById("badge-status-inauguracao");
+                if (badgeStatus) badgeStatus.textContent = "• Sem Loja Ativa";
+                document.getElementById("cnt-dias").textContent = "00";
+                document.getElementById("cnt-horas").textContent = "00";
+                document.getElementById("cnt-minutos").textContent = "00";
+                document.getElementById("bar-progresso-fill").style.width = "0%";
+                document.getElementById("lbl-progresso-percent").textContent = "0% Concluído";
+                if (countdownTimer) clearInterval(countdownTimer);
+
+                const tbody = document.getElementById("tbody-checkpoints");
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                                Nenhuma loja selecionada. Cadastre uma filial para gerenciar as demandas.
+                            </td>
+                        </tr>
+                    `;
+                }
+                atualizarCardsStats(0, 0);
+                return;
+            }
+
             const loja = lojasData[lojaAtivaId];
 
-            // Renderizar títulos das Fases (editáveis)
-            const nomesFases = loja.nomes_fases || NOMES_FASES_PADRAO;
-            ["fase_1", "fase_2", "fase_3", "fase_4"].forEach((fKey, idx) => {
-                const el = document.getElementById(`${fKey.replace('_', '-')}-titulo`);
-                if (el) {
-                    el.textContent = nomesFases[fKey] || NOMES_FASES_PADRAO[fKey];
-                }
-                // Atualiza também as opções do select de nova tarefa
-                const optSelect = document.querySelector(`#inp-cp-fase option[value="${fKey}"]`);
-                if (optSelect) {
-                    optSelect.textContent = nomesFases[fKey] || `Fase ${idx+1}`;
-                }
-            });
-
-            // Parser seguro de Data da Inauguração (suporta ISO, YYYY-MM-DD, e strings locais)
+            // Parser seguro de Data da Inauguração
             let dataInaug = null;
             if (loja.data_inauguracao) {
                 dataInaug = new Date(loja.data_inauguracao);
                 if (isNaN(dataInaug.getTime())) {
-                    // Tenta parser de data pura caso venha em formato YYYY-MM-DD
                     const partes = String(loja.data_inauguracao).split(/[-T :]/);
                     if (partes.length >= 3) {
                         dataInaug = new Date(partes[0], partes[1] - 1, partes[2], partes[3] || 8, partes[4] || 0);
@@ -1513,14 +1217,8 @@
             // Iniciar Relógio Contagem Regressiva
             iniciarCountdown(dataInaug);
 
-            // Renderizar Checkpoints por Fase
-            renderCheckpoints(loja);
-
-            // Renderizar Grade Diária Preço Zero
-            renderGridPrecoZero(loja);
-
-            // Calcular Estatísticas & Progresso
-            calcularEstatisticas(loja);
+            // Renderizar Tabelão Único
+            renderTabelaoCheckpoints(loja);
         }
 
         // COUNTDOWN TIMER
@@ -1546,7 +1244,6 @@
                 const diff = targetDate.getTime() - agora;
 
                 if (diff <= 0) {
-                    // Data chegou ou passou (Inaugurada ou Hoje)
                     cntDias.textContent = "00";
                     cntHoras.textContent = "00";
                     cntMin.textContent = "00";
@@ -1565,12 +1262,11 @@
                 cntHoras.textContent = String(horas).padStart(2, '0');
                 cntMin.textContent = String(minutos).padStart(2, '0');
 
-                // Atualizar milestones da timeline
                 atualizarMilestones(dias);
             }
 
             updateTime();
-            countdownTimer = setInterval(updateTime, 1000); // atualiza a cada segundo para precisao imediata
+            countdownTimer = setInterval(updateTime, 1000);
         }
 
         function atualizarMilestones(diasRestantes) {
@@ -1594,111 +1290,117 @@
             });
         }
 
-        // RENDER CHECKPOINTS
-        function renderCheckpoints(loja) {
+        // ==========================================
+        // RENDER DO TABELÃO ÚNICO SEQUENCIAL
+        // ==========================================
+        function renderTabelaoCheckpoints(loja) {
+            const tbody = document.getElementById("tbody-checkpoints");
+            tbody.innerHTML = "";
+
             const cps = loja.checkpoints || {};
-            const fases = {
-                "fase_1": { list: document.getElementById("fase-1-list"), total: 0, concluidos: 0 },
-                "fase_2": { list: document.getElementById("fase-2-list"), total: 0, concluidos: 0 },
-                "fase_3": { list: document.getElementById("fase-3-list"), total: 0, concluidos: 0 },
-                "fase_4": { list: document.getElementById("fase-4-list"), total: 0, concluidos: 0 }
-            };
+            const keys = Object.keys(cps);
 
-            // Limpa as listas
-            Object.keys(fases).forEach(fKey => {
-                if (fases[fKey].list) fases[fKey].list.innerHTML = "";
-            });
+            if (keys.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            Nenhuma atividade cadastrada ainda. Clique em <strong>+ Nova Demanda / Tarefa</strong> acima para começar seu checklist.
+                        </td>
+                    </tr>
+                `;
+                atualizarCardsStats(0, 0);
+                return;
+            }
 
-            const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
+            // Converter para array para ordenação sequencial
+            const lista = keys.map((id, index) => ({
+                id,
+                ...cps[id],
+                ordemOriginal: index + 1
+            }));
 
-            // Popula
-            Object.keys(cps).forEach(cpId => {
-                const cp = cps[cpId];
-                const faseKey = cp.fase || "fase_1";
-                if (!fases[faseKey]) return;
+            // Ordena primeiro as pendentes no topo ou pela ordem cronológica
+            let total = lista.length;
+            let concluidos = 0;
 
-                fases[faseKey].total++;
-                if (cp.concluido) fases[faseKey].concluidos++;
+            lista.forEach((item, idx) => {
+                if (item.concluido) concluidos++;
 
-                const row = document.createElement("div");
-                row.className = `checkpoint-item ${cp.concluido ? 'concluido' : ''}`;
+                const tr = document.createElement("tr");
+                tr.className = item.concluido ? "concluido" : "";
 
-                row.innerHTML = `
-                    <input type="checkbox" class="custom-checkbox" ${cp.concluido ? 'checked' : ''} 
-                        ${!podeEditar ? 'disabled' : ''} 
-                        onchange="window.toggleCheckpoint('${cpId}', this.checked)">
-                    <div class="checkpoint-info">
-                        <span class="checkpoint-titulo">
-                            ${cp.critico ? '<span style="color:#ef4444; font-weight:800;" title="Marco Crítico">⚠️ </span>' : ''}
-                            ${cp.titulo}
-                        </span>
-                        <div class="checkpoint-sub">
-                            <span class="pill-setor ${cp.setor === 'Pricing' ? 'pricing' : ''}">${cp.setor || 'Geral'}</span>
-                            ${cp.concluido ? 
-                                `<span style="color: #10b981; font-weight: 600;">✓ Concluído por ${cp.concluidoPor || 'Equipe'} em ${cp.concluidoEm || ''}</span>` : 
-                                `<span>Pendente</span>`
-                            }
+                const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
+
+                // Formatar data limite
+                let dataDisplay = "—";
+                if (item.data_limite) {
+                    const partes = item.data_limite.split("-");
+                    if (partes.length === 3) {
+                        dataDisplay = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                    } else {
+                        dataDisplay = item.data_limite;
+                    }
+                }
+
+                tr.innerHTML = `
+                    <td style="text-align: center;">
+                        <input type="checkbox" class="custom-checkbox" ${item.concluido ? 'checked' : ''} 
+                            ${!podeEditar ? 'disabled' : ''} 
+                            onchange="window.toggleCheckpoint('${item.id}', this.checked)">
+                    </td>
+                    <td class="col-seq">${idx + 1}</td>
+                    <td>
+                        <div class="task-title">
+                            ${item.titulo}
                         </div>
-                    </div>
-                    <div class="checkpoint-meta">
-                        ${cp.data_limite ? `<span class="checkpoint-date">${cp.data_limite}</span>` : ''}
-                        ${podeEditar ? `
-                            <button class="btn-action-cp" onclick="window.editarCheckpoint('${cpId}')" title="Editar Tarefa">✏️</button>
-                            <button class="btn-action-cp delete" onclick="window.excluirCheckpoint('${cpId}')" title="Excluir Tarefa">🗑️</button>
+                        ${item.concluido && item.concluidoPor ? `
+                            <div class="task-details">
+                                ✓ Finalizado por <strong>${item.concluidoPor}</strong> em ${item.concluidoEm || ''}
+                            </div>
                         ` : ''}
-                    </div>
+                    </td>
+                    <td>
+                        <span class="pill-setor ${item.setor === 'Pricing' ? 'pricing' : ''}">
+                            ${item.setor || 'Geral'}
+                        </span>
+                    </td>
+                    <td style="font-weight: 500;">
+                        📅 ${dataDisplay}
+                    </td>
+                    <td>
+                        <span class="pill-status ${item.concluido ? 'concluido' : 'pendente'}">
+                            ${item.concluido ? '✅ Concluído' : '⏳ Pendente'}
+                        </span>
+                    </td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        ${podeEditar ? `
+                            <button class="btn-action-cp" onclick="window.editarCheckpoint('${item.id}')" title="Editar Tarefa">✏️</button>
+                            <button class="btn-action-cp delete" onclick="window.excluirCheckpoint('${item.id}')" title="Excluir Tarefa">🗑️</button>
+                        ` : `—`}
+                    </td>
                 `;
 
-                if (fases[faseKey].list) {
-                    fases[faseKey].list.appendChild(row);
-                }
+                tbody.appendChild(tr);
             });
 
-            // Atualiza contadores dos acordeões
-            document.getElementById("prog-fase-1").textContent = `${fases["fase_1"].concluidos}/${fases["fase_1"].total}`;
-            document.getElementById("prog-fase-2").textContent = `${fases["fase_2"].concluidos}/${fases["fase_2"].total}`;
-            document.getElementById("prog-fase-3").textContent = `${fases["fase_3"].concluidos}/${fases["fase_3"].total}`;
-            document.getElementById("prog-fase-4").textContent = `${fases["fase_4"].concluidos}/${fases["fase_4"].total}`;
+            atualizarCardsStats(total, concluidos);
         }
 
-        // RENDER GRID ROTINA PREÇO ZERO (D-7 A D-1)
-        function renderGridPrecoZero(loja) {
-            const grid = document.getElementById("grid-preco-zero");
-            grid.innerHTML = "";
-            const rotina = loja.rotina_preco_zero || {};
+        // ATUALIZA BARRA DE PROGRESSO E CARDS VIVOS
+        function atualizarCardsStats(total, concluidos) {
+            const percentual = total > 0 ? Math.round((concluidos / total) * 100) : 0;
 
-            const diasLista = [
-                { key: "d_7", label: "D - 7", desc: "1ª Varredura Geral" },
-                { key: "d_6", label: "D - 6", desc: "Audit Diário" },
-                { key: "d_5", label: "D - 5", desc: "Audit Diário" },
-                { key: "d_4", label: "D - 4", desc: "Audit Diário" },
-                { key: "d_3", label: "D - 3", desc: "Saneamento Base" },
-                { key: "d_2", label: "D - 2", desc: "Pré-Encerramento" },
-                { key: "d_1", label: "D - 1", desc: "Tolerância Zero" }
-            ];
+            document.getElementById("lbl-progresso-percent").textContent = `${percentual}% Concluído`;
+            document.getElementById("bar-progresso-fill").style.width = `${percentual}%`;
 
-            const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
+            document.getElementById("stat-total-concluido").textContent = concluidos;
+            document.getElementById("stat-total-pendente").textContent = (total - concluidos);
+            document.getElementById("stat-total-tarefas").textContent = total;
+            document.getElementById("stat-taxa-conclusao").textContent = `${percentual}%`;
 
-            diasLista.forEach(dia => {
-                const item = rotina[dia.key] || { feito: false };
-                const card = document.createElement("div");
-                card.className = `dia-zero-item ${item.feito ? 'feito' : ''}`;
-                
-                card.innerHTML = `
-                    <span class="dia-zero-tag">${dia.label}</span>
-                    <span style="font-size: 0.65rem; color: var(--text-muted);">${dia.desc}</span>
-                    <span class="dia-zero-status">
-                        ${item.feito ? '✅ Realizado' : '⏳ Pendente'}
-                    </span>
-                    ${item.responsavel ? `<small style="font-size:0.6rem; color: var(--text-muted);">${item.responsavel}</small>` : ''}
-                `;
-
-                if (podeEditar) {
-                    card.onclick = () => window.togglePrecoZero(dia.key, !item.feito);
-                }
-
-                grid.appendChild(card);
-            });
+            if (percentual === 100 && total > 0 && typeof confetti === 'function') {
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+            }
         }
 
         // TOGGLE CHECKPOINT NO FIREBASE
@@ -1720,70 +1422,8 @@
                     origin: { y: 0.8 }
                 });
             }
-            window.showToast(checked ? "Checkpoint concluído!" : "Checkpoint reaberto!");
+            window.showToast(checked ? "Demanda concluída! Progresso atualizado." : "Demanda reaberta.");
         };
-
-        // TOGGLE PREÇO ZERO NO FIREBASE
-        window.togglePrecoZero = async (diaKey, novoStatus) => {
-            if (!lojaAtivaId) return;
-            const agora = new Date().toLocaleDateString('pt-BR');
-            const updates = {};
-            updates[`inauguracoes/${lojaAtivaId}/rotina_preco_zero/${diaKey}/feito`] = novoStatus;
-            updates[`inauguracoes/${lojaAtivaId}/rotina_preco_zero/${diaKey}/responsavel`] = novoStatus ? window.userName : "";
-            updates[`inauguracoes/${lojaAtivaId}/rotina_preco_zero/${diaKey}/data`] = novoStatus ? agora : "";
-
-            await update(ref(db), updates);
-            window.showToast(novoStatus ? `Varredura ${diaKey.toUpperCase()} marcada como realizada!` : `Varredura desmarcada.`);
-        };
-
-        // CÁLCULO GERAL DE ESTATÍSTICAS
-        function calcularEstatisticas(loja) {
-            const cps = loja.checkpoints || {};
-            const rotina = loja.rotina_preco_zero || {};
-
-            let totalCps = 0;
-            let concluidosCps = 0;
-
-            Object.keys(cps).forEach(k => {
-                totalCps++;
-                if (cps[k].concluido) concluidosCps++;
-            });
-
-            // Rotina Preço Zero Feitos
-            let zeroFeitos = 0;
-            Object.keys(rotina).forEach(k => {
-                if (rotina[k].feito) zeroFeitos++;
-            });
-
-            // Total combinado (Checkpoints + 7 dias de Preço Zero)
-            const totalGeral = totalCps + 7;
-            const concluidosGeral = concluidosCps + zeroFeitos;
-            const percentual = totalGeral > 0 ? Math.round((concluidosGeral / totalGeral) * 100) : 0;
-
-            // Preenche na UI
-            document.getElementById("lbl-progresso-percent").textContent = `${percentual}% Concluído`;
-            document.getElementById("bar-progresso-fill").style.width = `${percentual}%`;
-
-            document.getElementById("stat-total-concluido").textContent = concluidosCps;
-            document.getElementById("stat-total-pendente").textContent = (totalCps - concluidosCps);
-            document.getElementById("stat-total-zero").textContent = `${zeroFeitos}/7`;
-
-            // Ofertas e Sistema (Fase 3)
-            let f3Total = 0;
-            let f3Done = 0;
-            Object.keys(cps).forEach(k => {
-                if (cps[k].fase === "fase_3") {
-                    f3Total++;
-                    if (cps[k].concluido) f3Done++;
-                }
-            });
-            const pctOfertas = f3Total > 0 ? Math.round((f3Done / f3Total) * 100) : 0;
-            document.getElementById("stat-total-ofertas").textContent = `${pctOfertas}%`;
-
-            if (percentual === 100 && typeof confetti === 'function') {
-                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-            }
-        }
 
         // ==========================================
         // MODAL DE NOVA LOJA / INAUGURAÇÃO
@@ -1819,7 +1459,6 @@
                 btn.disabled = true;
                 btn.textContent = "Criando...";
 
-                // Montar ISO Date com segurança
                 const [ano, mes, dia] = dataStr.split("-").map(Number);
                 const [hora, min] = horaStr.split(":").map(Number);
                 const dataInaug = new Date(ano, mes - 1, dia, hora || 8, min || 0);
@@ -1830,33 +1469,8 @@
                     data_inauguracao: dataInaug.toISOString(),
                     gestor: gestor || window.userName,
                     status: "Em Andamento",
-                    nomes_fases: NOMES_FASES_PADRAO,
-                    checkpoints: {},
-                    rotina_preco_zero: {
-                        "d_7": { feito: false, responsavel: "", data: "" },
-                        "d_6": { feito: false, responsavel: "", data: "" },
-                        "d_5": { feito: false, responsavel: "", data: "" },
-                        "d_4": { feito: false, responsavel: "", data: "" },
-                        "d_3": { feito: false, responsavel: "", data: "" },
-                        "d_2": { feito: false, responsavel: "", data: "" },
-                        "d_1": { feito: false, responsavel: "", data: "" }
-                    }
+                    checkpoints: {}
                 };
-
-                // Copia checkpoints padrão
-                Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
-                    CHECKPOINTS_PADRAO[faseKey].forEach(item => {
-                        novaLoja.checkpoints[item.id] = {
-                            titulo: item.titulo,
-                            fase: faseKey,
-                            setor: item.setor,
-                            concluido: false,
-                            critico: !!item.critico,
-                            concluidoPor: "",
-                            concluidoEm: ""
-                        };
-                    });
-                });
 
                 await set(novaRef, novaLoja);
                 lojaAtivaId = novaRef.key;
@@ -1898,12 +1512,7 @@
                     lojaAtivaId = chavesRestantes.length > 0 ? chavesRestantes[0] : null;
 
                     popularSelectLojas();
-                    if (lojaAtivaId) {
-                        renderLojaAtiva();
-                    } else {
-                        // Se não restar nenhuma, recria a demonstração
-                        criarLojaInicialDemonstracao();
-                    }
+                    renderLojaAtiva();
 
                     window.showToast(`Loja "${nomeLoja}" excluída com sucesso!`);
                 } catch (err) {
@@ -1917,51 +1526,16 @@
         }
 
         // ==========================================
-        // EDITAR NOME DA FASE/ETAPA
-        // ==========================================
-        const modalFase = document.getElementById("modal-fase");
-        window.fecharModalFase = () => { modalFase.style.display = "none"; };
-
-        window.editarTituloFase = (faseKey) => {
-            if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
-            const loja = lojasData[lojaAtivaId];
-            const nomesFases = loja.nomes_fases || NOMES_FASES_PADRAO;
-            
-            document.getElementById("inp-fase-key").value = faseKey;
-            document.getElementById("inp-fase-titulo").value = nomesFases[faseKey] || NOMES_FASES_PADRAO[faseKey] || "";
-            modalFase.style.display = "flex";
-        };
-
-        document.getElementById("btn-salvar-fase").onclick = async () => {
-            const faseKey = document.getElementById("inp-fase-key").value;
-            const novoTitulo = document.getElementById("inp-fase-titulo").value.trim();
-
-            if (!novoTitulo) {
-                alert("Informe o nome da etapa.");
-                return;
-            }
-
-            if (!lojaAtivaId) return;
-
-            try {
-                const updates = {};
-                updates[`inauguracoes/${lojaAtivaId}/nomes_fases/${faseKey}`] = novoTitulo;
-                await update(ref(db), updates);
-                window.fecharModalFase();
-                window.showToast("Nome da etapa atualizado!");
-            } catch (err) {
-                console.error("Erro ao atualizar etapa:", err);
-                alert("Erro ao salvar: " + err.message);
-            }
-        };
-
-        // ==========================================
-        // MODAL ADICIONAR / EDITAR CHECKPOINT
+        // MODAL ADICIONAR / EDITAR DEMANDA (TABELÃO)
         // ==========================================
         const btnAddCp = document.getElementById("btn-add-checkpoint");
         const modalCp = document.getElementById("modal-checkpoint");
         btnAddCp.onclick = () => { 
-            document.getElementById("modal-cp-titulo-header").textContent = "Novo Checkpoint";
+            if (!lojaAtivaId) {
+                alert("Cadastre ou selecione uma filial primeiro antes de adicionar demandas.");
+                return;
+            }
+            document.getElementById("modal-cp-titulo-header").textContent = "Nova Atividade / Demanda";
             document.getElementById("inp-cp-edit-id").value = "";
             document.getElementById("inp-cp-titulo").value = "";
             document.getElementById("inp-cp-data").value = "";
@@ -1974,9 +1548,8 @@
             const cp = lojasData[lojaAtivaId].checkpoints?.[cpId];
             if (!cp) return;
 
-            document.getElementById("modal-cp-titulo-header").textContent = "Editar Checkpoint";
+            document.getElementById("modal-cp-titulo-header").textContent = "Editar Atividade / Demanda";
             document.getElementById("inp-cp-edit-id").value = cpId;
-            document.getElementById("inp-cp-fase").value = cp.fase || "fase_1";
             document.getElementById("inp-cp-titulo").value = cp.titulo || "";
             document.getElementById("inp-cp-setor").value = cp.setor || "Pricing";
             document.getElementById("inp-cp-data").value = cp.data_limite || "";
@@ -1998,13 +1571,12 @@
 
         document.getElementById("btn-salvar-cp").onclick = async () => {
             const editId = document.getElementById("inp-cp-edit-id").value;
-            const fase = document.getElementById("inp-cp-fase").value;
             const titulo = document.getElementById("inp-cp-titulo").value.trim();
             const setor = document.getElementById("inp-cp-setor").value;
             const data = document.getElementById("inp-cp-data").value;
 
             if (!titulo) {
-                alert("Informe o título da atividade.");
+                alert("Informe o título da atividade/demanda.");
                 return;
             }
 
@@ -2013,24 +1585,23 @@
             try {
                 if (editId) {
                     const updates = {};
-                    updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/fase`] = fase;
                     updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/titulo`] = titulo;
                     updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/setor`] = setor;
                     updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/data_limite`] = data || "";
                     await update(ref(db), updates);
-                    window.showToast("Tarefa atualizada com sucesso!");
+                    window.showToast("Demanda atualizada com sucesso!");
                 } else {
                     const novoCpRef = push(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints`));
                     await set(novoCpRef, {
-                        fase: fase,
                         titulo: titulo,
                         setor: setor,
                         data_limite: data || "",
                         concluido: false,
                         concluidoPor: "",
-                        concluidoEm: ""
+                        concluidoEm: "",
+                        criadoEm: Date.now()
                     });
-                    window.showToast("Tarefa adicionada com sucesso!");
+                    window.showToast("Nova demanda adicionada ao checklist!");
                 }
 
                 document.getElementById("inp-cp-titulo").value = "";
