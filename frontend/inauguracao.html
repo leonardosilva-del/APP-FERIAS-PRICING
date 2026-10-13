@@ -485,7 +485,6 @@
             padding: 1.25rem 1.5rem;
             background: rgba(0, 0, 0, 0.015);
             border-bottom: 1px solid var(--border);
-            cursor: pointer;
             user-select: none;
             transition: background 0.2s;
         }
@@ -506,6 +505,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex: 1;
         }
 
         .fase-badge {
@@ -516,6 +516,7 @@
             padding: 4px 10px;
             border-radius: 20px;
             border: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         .fase-badge.badge-pricing {
@@ -536,13 +537,40 @@
             color: var(--text-main);
         }
 
+        .btn-edit-fase {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-edit-fase:hover {
+            background: var(--pill-bg);
+            color: var(--primary);
+            border-color: var(--border);
+        }
+
+        .fase-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .fase-progress-pill {
             font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-muted);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            cursor: pointer;
         }
 
         /* LISTA DE CHECKPOINTS */
@@ -666,7 +694,7 @@
         .checkpoint-meta {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .checkpoint-date {
@@ -676,9 +704,27 @@
             white-space: nowrap;
         }
 
-        .checkpoint-date.atrasado {
-            color: #ef4444;
-            font-weight: 700;
+        .btn-action-cp {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            transition: 0.2s;
+        }
+
+        .btn-action-cp:hover {
+            opacity: 1;
+            color: var(--primary);
+            background: var(--pill-bg);
+        }
+
+        .btn-action-cp.delete:hover {
+            color: var(--danger);
+            background: #fee2e2;
         }
 
         /* DIÁRIO DE PREÇO ZERO (ROUTINE SPECIAL CARD) */
@@ -740,7 +786,7 @@
             color: #a7f3d0;
         }
 
-        /* MODAL DE ADICIONAR/EDITAR INAUGURAÇÃO */
+        /* MODAL GERAL */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -925,7 +971,7 @@
                         <select id="select-loja-ativa" class="select-loja">
                             <option value="">Carregando inaugurações...</option>
                         </select>
-                        <button id="btn-nova-inauguracao" class="btn-nav" style="display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 14px;">
+                        <button id="btn-nova-inauguracao" class="btn-nav" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 14px;">
                             + Nova Loja
                         </button>
                     </div>
@@ -1034,7 +1080,7 @@
                     <span>📋 Checkpoints Operacionais de Precificação</span>
                 </h2>
                 <div style="display: flex; gap: 8px;">
-                    <button id="btn-add-checkpoint" class="btn-nav" style="display: none;">
+                    <button id="btn-add-checkpoint" class="btn-nav">
                         + Adicionar Tarefa
                     </button>
                 </div>
@@ -1042,14 +1088,19 @@
 
             <!-- FASE 1: PREPARAÇÃO PRÉVIA -->
             <div class="fase-card">
-                <div class="fase-header" onclick="window.toggleFase('fase-1-list')">
+                <div class="fase-header">
                     <div class="fase-title-group">
                         <span class="fase-badge">Fase 1</span>
-                        <span class="fase-title">1. Planejamento & Cadastro Base (D-30 ao D-8)</span>
+                        <span id="fase-1-titulo" class="fase-title">1. Planejamento & Cadastro Base (D-30 ao D-8)</span>
+                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_1')" title="Editar Nome da Etapa">
+                            ✏️ Editar Etapa
+                        </button>
                     </div>
-                    <div class="fase-progress-pill">
-                        <span id="prog-fase-1">0/3</span>
-                        <span>▼</span>
+                    <div class="fase-right-actions">
+                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-1-list')">
+                            <span id="prog-fase-1">0/3</span>
+                            <span>▼</span>
+                        </div>
                     </div>
                 </div>
                 <div id="fase-1-list" class="checkpoints-list">
@@ -1059,14 +1110,19 @@
 
             <!-- FASE 2: SEMANA CRÍTICA DE PRECIFICAÇÃO (1 SEMANA ANTES & PREÇO ZERO DIÁRIO) -->
             <div class="fase-card destaque-critico">
-                <div class="fase-header" onclick="window.toggleFase('fase-2-list')">
+                <div class="fase-header">
                     <div class="fase-title-group">
                         <span class="fase-badge badge-pricing">⭐ Semana Crítica Pricing (D-7 ao D-1)</span>
-                        <span class="fase-title">2. Precificação Geral & Rotina Diária de Preço Zero</span>
+                        <span id="fase-2-titulo" class="fase-title">2. Precificação Geral & Rotina Diária de Preço Zero</span>
+                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_2')" title="Editar Nome da Etapa">
+                            ✏️ Editar Etapa
+                        </button>
                     </div>
-                    <div class="fase-progress-pill">
-                        <span id="prog-fase-2">0/5</span>
-                        <span>▼</span>
+                    <div class="fase-right-actions">
+                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-2-list')">
+                            <span id="prog-fase-2">0/5</span>
+                            <span>▼</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -1090,14 +1146,19 @@
 
             <!-- FASE 3: OFERTAS E PROGRAMAÇÃO DE PREÇOS -->
             <div class="fase-card">
-                <div class="fase-header" onclick="window.toggleFase('fase-3-list')">
+                <div class="fase-header">
                     <div class="fase-title-group">
                         <span class="fase-badge">Fase 3</span>
-                        <span class="fase-title">3. Ofertas de Inauguração & Programação no Sistema</span>
+                        <span id="fase-3-titulo" class="fase-title">3. Ofertas de Inauguração & Programação no Sistema</span>
+                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_3')" title="Editar Nome da Etapa">
+                            ✏️ Editar Etapa
+                        </button>
                     </div>
-                    <div class="fase-progress-pill">
-                        <span id="prog-fase-3">0/4</span>
-                        <span>▼</span>
+                    <div class="fase-right-actions">
+                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-3-list')">
+                            <span id="prog-fase-3">0/4</span>
+                            <span>▼</span>
+                        </div>
                     </div>
                 </div>
                 <div id="fase-3-list" class="checkpoints-list">
@@ -1107,14 +1168,19 @@
 
             <!-- FASE 4: VIRADA DE LOJA & CARGA FINAL PDV -->
             <div class="fase-card">
-                <div class="fase-header" onclick="window.toggleFase('fase-4-list')">
+                <div class="fase-header">
                     <div class="fase-title-group">
                         <span class="fase-badge">Fase 4</span>
-                        <span class="fase-title">4. Auditoria Final, Carga PDV & Abertura (D-1 e D-0)</span>
+                        <span id="fase-4-titulo" class="fase-title">4. Auditoria Final, Carga PDV & Abertura (D-1 e D-0)</span>
+                        <button class="btn-edit-fase" onclick="window.editarTituloFase('fase_4')" title="Editar Nome da Etapa">
+                            ✏️ Editar Etapa
+                        </button>
                     </div>
-                    <div class="fase-progress-pill">
-                        <span id="prog-fase-4">0/4</span>
-                        <span>▼</span>
+                    <div class="fase-right-actions">
+                        <div class="fase-progress-pill" onclick="window.toggleFase('fase-4-list')">
+                            <span id="prog-fase-4">0/4</span>
+                            <span>▼</span>
+                        </div>
                     </div>
                 </div>
                 <div id="fase-4-list" class="checkpoints-list">
@@ -1131,12 +1197,16 @@
         <div class="modal-content">
             <h3 class="modal-title">Cadastrar Inauguração de Filial</h3>
             <div class="form-group">
-                <label class="form-label">Nome da Filial / Loja</label>
+                <label class="form-label">Nome da Filial / Loja *</label>
                 <input type="text" id="inp-loja-nome" class="form-input" placeholder="Ex: Loja 52 - Samambaia Norte">
             </div>
             <div class="form-group">
-                <label class="form-label">Data e Hora da Inauguração (Abertura dos Portões)</label>
-                <input type="datetime-local" id="inp-loja-data" class="form-input">
+                <label class="form-label">Data da Inauguração *</label>
+                <input type="date" id="inp-loja-data" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Horário de Abertura dos Portões (Opcional)</label>
+                <input type="time" id="inp-loja-hora" class="form-input" value="08:00">
             </div>
             <div class="form-group">
                 <label class="form-label">Gestor / Responsável Geral</label>
@@ -1149,21 +1219,22 @@
         </div>
     </div>
 
-    <!-- MODAL ADICIONAR CHECKPOINT PERSONALIZADO -->
+    <!-- MODAL ADICIONAR / EDITAR CHECKPOINT -->
     <div id="modal-checkpoint" class="modal-overlay">
         <div class="modal-content">
-            <h3 class="modal-title">Novo Checkpoint</h3>
+            <h3 id="modal-cp-titulo-header" class="modal-title">Novo Checkpoint</h3>
+            <input type="hidden" id="inp-cp-edit-id" value="">
             <div class="form-group">
                 <label class="form-label">Fase do Checkpoint</label>
                 <select id="inp-cp-fase" class="form-input">
-                    <option value="fase_1">1. Planejamento & Cadastro Base</option>
-                    <option value="fase_2">2. Semana Crítica Pricing (D-7 a D-1)</option>
-                    <option value="fase_3">3. Ofertas de Inauguração & Sistema</option>
-                    <option value="fase_4">4. Auditoria Final & Carga PDV</option>
+                    <option value="fase_1">Fase 1</option>
+                    <option value="fase_2">Fase 2 (Semana Crítica)</option>
+                    <option value="fase_3">Fase 3 (Ofertas & Sistema)</option>
+                    <option value="fase_4">Fase 4 (Virada de Loja & PDV)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Título da Atividade</label>
+                <label class="form-label">Título da Atividade *</label>
                 <input type="text" id="inp-cp-titulo" class="form-input" placeholder="Ex: Conferir etiquetas de frios e laticínios">
             </div>
             <div class="form-group">
@@ -1173,15 +1244,32 @@
                     <option value="Comercial">🛒 Comercial</option>
                     <option value="TI">💻 TI / Automação</option>
                     <option value="Operações">🏢 Operações / Loja</option>
+                    <option value="Marketing">📢 Marketing / Encartes</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Data / Prazo Limite</label>
+                <label class="form-label">Data / Prazo Limite (Opcional)</label>
                 <input type="date" id="inp-cp-data" class="form-input">
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="window.fecharModalCp()">Cancelar</button>
                 <button type="button" class="btn-primary" id="btn-salvar-cp">Salvar Tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR NOME DA FASE/ETAPA -->
+    <div id="modal-fase" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title">Editar Nome da Etapa</h3>
+            <input type="hidden" id="inp-fase-key" value="">
+            <div class="form-group">
+                <label class="form-label">Título Personalizado da Etapa *</label>
+                <input type="text" id="inp-fase-titulo" class="form-input" placeholder="Ex: 1. Planejamento & Cadastro Base (D-30 ao D-8)">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="window.fecharModalFase()">Cancelar</button>
+                <button type="button" class="btn-primary" id="btn-salvar-fase">Atualizar Etapa</button>
             </div>
         </div>
     </div>
@@ -1193,13 +1281,21 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-        import { ref, onValue, set, update, push, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref, onValue, set, update, push, remove, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         window.perfilUsuario = "Colaborador";
         window.userName = "Usuário";
         let lojasData = {};
         let lojaAtivaId = null;
         let countdownTimer = null;
+
+        // FASES PADRÃO
+        const NOMES_FASES_PADRAO = {
+            "fase_1": "1. Planejamento & Cadastro Base (D-30 ao D-8)",
+            "fase_2": "2. Precificação Geral & Rotina Diária de Preço Zero",
+            "fase_3": "3. Ofertas de Inauguração & Programação no Sistema",
+            "fase_4": "4. Auditoria Final, Carga PDV & Abertura (D-1 e D-0)"
+        };
 
         // CHECKPOINTS PADRÃO BASEADOS NA ROTINA DE PRICING E INAUGURAÇÃO
         const CHECKPOINTS_PADRAO = {
@@ -1273,7 +1369,7 @@
         function popularSelectLojas() {
             selectLojaEl.innerHTML = "";
             const keys = Object.keys(lojasData);
-            keys.forEach((key, idx) => {
+            keys.forEach((key) => {
                 const opt = document.createElement("option");
                 opt.value = key;
                 opt.textContent = lojasData[key].nome || key;
@@ -1298,6 +1394,7 @@
                 data_inauguracao: dataInaug.toISOString(),
                 gestor: "Leonardo Silva",
                 status: "Em Andamento",
+                nomes_fases: NOMES_FASES_PADRAO,
                 checkpoints: {},
                 rotina_preco_zero: {
                     "d_7": { feito: false, responsavel: "", data: "" },
@@ -1332,6 +1429,20 @@
         function renderLojaAtiva() {
             if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
             const loja = lojasData[lojaAtivaId];
+
+            // Renderizar títulos das Fases (editáveis)
+            const nomesFases = loja.nomes_fases || NOMES_FASES_PADRAO;
+            ["fase_1", "fase_2", "fase_3", "fase_4"].forEach((fKey, idx) => {
+                const el = document.getElementById(`${fKey.replace('_', '-')}-titulo`);
+                if (el) {
+                    el.textContent = nomesFases[fKey] || NOMES_FASES_PADRAO[fKey];
+                }
+                // Atualiza também as opções do select de nova tarefa
+                const optSelect = document.querySelector(`#inp-cp-fase option[value="${fKey}"]`);
+                if (optSelect) {
+                    optSelect.textContent = nomesFases[fKey] || `Fase ${idx+1}`;
+                }
+            });
 
             // Detalhes do Subtítulo
             const dataInaug = new Date(loja.data_inauguracao);
@@ -1426,6 +1537,8 @@
                 if (fases[fKey].list) fases[fKey].list.innerHTML = "";
             });
 
+            const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
+
             // Popula
             Object.keys(cps).forEach(cpId => {
                 const cp = cps[cpId];
@@ -1437,8 +1550,6 @@
 
                 const row = document.createElement("div");
                 row.className = `checkpoint-item ${cp.concluido ? 'concluido' : ''}`;
-
-                const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
 
                 row.innerHTML = `
                     <input type="checkbox" class="custom-checkbox" ${cp.concluido ? 'checked' : ''} 
@@ -1459,6 +1570,10 @@
                     </div>
                     <div class="checkpoint-meta">
                         ${cp.data_limite ? `<span class="checkpoint-date">${cp.data_limite}</span>` : ''}
+                        ${podeEditar ? `
+                            <button class="btn-action-cp" onclick="window.editarCheckpoint('${cpId}')" title="Editar Tarefa">✏️</button>
+                            <button class="btn-action-cp delete" onclick="window.excluirCheckpoint('${cpId}')" title="Excluir Tarefa">🗑️</button>
+                        ` : ''}
                     </div>
                 `;
 
@@ -1598,68 +1713,174 @@
             }
         }
 
-        // MODAL DE NOVA LOJA
+        // ==========================================
+        // MODAL DE NOVA LOJA / INAUGURAÇÃO
+        // ==========================================
         const btnNovaLoja = document.getElementById("btn-nova-inauguracao");
         const modalLoja = document.getElementById("modal-loja");
-        btnNovaLoja.onclick = () => { modalLoja.style.display = "flex"; };
+        btnNovaLoja.onclick = () => { 
+            document.getElementById("inp-loja-nome").value = "";
+            document.getElementById("inp-loja-data").value = "";
+            document.getElementById("inp-loja-hora").value = "08:00";
+            document.getElementById("inp-loja-gestor").value = window.userName || "";
+            modalLoja.style.display = "flex"; 
+        };
         window.fecharModalLoja = () => { modalLoja.style.display = "none"; };
 
         document.getElementById("btn-salvar-loja").onclick = async () => {
+            const btn = document.getElementById("btn-salvar-loja");
             const nome = document.getElementById("inp-loja-nome").value.trim();
-            const data = document.getElementById("inp-loja-data").value;
+            const dataStr = document.getElementById("inp-loja-data").value;
+            const horaStr = document.getElementById("inp-loja-hora").value || "08:00";
             const gestor = document.getElementById("inp-loja-gestor").value.trim();
 
-            if (!nome || !data) {
-                alert("Preencha o nome da filial e a data da inauguração.");
+            if (!nome) {
+                alert("Por favor, preencha o nome da filial.");
+                return;
+            }
+            if (!dataStr) {
+                alert("Por favor, selecione a data prevista de inauguração.");
                 return;
             }
 
-            const novaRef = push(inauguracoesRef);
-            const novaLoja = {
-                nome: nome,
-                data_inauguracao: new Date(data).toISOString(),
-                gestor: gestor || window.userName,
-                status: "Em Andamento",
-                checkpoints: {},
-                rotina_preco_zero: {
-                    "d_7": { feito: false, responsavel: "", data: "" },
-                    "d_6": { feito: false, responsavel: "", data: "" },
-                    "d_5": { feito: false, responsavel: "", data: "" },
-                    "d_4": { feito: false, responsavel: "", data: "" },
-                    "d_3": { feito: false, responsavel: "", data: "" },
-                    "d_2": { feito: false, responsavel: "", data: "" },
-                    "d_1": { feito: false, responsavel: "", data: "" }
-                }
-            };
+            try {
+                btn.disabled = true;
+                btn.textContent = "Criando...";
 
-            // Copia checkpoints padrão
-            Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
-                CHECKPOINTS_PADRAO[faseKey].forEach(item => {
-                    novaLoja.checkpoints[item.id] = {
-                        titulo: item.titulo,
-                        fase: faseKey,
-                        setor: item.setor,
-                        concluido: false,
-                        critico: !!item.critico,
-                        concluidoPor: "",
-                        concluidoEm: ""
-                    };
+                // Montar ISO Date com segurança
+                const [ano, mes, dia] = dataStr.split("-").map(Number);
+                const [hora, min] = horaStr.split(":").map(Number);
+                const dataInaug = new Date(ano, mes - 1, dia, hora || 8, min || 0);
+
+                const novaRef = push(inauguracoesRef);
+                const novaLoja = {
+                    nome: nome,
+                    data_inauguracao: dataInaug.toISOString(),
+                    gestor: gestor || window.userName,
+                    status: "Em Andamento",
+                    nomes_fases: NOMES_FASES_PADRAO,
+                    checkpoints: {},
+                    rotina_preco_zero: {
+                        "d_7": { feito: false, responsavel: "", data: "" },
+                        "d_6": { feito: false, responsavel: "", data: "" },
+                        "d_5": { feito: false, responsavel: "", data: "" },
+                        "d_4": { feito: false, responsavel: "", data: "" },
+                        "d_3": { feito: false, responsavel: "", data: "" },
+                        "d_2": { feito: false, responsavel: "", data: "" },
+                        "d_1": { feito: false, responsavel: "", data: "" }
+                    }
+                };
+
+                // Copia checkpoints padrão
+                Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
+                    CHECKPOINTS_PADRAO[faseKey].forEach(item => {
+                        novaLoja.checkpoints[item.id] = {
+                            titulo: item.titulo,
+                            fase: faseKey,
+                            setor: item.setor,
+                            concluido: false,
+                            critico: !!item.critico,
+                            concluidoPor: "",
+                            concluidoEm: ""
+                        };
+                    });
                 });
-            });
 
-            await set(novaRef, novaLoja);
-            lojaAtivaId = novaRef.key;
-            window.fecharModalLoja();
-            window.showToast("Nova inauguração cadastrada com sucesso!");
+                await set(novaRef, novaLoja);
+                lojaAtivaId = novaRef.key;
+                window.fecharModalLoja();
+                window.showToast("Inauguração criada com sucesso!");
+            } catch (err) {
+                console.error("Erro ao salvar loja:", err);
+                alert("Erro ao criar inauguração no banco de dados: " + (err.message || err));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Criar Inauguração";
+            }
         };
 
-        // MODAL DE NOVO CHECKPOINT
+        // ==========================================
+        // EDITAR NOME DA FASE/ETAPA
+        // ==========================================
+        const modalFase = document.getElementById("modal-fase");
+        window.fecharModalFase = () => { modalFase.style.display = "none"; };
+
+        window.editarTituloFase = (faseKey) => {
+            if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
+            const loja = lojasData[lojaAtivaId];
+            const nomesFases = loja.nomes_fases || NOMES_FASES_PADRAO;
+            
+            document.getElementById("inp-fase-key").value = faseKey;
+            document.getElementById("inp-fase-titulo").value = nomesFases[faseKey] || NOMES_FASES_PADRAO[faseKey] || "";
+            modalFase.style.display = "flex";
+        };
+
+        document.getElementById("btn-salvar-fase").onclick = async () => {
+            const faseKey = document.getElementById("inp-fase-key").value;
+            const novoTitulo = document.getElementById("inp-fase-titulo").value.trim();
+
+            if (!novoTitulo) {
+                alert("Informe o nome da etapa.");
+                return;
+            }
+
+            if (!lojaAtivaId) return;
+
+            try {
+                const updates = {};
+                updates[`inauguracoes/${lojaAtivaId}/nomes_fases/${faseKey}`] = novoTitulo;
+                await update(ref(db), updates);
+                window.fecharModalFase();
+                window.showToast("Nome da etapa atualizado!");
+            } catch (err) {
+                console.error("Erro ao atualizar etapa:", err);
+                alert("Erro ao salvar: " + err.message);
+            }
+        };
+
+        // ==========================================
+        // MODAL ADICIONAR / EDITAR CHECKPOINT
+        // ==========================================
         const btnAddCp = document.getElementById("btn-add-checkpoint");
         const modalCp = document.getElementById("modal-checkpoint");
-        btnAddCp.onclick = () => { modalCp.style.display = "flex"; };
+        btnAddCp.onclick = () => { 
+            document.getElementById("modal-cp-titulo-header").textContent = "Novo Checkpoint";
+            document.getElementById("inp-cp-edit-id").value = "";
+            document.getElementById("inp-cp-titulo").value = "";
+            document.getElementById("inp-cp-data").value = "";
+            modalCp.style.display = "flex"; 
+        };
         window.fecharModalCp = () => { modalCp.style.display = "none"; };
 
+        window.editarCheckpoint = (cpId) => {
+            if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
+            const cp = lojasData[lojaAtivaId].checkpoints?.[cpId];
+            if (!cp) return;
+
+            document.getElementById("modal-cp-titulo-header").textContent = "Editar Checkpoint";
+            document.getElementById("inp-cp-edit-id").value = cpId;
+            document.getElementById("inp-cp-fase").value = cp.fase || "fase_1";
+            document.getElementById("inp-cp-titulo").value = cp.titulo || "";
+            document.getElementById("inp-cp-setor").value = cp.setor || "Pricing";
+            document.getElementById("inp-cp-data").value = cp.data_limite || "";
+
+            modalCp.style.display = "flex";
+        };
+
+        window.excluirCheckpoint = async (cpId) => {
+            if (!lojaAtivaId) return;
+            if (!confirm("Tem certeza que deseja excluir esta atividade?")) return;
+
+            try {
+                await remove(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints/${cpId}`));
+                window.showToast("Tarefa excluída.");
+            } catch (err) {
+                alert("Erro ao excluir: " + err.message);
+            }
+        };
+
         document.getElementById("btn-salvar-cp").onclick = async () => {
+            const editId = document.getElementById("inp-cp-edit-id").value;
             const fase = document.getElementById("inp-cp-fase").value;
             const titulo = document.getElementById("inp-cp-titulo").value.trim();
             const setor = document.getElementById("inp-cp-setor").value;
@@ -1672,20 +1893,34 @@
 
             if (!lojaAtivaId) return;
 
-            const novoCpRef = push(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints`));
-            await set(novoCpRef, {
-                fase: fase,
-                titulo: titulo,
-                setor: setor,
-                data_limite: data || "",
-                concluido: false,
-                concluidoPor: "",
-                concluidoEm: ""
-            });
+            try {
+                if (editId) {
+                    const updates = {};
+                    updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/fase`] = fase;
+                    updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/titulo`] = titulo;
+                    updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/setor`] = setor;
+                    updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/data_limite`] = data || "";
+                    await update(ref(db), updates);
+                    window.showToast("Tarefa atualizada com sucesso!");
+                } else {
+                    const novoCpRef = push(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints`));
+                    await set(novoCpRef, {
+                        fase: fase,
+                        titulo: titulo,
+                        setor: setor,
+                        data_limite: data || "",
+                        concluido: false,
+                        concluidoPor: "",
+                        concluidoEm: ""
+                    });
+                    window.showToast("Tarefa adicionada com sucesso!");
+                }
 
-            document.getElementById("inp-cp-titulo").value = "";
-            window.fecharModalCp();
-            window.showToast("Tarefa adicionada com sucesso!");
+                document.getElementById("inp-cp-titulo").value = "";
+                window.fecharModalCp();
+            } catch (err) {
+                alert("Erro ao salvar tarefa: " + err.message);
+            }
         };
 
         // AUTENTICAÇÃO
@@ -1714,10 +1949,8 @@
                 const roleEl = document.getElementById('user-role-widget');
                 if (roleEl) roleEl.textContent = window.perfilUsuario;
 
-                // Controles de visibilidade de botões administrativos
-                if (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing") {
-                    btnNovaLoja.style.display = "inline-flex";
-                    btnAddCp.style.display = "inline-flex";
+                if (lojaAtivaId && lojasData[lojaAtivaId]) {
+                    renderLojaAtiva();
                 }
             });
         });
