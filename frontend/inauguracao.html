@@ -1351,19 +1351,57 @@
             renderLojaAtiva();
         });
 
-        // ESCUTAR NÓ DE INAUGURAÇÕES NO FIREBASE
+        // ESCUTAR NÓ DE INAUGURAÇÕES NO FIREBASE COM TRATAMENTO DE PERMISSÃO
         const inauguracoesRef = ref(db, 'inauguracoes');
         onValue(inauguracoesRef, (snapshot) => {
             lojasData = snapshot.val() || {};
             
-            // Se ainda não existir nenhuma inauguração, inicializa com uma demonstração da rede
+            // Se o nó ainda estiver vazio no banco
             if (Object.keys(lojasData).length === 0) {
+                // Tenta criar demonstração se for gestor/pricing, caso contrário exibe template local
                 criarLojaInicialDemonstracao();
                 return;
             }
 
             popularSelectLojas();
             renderLojaAtiva();
+        }, (error) => {
+            console.warn("Aviso de permissão Firebase no nó inauguracoes:", error);
+            // Se as regras do Firebase ainda não liberaram o nó 'inauguracoes', usar template local para não travar
+            if (!lojasData || Object.keys(lojasData).length === 0) {
+                lojasData = {
+                    "demo_local": {
+                        nome: "Loja 52 - Samambaia Norte (Modo Demonstração)",
+                        data_inauguracao: new Date(Date.now() + 14*86400000).toISOString(),
+                        gestor: window.userName || "Pricing",
+                        status: "Em Andamento",
+                        nomes_fases: NOMES_FASES_PADRAO,
+                        checkpoints: {},
+                        rotina_preco_zero: {
+                            "d_7": { feito: false, responsavel: "", data: "" },
+                            "d_6": { feito: false, responsavel: "", data: "" },
+                            "d_5": { feito: false, responsavel: "", data: "" },
+                            "d_4": { feito: false, responsavel: "", data: "" },
+                            "d_3": { feito: false, responsavel: "", data: "" },
+                            "d_2": { feito: false, responsavel: "", data: "" },
+                            "d_1": { feito: false, responsavel: "", data: "" }
+                        }
+                    }
+                };
+                Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
+                    CHECKPOINTS_PADRAO[faseKey].forEach(item => {
+                        lojasData["demo_local"].checkpoints[item.id] = {
+                            titulo: item.titulo,
+                            fase: faseKey,
+                            setor: item.setor,
+                            concluido: false,
+                            critico: !!item.critico
+                        };
+                    });
+                });
+                popularSelectLojas();
+                renderLojaAtiva();
+            }
         });
 
         function popularSelectLojas() {

@@ -1,0 +1,64 @@
+{
+  "rules": {
+    "usuarios": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "agenda_tarefas": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "agenda_fixas": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "escalas_plantao": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "campanhas_oficiais_v3": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "historico_auditoria_v3": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "links_essenciais": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "base_listas_excel": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "configuracoes_sistema": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "aniversariantes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "chamados_comercial": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "base_produtos": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "ferias": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "painel_criticas": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "inauguracoes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}
