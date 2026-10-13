@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cronograma de Inauguração - Pricing ;DD</title>
+
+    <!-- FAVICON LOCAL -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/favicon.png">
+
+    <!-- METATAGS OPEN GRAPH -->
+    <meta property="og:title" content="Cronograma de Inauguração - Pricing ;DD">
+    <meta property="og:description" content="Acompanhe o checklist, contagem regressiva e checkpoints das inaugurações.">
+    <meta property="og:image" content="https://intranetpricing.onrender.com/logo.png">
+    <meta property="og:url" content="https://intranetpricing.onrender.com/inauguracao.html">
+
+    <!-- Canvas Confetti para gamificação de conclusão -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <!-- SCRIPT DO MODO DARK GLOBAL -->
+    <script>
+        if (localStorage.getItem('tema-intranet') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+        function toggleDark() {
+            document.documentElement.classList.toggle('dark-theme');
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            localStorage.setItem('tema-intranet', isDark ? 'dark' : 'light');
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) btnIcon.textContent = isDark ? '☀️' : '🌙';
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --border-subtle: #f1f5f9;
+            --ring-focus: rgba(37, 99, 235, 0.15);
+            --pill-bg: #f1f5f9;
+        }
+
+        html.dark-theme {
+            --bg-color: #0b1120;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-subtle: #1e293b;
+            --ring-focus: rgba(96, 165, 250, 0.2);
+            --pill-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 1.5rem 2rem 3rem 2rem;
+            transition: background-color 0.3s ease;
+        }
+
+        /* HEADER & NAVBAR */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-section img {
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* PERFIL */
+        .user-profile-widget {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 5px 14px 5px 6px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+        }
+
+        .user-info-widget {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name-widget {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .user-role-widget {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .btn-logout-widget {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .btn-logout-widget:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        /* COCKPIT HERO: COUNTDOWN & SELEÇÃO DE LOJA */
+        .cockpit-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 60%, #0f172a 100%);
+            color: #ffffff;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.25);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .cockpit-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .cockpit-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .loja-selector-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .loja-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #93c5fd;
+            width: fit-content;
+        }
+
+        .select-loja {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            min-width: 280px;
+        }
+
+        .select-loja option {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .select-loja:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        }
+
+        /* WIDGET DO CONTADOR REGRESSIVO */
+        .countdown-widget {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 20px;
+            border-radius: 1rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .countdown-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 58px;
+        }
+
+        .countdown-num {
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(180deg, #ffffff 0%, #93c5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .countdown-lbl {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .countdown-divider {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 12px;
+        }
+
+        /* LINHA DO TEMPO MACRO / PROGRESS BAR */
+        .timeline-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .progress-track {
+            position: relative;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            overflow: visible;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+            border-radius: 20px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 16px rgba(6, 182, 212, 0.6);
+        }
+
+        /* MARCADORES / MILESTONES NA BARRA */
+        .milestones-track {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            position: relative;
+        }
+
+        .milestone-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.72rem;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .milestone-item.active {
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
+        .milestone-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            margin-bottom: 4px;
+            transition: all 0.3s;
+        }
+
+        .milestone-item.active .milestone-dot {
+            background: #38bdf8;
+            transform: scale(1.3);
+            box-shadow: 0 0 8px #38bdf8;
+        }
+
+        /* CARDS DE RESUMO DE STATUS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        /* SEÇÃO DE CHECKLIST E FASES */
+        .checklist-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fase-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .fase-card.destaque-critico {
+            border-left: 5px solid #2563eb;
+        }
+
+        .fase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: rgba(0, 0, 0, 0.015);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .fase-header:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        html.dark-theme .fase-header {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        html.dark-theme .fase-header:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .fase-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fase-badge {
+            background: var(--pill-bg);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .fase-badge.badge-pricing {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+        html.dark-theme .fase-badge.badge-pricing {
+            background: #1e3a8a;
+            color: #93c5fd;
+            border-color: #2563eb;
+        }
+
+        .fase-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .fase-progress-pill {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* LISTA DE CHECKPOINTS */
+        .checkpoints-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .checkpoint-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        .checkpoint-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkpoint-item:hover {
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        html.dark-theme .checkpoint-item:hover {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .checkpoint-item.concluido {
+            opacity: 0.75;
+        }
+
+        .checkpoint-item.concluido .checkpoint-titulo {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* CUSTOM CHECKBOX */
+        .custom-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--card-bg);
+        }
+
+        .custom-checkbox:hover {
+            border-color: var(--primary);
+        }
+
+        .custom-checkbox:checked {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .checkpoint-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .checkpoint-titulo {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: color 0.2s;
+        }
+
+        .checkpoint-sub {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .pill-setor {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.72rem;
+            background: var(--pill-bg);
+            border: 1px solid var(--border);
+        }
+
+        .pill-setor.pricing {
+            background: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        html.dark-theme .pill-setor.pricing {
+            background: #1e3a8a;
+            color: #93c5fd;
+            border-color: #3b82f6;
+        }
+
+        .checkpoint-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .checkpoint-date {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .checkpoint-date.atrasado {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
+        /* DIÁRIO DE PREÇO ZERO (ROUTINE SPECIAL CARD) */
+        .diario-zero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            padding: 1rem 1.5rem;
+            background: var(--pill-bg);
+            border-top: 1px dashed var(--border);
+        }
+
+        .dia-zero-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dia-zero-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .dia-zero-item.feito {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        html.dark-theme .dia-zero-item.feito {
+            background: #064e3b;
+            border-color: #059669;
+        }
+
+        .dia-zero-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .dia-zero-status {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .dia-zero-item.feito .dia-zero-status {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        html.dark-theme .dia-zero-item.feito .dia-zero-status {
+            color: #a7f3d0;
+        }
+
+        /* MODAL DE ADICIONAR/EDITAR INAUGURAÇÃO */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            max-width: 550px;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--pill-bg);
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--ring-focus);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--pill-bg);
+            color: var(--text-main);
+        }
+
+        /* TOAST CONTAINER */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10000;
+        }
+
+        .toast-msg {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .cockpit-card { padding: 1.25rem; }
+            .countdown-num { font-size: 1.6rem; }
+            .checkpoint-item { grid-template-columns: auto 1fr; }
+            .checkpoint-meta { grid-column: span 2; justify-content: flex-end; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR TOPO -->
+    <header class="top-navbar">
+        <div class="brand-section">
+            <img src="/logo.png" alt="DIA A DIA ;DD" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';" />
+            <span id="alt-logo" style="display: none; font-weight: 800; font-size: 1.4rem;">Intranet Pricing</span>
+        </div>
+
+        <div class="nav-actions">
+            <a href="/" class="btn-nav" title="Voltar para a Home">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Voltar ao Início
+            </a>
+
+            <button onclick="toggleDark()" class="btn-nav" title="Alternar Modo Escuro/Claro">
+                <span id="icon-theme">🌙</span>
+            </button>
+
+            <!-- WIDGET DE PERFIL -->
+            <div class="user-profile-widget">
+                <img id="user-photo" src="" class="user-avatar" alt="Foto">
+                <div class="user-info-widget">
+                    <span id="user-name-widget" class="user-name-widget">Carregando...</span>
+                    <span id="user-role-widget" class="user-role-widget">Colaborador</span>
+                </div>
+                <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- 🚀 COCKPIT HERO: CONTAGEM REGRESSIVA & LINHA DO TEMPO MASTER -->
+        <section class="cockpit-card">
+            <div class="cockpit-top">
+                <div class="loja-selector-block">
+                    <div class="loja-badge-tag">
+                        <span>🎯 Cronograma Oficial</span>
+                        <span id="badge-status-inauguracao">• Em Planejamento</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <select id="select-loja-ativa" class="select-loja">
+                            <option value="">Carregando inaugurações...</option>
+                        </select>
+                        <button id="btn-nova-inauguracao" class="btn-nav" style="display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 14px;">
+                            + Nova Loja
+                        </button>
+                    </div>
+                    <p id="loja-detalhes-sub" style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;">
+                        Data prevista de inauguração: <strong>--/--/----</strong>
+                    </p>
+                </div>
+
+                <!-- CONTADOR REGRESSIVO DINÂMICO -->
+                <div class="countdown-widget">
+                    <div class="countdown-box">
+                        <span id="cnt-dias" class="countdown-num">00</span>
+                        <span class="countdown-lbl">Dias</span>
+                    </div>
+                    <span class="countdown-divider">:</span>
+                    <div class="countdown-box">
+                        <span id="cnt-horas" class="countdown-num">00</span>
+                        <span class="countdown-lbl">Horas</span>
+                    </div>
+                    <span class="countdown-divider">:</span>
+                    <div class="countdown-box">
+                        <span id="cnt-minutos" class="countdown-num">00</span>
+                        <span class="countdown-lbl">Minutos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINHA DO TEMPO / PROGRESSO -->
+            <div class="timeline-section">
+                <div class="timeline-header-info">
+                    <span><strong>Progresso Geral dos Checkpoints</strong></span>
+                    <span id="lbl-progresso-percent">0% Concluído</span>
+                </div>
+                <div class="progress-track">
+                    <div id="bar-progresso-fill" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="milestones-track">
+                    <div id="ms-d30" class="milestone-item">
+                        <span class="milestone-dot"></span>
+                        <span>D - 30</span>
+                        <small style="opacity: 0.7;">Prévia</small>
+                    </div>
+                    <div id="ms-d7" class="milestone-item">
+                        <span class="milestone-dot"></span>
+                        <span>D - 7</span>
+                        <small style="opacity: 0.7;">Precificação Geral</small>
+                    </div>
+                    <div id="ms-d3" class="milestone-item">
+                        <span class="milestone-dot"></span>
+                        <span>D - 3</span>
+                        <small style="opacity: 0.7;">Ofertas Fechadas</small>
+                    </div>
+                    <div id="ms-d1" class="milestone-item">
+                        <span class="milestone-dot"></span>
+                        <span>D - 1</span>
+                        <small style="opacity: 0.7;">Carga PDV</small>
+                    </div>
+                    <div id="ms-d0" class="milestone-item">
+                        <span class="milestone-dot"></span>
+                        <span>D - 0</span>
+                        <small style="opacity: 0.7;">Inauguração 🎉</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARDS DE MÉTRICAS RÁPIDAS -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">✅</div>
+                <div class="stat-info">
+                    <span id="stat-total-concluido" class="stat-value">0</span>
+                    <span class="stat-label">Checkpoints Concluídos</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">⏳</div>
+                <div class="stat-info">
+                    <span id="stat-total-pendente" class="stat-value">0</span>
+                    <span class="stat-label">Tarefas em Aberto</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #dc2626;">🚨</div>
+                <div class="stat-info">
+                    <span id="stat-total-zero" class="stat-value">0/7</span>
+                    <span class="stat-label">Rotinas Preço Zero OK</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">🏷️</div>
+                <div class="stat-info">
+                    <span id="stat-total-ofertas" class="stat-value">0%</span>
+                    <span class="stat-label">Ofertas & Sistema</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO PRINCIPAL DE CHECKLISTS -->
+        <section class="checklist-container">
+            <div class="checklist-header">
+                <h2 class="section-title">
+                    <span>📋 Checkpoints Operacionais de Precificação</span>
+                </h2>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-add-checkpoint" class="btn-nav" style="display: none;">
+                        + Adicionar Tarefa
+                    </button>
+                </div>
+            </div>
+
+            <!-- FASE 1: PREPARAÇÃO PRÉVIA -->
+            <div class="fase-card">
+                <div class="fase-header" onclick="window.toggleFase('fase-1-list')">
+                    <div class="fase-title-group">
+                        <span class="fase-badge">Fase 1</span>
+                        <span class="fase-title">1. Planejamento & Cadastro Base (D-30 ao D-8)</span>
+                    </div>
+                    <div class="fase-progress-pill">
+                        <span id="prog-fase-1">0/3</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+                <div id="fase-1-list" class="checkpoints-list">
+                    <!-- Renderizado dinamicamente -->
+                </div>
+            </div>
+
+            <!-- FASE 2: SEMANA CRÍTICA DE PRECIFICAÇÃO (1 SEMANA ANTES & PREÇO ZERO DIÁRIO) -->
+            <div class="fase-card destaque-critico">
+                <div class="fase-header" onclick="window.toggleFase('fase-2-list')">
+                    <div class="fase-title-group">
+                        <span class="fase-badge badge-pricing">⭐ Semana Crítica Pricing (D-7 ao D-1)</span>
+                        <span class="fase-title">2. Precificação Geral & Rotina Diária de Preço Zero</span>
+                    </div>
+                    <div class="fase-progress-pill">
+                        <span id="prog-fase-2">0/5</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+                
+                <!-- DIÁRIO D-7 A D-1 PARA PRODUTOS PREÇO ZERO -->
+                <div style="padding: 1rem 1.5rem 0.5rem 1.5rem;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 4px;">
+                        🎯 Rotina Diária: Varredura de Produtos com Preço Zero (Consinco)
+                    </span>
+                    <span style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 10px;">
+                        Todos os dias a partir de 1 semana antes da inauguração, a base de itens com preço zerado deve ser auditada e saneada.
+                    </span>
+                </div>
+                <div id="grid-preco-zero" class="diario-zero-grid">
+                    <!-- Cards D-7 até D-1 -->
+                </div>
+
+                <div id="fase-2-list" class="checkpoints-list">
+                    <!-- Itens adicionais da Fase 2 -->
+                </div>
+            </div>
+
+            <!-- FASE 3: OFERTAS E PROGRAMAÇÃO DE PREÇOS -->
+            <div class="fase-card">
+                <div class="fase-header" onclick="window.toggleFase('fase-3-list')">
+                    <div class="fase-title-group">
+                        <span class="fase-badge">Fase 3</span>
+                        <span class="fase-title">3. Ofertas de Inauguração & Programação no Sistema</span>
+                    </div>
+                    <div class="fase-progress-pill">
+                        <span id="prog-fase-3">0/4</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+                <div id="fase-3-list" class="checkpoints-list">
+                    <!-- Renderizado dinamicamente -->
+                </div>
+            </div>
+
+            <!-- FASE 4: VIRADA DE LOJA & CARGA FINAL PDV -->
+            <div class="fase-card">
+                <div class="fase-header" onclick="window.toggleFase('fase-4-list')">
+                    <div class="fase-title-group">
+                        <span class="fase-badge">Fase 4</span>
+                        <span class="fase-title">4. Auditoria Final, Carga PDV & Abertura (D-1 e D-0)</span>
+                    </div>
+                    <div class="fase-progress-pill">
+                        <span id="prog-fase-4">0/4</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+                <div id="fase-4-list" class="checkpoints-list">
+                    <!-- Renderizado dinamicamente -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- MODAL DE CRIAR/EDITAR NOVA INAUGURAÇÃO -->
+    <div id="modal-loja" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title">Cadastrar Inauguração de Filial</h3>
+            <div class="form-group">
+                <label class="form-label">Nome da Filial / Loja</label>
+                <input type="text" id="inp-loja-nome" class="form-input" placeholder="Ex: Loja 52 - Samambaia Norte">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Data e Hora da Inauguração (Abertura dos Portões)</label>
+                <input type="datetime-local" id="inp-loja-data" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Gestor / Responsável Geral</label>
+                <input type="text" id="inp-loja-gestor" class="form-input" placeholder="Ex: Leonardo Silva">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="window.fecharModalLoja()">Cancelar</button>
+                <button type="button" class="btn-primary" id="btn-salvar-loja">Criar Inauguração</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADICIONAR CHECKPOINT PERSONALIZADO -->
+    <div id="modal-checkpoint" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title">Novo Checkpoint</h3>
+            <div class="form-group">
+                <label class="form-label">Fase do Checkpoint</label>
+                <select id="inp-cp-fase" class="form-input">
+                    <option value="fase_1">1. Planejamento & Cadastro Base</option>
+                    <option value="fase_2">2. Semana Crítica Pricing (D-7 a D-1)</option>
+                    <option value="fase_3">3. Ofertas de Inauguração & Sistema</option>
+                    <option value="fase_4">4. Auditoria Final & Carga PDV</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Título da Atividade</label>
+                <input type="text" id="inp-cp-titulo" class="form-input" placeholder="Ex: Conferir etiquetas de frios e laticínios">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Setor Envolvido</label>
+                <select id="inp-cp-setor" class="form-input">
+                    <option value="Pricing">📊 Pricing</option>
+                    <option value="Comercial">🛒 Comercial</option>
+                    <option value="TI">💻 TI / Automação</option>
+                    <option value="Operações">🏢 Operações / Loja</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Data / Prazo Limite</label>
+                <input type="date" id="inp-cp-data" class="form-input">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="window.fecharModalCp()">Cancelar</button>
+                <button type="button" class="btn-primary" id="btn-salvar-cp">Salvar Tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container"></div>
+
+    <!-- SCRIPT PRINCIPAL INTEGRADO AO FIREBASE -->
+    <script type="module">
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { ref, onValue, set, update, push, get } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        window.perfilUsuario = "Colaborador";
+        window.userName = "Usuário";
+        let lojasData = {};
+        let lojaAtivaId = null;
+        let countdownTimer = null;
+
+        // CHECKPOINTS PADRÃO BASEADOS NA ROTINA DE PRICING E INAUGURAÇÃO
+        const CHECKPOINTS_PADRAO = {
+            "fase_1": [
+                { id: "cp_1_1", titulo: "Definição do raio de concorrência e concorrentes-alvo", setor: "Pricing", diasAntes: 25 },
+                { id: "cp_1_2", titulo: "Pesquisa de preços pré-inauguração concluída", setor: "Pricing", diasAntes: 20 },
+                { id: "cp_1_3", titulo: "Parametrização inicial de tributação e margens da nova filial", setor: "Pricing", diasAntes: 15 }
+            ],
+            "fase_2": [
+                { id: "cp_2_1", titulo: "Abertura oficial da tabela de preços da nova filial no Consinco", setor: "Pricing", diasAntes: 7, critico: true },
+                { id: "cp_2_2", titulo: "Carga das regras de markup e margens meta por setor", setor: "Pricing", diasAntes: 6 },
+                { id: "cp_2_3", titulo: "Validação de itens com custo zerado ou pendente de entrada", setor: "Pricing", diasAntes: 4 }
+            ],
+            "fase_3": [
+                { id: "cp_3_1", titulo: "Recebimento da lista de ofertas de inauguração (Comercial)", setor: "Comercial", diasAntes: 7, critico: true },
+                { id: "cp_3_2", titulo: "Simulação de margem e impacto financeiro das ofertas", setor: "Pricing", diasAntes: 5 },
+                { id: "cp_3_3", titulo: "Programação e digitação das ofertas no sistema Consinco", setor: "Pricing", diasAntes: 3, critico: true },
+                { id: "cp_3_4", titulo: "Conferência final entre Encarte Gráfico x Sistema Consinco", setor: "Pricing", diasAntes: 2, critico: true }
+            ],
+            "fase_4": [
+                { id: "cp_4_1", titulo: "Disparo da Carga Geral de Preços para os servidores da nova loja", setor: "TI", diasAntes: 1, critico: true },
+                { id: "cp_4_2", titulo: "Varredura Final Preço Zero (Tolerância Zero antes da abertura)", setor: "Pricing", diasAntes: 1, critico: true },
+                { id: "cp_4_3", titulo: "Bipagem de amostra nos caixas (Conferência PDV x Gôndola)", setor: "Pricing", diasAntes: 1 },
+                { id: "cp_4_4", titulo: "Liberação do sinal verde de precificação para abertura dos portões", setor: "Pricing", diasAntes: 0, critico: true }
+            ]
+        };
+
+        // TOAST
+        window.showToast = (msg) => {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            toast.className = "toast-msg";
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // TOGGLE ACORDEÃO
+        window.toggleFase = (listId) => {
+            const list = document.getElementById(listId);
+            if (list) {
+                list.style.display = list.style.display === "none" ? "flex" : "none";
+            }
+        };
+
+        // SELETOR DE LOJA ATIVA
+        const selectLojaEl = document.getElementById("select-loja-ativa");
+        selectLojaEl.addEventListener("change", (e) => {
+            lojaAtivaId = e.target.value;
+            renderLojaAtiva();
+        });
+
+        // ESCUTAR NÓ DE INAUGURAÇÕES NO FIREBASE
+        const inauguracoesRef = ref(db, 'inauguracoes');
+        onValue(inauguracoesRef, (snapshot) => {
+            lojasData = snapshot.val() || {};
+            
+            // Se ainda não existir nenhuma inauguração, inicializa com uma demonstração da rede
+            if (Object.keys(lojasData).length === 0) {
+                criarLojaInicialDemonstracao();
+                return;
+            }
+
+            popularSelectLojas();
+            renderLojaAtiva();
+        });
+
+        function popularSelectLojas() {
+            selectLojaEl.innerHTML = "";
+            const keys = Object.keys(lojasData);
+            keys.forEach((key, idx) => {
+                const opt = document.createElement("option");
+                opt.value = key;
+                opt.textContent = lojasData[key].nome || key;
+                selectLojaEl.appendChild(opt);
+            });
+
+            if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
+                lojaAtivaId = keys[0];
+            }
+            selectLojaEl.value = lojaAtivaId;
+        }
+
+        // CRIA UMA LOJA DEMONSTRATIVA CASO O BANCO ESTEJA VAZIO
+        async function criarLojaInicialDemonstracao() {
+            const dataInaug = new Date();
+            dataInaug.setDate(dataInaug.getDate() + 14); // Em 14 dias
+            dataInaug.setHours(8, 0, 0, 0);
+
+            const novaLojaRef = push(inauguracoesRef);
+            const lojaDemo = {
+                nome: "Loja 52 - Samambaia Norte (Inauguração)",
+                data_inauguracao: dataInaug.toISOString(),
+                gestor: "Leonardo Silva",
+                status: "Em Andamento",
+                checkpoints: {},
+                rotina_preco_zero: {
+                    "d_7": { feito: false, responsavel: "", data: "" },
+                    "d_6": { feito: false, responsavel: "", data: "" },
+                    "d_5": { feito: false, responsavel: "", data: "" },
+                    "d_4": { feito: false, responsavel: "", data: "" },
+                    "d_3": { feito: false, responsavel: "", data: "" },
+                    "d_2": { feito: false, responsavel: "", data: "" },
+                    "d_1": { feito: false, responsavel: "", data: "" }
+                }
+            };
+
+            // Adiciona checkpoints padrão
+            Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
+                CHECKPOINTS_PADRAO[faseKey].forEach(item => {
+                    lojaDemo.checkpoints[item.id] = {
+                        titulo: item.titulo,
+                        fase: faseKey,
+                        setor: item.setor,
+                        concluido: false,
+                        critico: !!item.critico,
+                        concluidoPor: "",
+                        concluidoEm: ""
+                    };
+                });
+            });
+
+            await set(novaLojaRef, lojaDemo);
+        }
+
+        // RENDERIZAR A LOJA ATUALMENTE SELECIONADA
+        function renderLojaAtiva() {
+            if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
+            const loja = lojasData[lojaAtivaId];
+
+            // Detalhes do Subtítulo
+            const dataInaug = new Date(loja.data_inauguracao);
+            const dataFormatada = !isNaN(dataInaug.getTime()) ? 
+                dataInaug.toLocaleDateString('pt-BR') + ' às ' + dataInaug.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 
+                'Data indefinida';
+
+            document.getElementById("loja-detalhes-sub").innerHTML = 
+                `Data prevista: <strong>${dataFormatada}</strong> | Gestor: <strong>${loja.gestor || 'Equipe Pricing'}</strong>`;
+
+            // Badge status
+            const badgeStatus = document.getElementById("badge-status-inauguracao");
+            badgeStatus.textContent = `• ${loja.status || 'Em Andamento'}`;
+
+            // Iniciar Relógio Contagem Regressiva
+            iniciarCountdown(dataInaug);
+
+            // Renderizar Checkpoints por Fase
+            renderCheckpoints(loja);
+
+            // Renderizar Grade Diária Preço Zero
+            renderGridPrecoZero(loja);
+
+            // Calcular Estatísticas & Progresso
+            calcularEstatisticas(loja);
+        }
+
+        // COUNTDOWN TIMER
+        function iniciarCountdown(targetDate) {
+            if (countdownTimer) clearInterval(countdownTimer);
+
+            function updateTime() {
+                const agora = new Date().getTime();
+                const diff = targetDate.getTime() - agora;
+
+                if (diff <= 0) {
+                    document.getElementById("cnt-dias").textContent = "00";
+                    document.getElementById("cnt-horas").textContent = "00";
+                    document.getElementById("cnt-minutos").textContent = "00";
+                    return;
+                }
+
+                const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                document.getElementById("cnt-dias").textContent = String(dias).padStart(2, '0');
+                document.getElementById("cnt-horas").textContent = String(horas).padStart(2, '0');
+                document.getElementById("cnt-minutos").textContent = String(minutos).padStart(2, '0');
+
+                // Atualizar milestones da timeline
+                atualizarMilestones(dias);
+            }
+
+            updateTime();
+            countdownTimer = setInterval(updateTime, 60000); // atualiza a cada minuto
+        }
+
+        function atualizarMilestones(diasRestantes) {
+            const msMap = [
+                { id: "ms-d30", dias: 30 },
+                { id: "ms-d7", dias: 7 },
+                { id: "ms-d3", dias: 3 },
+                { id: "ms-d1", dias: 1 },
+                { id: "ms-d0", dias: 0 }
+            ];
+
+            msMap.forEach(ms => {
+                const el = document.getElementById(ms.id);
+                if (el) {
+                    if (diasRestantes <= ms.dias) {
+                        el.classList.add("active");
+                    } else {
+                        el.classList.remove("active");
+                    }
+                }
+            });
+        }
+
+        // RENDER CHECKPOINTS
+        function renderCheckpoints(loja) {
+            const cps = loja.checkpoints || {};
+            const fases = {
+                "fase_1": { list: document.getElementById("fase-1-list"), total: 0, concluidos: 0 },
+                "fase_2": { list: document.getElementById("fase-2-list"), total: 0, concluidos: 0 },
+                "fase_3": { list: document.getElementById("fase-3-list"), total: 0, concluidos: 0 },
+                "fase_4": { list: document.getElementById("fase-4-list"), total: 0, concluidos: 0 }
+            };
+
+            // Limpa as listas
+            Object.keys(fases).forEach(fKey => {
+                if (fases[fKey].list) fases[fKey].list.innerHTML = "";
+            });
+
+            // Popula
+            Object.keys(cps).forEach(cpId => {
+                const cp = cps[cpId];
+                const faseKey = cp.fase || "fase_1";
+                if (!fases[faseKey]) return;
+
+                fases[faseKey].total++;
+                if (cp.concluido) fases[faseKey].concluidos++;
+
+                const row = document.createElement("div");
+                row.className = `checkpoint-item ${cp.concluido ? 'concluido' : ''}`;
+
+                const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
+
+                row.innerHTML = `
+                    <input type="checkbox" class="custom-checkbox" ${cp.concluido ? 'checked' : ''} 
+                        ${!podeEditar ? 'disabled' : ''} 
+                        onchange="window.toggleCheckpoint('${cpId}', this.checked)">
+                    <div class="checkpoint-info">
+                        <span class="checkpoint-titulo">
+                            ${cp.critico ? '<span style="color:#ef4444; font-weight:800;" title="Marco Crítico">⚠️ </span>' : ''}
+                            ${cp.titulo}
+                        </span>
+                        <div class="checkpoint-sub">
+                            <span class="pill-setor ${cp.setor === 'Pricing' ? 'pricing' : ''}">${cp.setor || 'Geral'}</span>
+                            ${cp.concluido ? 
+                                `<span style="color: #10b981; font-weight: 600;">✓ Concluído por ${cp.concluidoPor || 'Equipe'} em ${cp.concluidoEm || ''}</span>` : 
+                                `<span>Pendente</span>`
+                            }
+                        </div>
+                    </div>
+                    <div class="checkpoint-meta">
+                        ${cp.data_limite ? `<span class="checkpoint-date">${cp.data_limite}</span>` : ''}
+                    </div>
+                `;
+
+                if (fases[faseKey].list) {
+                    fases[faseKey].list.appendChild(row);
+                }
+            });
+
+            // Atualiza contadores dos acordeões
+            document.getElementById("prog-fase-1").textContent = `${fases["fase_1"].concluidos}/${fases["fase_1"].total}`;
+            document.getElementById("prog-fase-2").textContent = `${fases["fase_2"].concluidos}/${fases["fase_2"].total}`;
+            document.getElementById("prog-fase-3").textContent = `${fases["fase_3"].concluidos}/${fases["fase_3"].total}`;
+            document.getElementById("prog-fase-4").textContent = `${fases["fase_4"].concluidos}/${fases["fase_4"].total}`;
+        }
+
+        // RENDER GRID ROTINA PREÇO ZERO (D-7 A D-1)
+        function renderGridPrecoZero(loja) {
+            const grid = document.getElementById("grid-preco-zero");
+            grid.innerHTML = "";
+            const rotina = loja.rotina_preco_zero || {};
+
+            const diasLista = [
+                { key: "d_7", label: "D - 7", desc: "1ª Varredura Geral" },
+                { key: "d_6", label: "D - 6", desc: "Audit Diário" },
+                { key: "d_5", label: "D - 5", desc: "Audit Diário" },
+                { key: "d_4", label: "D - 4", desc: "Audit Diário" },
+                { key: "d_3", label: "D - 3", desc: "Saneamento Base" },
+                { key: "d_2", label: "D - 2", desc: "Pré-Encerramento" },
+                { key: "d_1", label: "D - 1", desc: "Tolerância Zero" }
+            ];
+
+            const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
+
+            diasLista.forEach(dia => {
+                const item = rotina[dia.key] || { feito: false };
+                const card = document.createElement("div");
+                card.className = `dia-zero-item ${item.feito ? 'feito' : ''}`;
+                
+                card.innerHTML = `
+                    <span class="dia-zero-tag">${dia.label}</span>
+                    <span style="font-size: 0.65rem; color: var(--text-muted);">${dia.desc}</span>
+                    <span class="dia-zero-status">
+                        ${item.feito ? '✅ Realizado' : '⏳ Pendente'}
+                    </span>
+                    ${item.responsavel ? `<small style="font-size:0.6rem; color: var(--text-muted);">${item.responsavel}</small>` : ''}
+                `;
+
+                if (podeEditar) {
+                    card.onclick = () => window.togglePrecoZero(dia.key, !item.feito);
+                }
+
+                grid.appendChild(card);
+            });
+        }
+
+        // TOGGLE CHECKPOINT NO FIREBASE
+        window.toggleCheckpoint = async (cpId, checked) => {
+            if (!lojaAtivaId) return;
+            const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            const updates = {};
+            updates[`inauguracoes/${lojaAtivaId}/checkpoints/${cpId}/concluido`] = checked;
+            updates[`inauguracoes/${lojaAtivaId}/checkpoints/${cpId}/concluidoPor`] = checked ? window.userName : "";
+            updates[`inauguracoes/${lojaAtivaId}/checkpoints/${cpId}/concluidoEm`] = checked ? agora : "";
+
+            await update(ref(db), updates);
+
+            if (checked && typeof confetti === 'function') {
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.8 }
+                });
+            }
+            window.showToast(checked ? "Checkpoint concluído!" : "Checkpoint reaberto!");
+        };
+
+        // TOGGLE PREÇO ZERO NO FIREBASE
+        window.togglePrecoZero = async (diaKey, novoStatus) => {
+            if (!lojaAtivaId) return;
+            const agora = new Date().toLocaleDateString('pt-BR');
+            const updates = {};
+            updates[`inauguracoes/${lojaAtivaId}/rotina_preco_zero/${diaKey}/feito`] = novoStatus;
+            updates[`inauguracoes/${lojaAtivaId}/rotina_preco_zero/${diaKey}/responsavel`] = novoStatus ? window.userName : "";
+            updates[`inauguracoes/${lojaAtivaId}/rotina_preco_zero/${diaKey}/data`] = novoStatus ? agora : "";
+
+            await update(ref(db), updates);
+            window.showToast(novoStatus ? `Varredura ${diaKey.toUpperCase()} marcada como realizada!` : `Varredura desmarcada.`);
+        };
+
+        // CÁLCULO GERAL DE ESTATÍSTICAS
+        function calcularEstatisticas(loja) {
+            const cps = loja.checkpoints || {};
+            const rotina = loja.rotina_preco_zero || {};
+
+            let totalCps = 0;
+            let concluidosCps = 0;
+
+            Object.keys(cps).forEach(k => {
+                totalCps++;
+                if (cps[k].concluido) concluidosCps++;
+            });
+
+            // Rotina Preço Zero Feitos
+            let zeroFeitos = 0;
+            Object.keys(rotina).forEach(k => {
+                if (rotina[k].feito) zeroFeitos++;
+            });
+
+            // Total combinado (Checkpoints + 7 dias de Preço Zero)
+            const totalGeral = totalCps + 7;
+            const concluidosGeral = concluidosCps + zeroFeitos;
+            const percentual = totalGeral > 0 ? Math.round((concluidosGeral / totalGeral) * 100) : 0;
+
+            // Preenche na UI
+            document.getElementById("lbl-progresso-percent").textContent = `${percentual}% Concluído`;
+            document.getElementById("bar-progresso-fill").style.width = `${percentual}%`;
+
+            document.getElementById("stat-total-concluido").textContent = concluidosCps;
+            document.getElementById("stat-total-pendente").textContent = (totalCps - concluidosCps);
+            document.getElementById("stat-total-zero").textContent = `${zeroFeitos}/7`;
+
+            // Ofertas e Sistema (Fase 3)
+            let f3Total = 0;
+            let f3Done = 0;
+            Object.keys(cps).forEach(k => {
+                if (cps[k].fase === "fase_3") {
+                    f3Total++;
+                    if (cps[k].concluido) f3Done++;
+                }
+            });
+            const pctOfertas = f3Total > 0 ? Math.round((f3Done / f3Total) * 100) : 0;
+            document.getElementById("stat-total-ofertas").textContent = `${pctOfertas}%`;
+
+            if (percentual === 100 && typeof confetti === 'function') {
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+            }
+        }
+
+        // MODAL DE NOVA LOJA
+        const btnNovaLoja = document.getElementById("btn-nova-inauguracao");
+        const modalLoja = document.getElementById("modal-loja");
+        btnNovaLoja.onclick = () => { modalLoja.style.display = "flex"; };
+        window.fecharModalLoja = () => { modalLoja.style.display = "none"; };
+
+        document.getElementById("btn-salvar-loja").onclick = async () => {
+            const nome = document.getElementById("inp-loja-nome").value.trim();
+            const data = document.getElementById("inp-loja-data").value;
+            const gestor = document.getElementById("inp-loja-gestor").value.trim();
+
+            if (!nome || !data) {
+                alert("Preencha o nome da filial e a data da inauguração.");
+                return;
+            }
+
+            const novaRef = push(inauguracoesRef);
+            const novaLoja = {
+                nome: nome,
+                data_inauguracao: new Date(data).toISOString(),
+                gestor: gestor || window.userName,
+                status: "Em Andamento",
+                checkpoints: {},
+                rotina_preco_zero: {
+                    "d_7": { feito: false, responsavel: "", data: "" },
+                    "d_6": { feito: false, responsavel: "", data: "" },
+                    "d_5": { feito: false, responsavel: "", data: "" },
+                    "d_4": { feito: false, responsavel: "", data: "" },
+                    "d_3": { feito: false, responsavel: "", data: "" },
+                    "d_2": { feito: false, responsavel: "", data: "" },
+                    "d_1": { feito: false, responsavel: "", data: "" }
+                }
+            };
+
+            // Copia checkpoints padrão
+            Object.keys(CHECKPOINTS_PADRAO).forEach(faseKey => {
+                CHECKPOINTS_PADRAO[faseKey].forEach(item => {
+                    novaLoja.checkpoints[item.id] = {
+                        titulo: item.titulo,
+                        fase: faseKey,
+                        setor: item.setor,
+                        concluido: false,
+                        critico: !!item.critico,
+                        concluidoPor: "",
+                        concluidoEm: ""
+                    };
+                });
+            });
+
+            await set(novaRef, novaLoja);
+            lojaAtivaId = novaRef.key;
+            window.fecharModalLoja();
+            window.showToast("Nova inauguração cadastrada com sucesso!");
+        };
+
+        // MODAL DE NOVO CHECKPOINT
+        const btnAddCp = document.getElementById("btn-add-checkpoint");
+        const modalCp = document.getElementById("modal-checkpoint");
+        btnAddCp.onclick = () => { modalCp.style.display = "flex"; };
+        window.fecharModalCp = () => { modalCp.style.display = "none"; };
+
+        document.getElementById("btn-salvar-cp").onclick = async () => {
+            const fase = document.getElementById("inp-cp-fase").value;
+            const titulo = document.getElementById("inp-cp-titulo").value.trim();
+            const setor = document.getElementById("inp-cp-setor").value;
+            const data = document.getElementById("inp-cp-data").value;
+
+            if (!titulo) {
+                alert("Informe o título da atividade.");
+                return;
+            }
+
+            if (!lojaAtivaId) return;
+
+            const novoCpRef = push(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints`));
+            await set(novoCpRef, {
+                fase: fase,
+                titulo: titulo,
+                setor: setor,
+                data_limite: data || "",
+                concluido: false,
+                concluidoPor: "",
+                concluidoEm: ""
+            });
+
+            document.getElementById("inp-cp-titulo").value = "";
+            window.fecharModalCp();
+            window.showToast("Tarefa adicionada com sucesso!");
+        };
+
+        // AUTENTICAÇÃO
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "/";
+                return;
+            }
+
+            const photoEl = document.getElementById('user-photo');
+            if (photoEl) photoEl.src = user.photoURL || 'https://via.placeholder.com/40';
+
+            const nameEl = document.getElementById('user-name-widget');
+            if (nameEl) nameEl.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
+
+            const userRef = ref(db, 'usuarios/' + user.uid);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    window.perfilUsuario = snapshot.val().perfil || "Colaborador";
+                    if (snapshot.val().nome) {
+                        window.userName = snapshot.val().nome;
+                        if (nameEl) nameEl.textContent = window.userName.split(' ')[0];
+                    }
+                }
+
+                const roleEl = document.getElementById('user-role-widget');
+                if (roleEl) roleEl.textContent = window.perfilUsuario;
+
+                // Controles de visibilidade de botões administrativos
+                if (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing") {
+                    btnNovaLoja.style.display = "inline-flex";
+                    btnAddCp.style.display = "inline-flex";
+                }
+            });
+        });
+
+        // LOGOUT
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    window.location.href = "/";
+                });
+            });
+        }
+    </script>
+    <!-- ALERTA GLOBAL PRICING -->
+    <script type="module" src="./alerta-global-pricing.js"></script>
+</body>
+</html>
