@@ -277,49 +277,44 @@
             box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
         }
 
-        /* WIDGET DO CONTADOR REGRESSIVO */
+        /* WIDGET DO CONTADOR REGRESSIVO (FOCO EXCLUSIVO EM DIAS ÚTEIS) */
         .countdown-widget {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 12px 20px;
-            border-radius: 1rem;
-            backdrop-filter: blur(12px);
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 14px 28px;
+            border-radius: 1.2rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .countdown-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 58px;
+            text-align: center;
         }
 
         .countdown-num {
-            font-size: 2.2rem;
+            font-size: 3.2rem;
             font-weight: 900;
             line-height: 1;
             font-variant-numeric: tabular-nums;
-            background: linear-gradient(180deg, #ffffff 0%, #93c5fd 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #38bdf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
 
         .countdown-lbl {
-            font-size: 0.65rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.12em;
             color: #94a3b8;
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        .countdown-divider {
-            font-size: 1.5rem;
+            margin-top: 6px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.3);
-            margin-bottom: 12px;
         }
 
         /* LINHA DO TEMPO MACRO / PROGRESS BAR */
@@ -895,20 +890,10 @@
                 </div>
 
                 <!-- CONTADOR REGRESSIVO DINÂMICO (DIAS ÚTEIS) -->
-                <div class="countdown-widget" title="Contador calculado em dias úteis (desconsiderando finais de semana e feriados nacionais)">
+                <div class="countdown-widget" title="Dias úteis restantes até a data da inauguração (excluindo sábados, domingos e feriados nacionais)">
                     <div class="countdown-box">
                         <span id="cnt-dias" class="countdown-num">00</span>
-                        <span class="countdown-lbl">Dias Úteis</span>
-                    </div>
-                    <span class="countdown-divider">:</span>
-                    <div class="countdown-box">
-                        <span id="cnt-horas" class="countdown-num">00</span>
-                        <span class="countdown-lbl">Horas</span>
-                    </div>
-                    <span class="countdown-divider">:</span>
-                    <div class="countdown-box">
-                        <span id="cnt-minutos" class="countdown-num">00</span>
-                        <span class="countdown-lbl">Minutos</span>
+                        <span class="countdown-lbl">Dias Úteis Restantes</span>
                     </div>
                 </div>
             </div>
@@ -1166,10 +1151,7 @@
             if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
                 document.getElementById("loja-detalhes-sub").innerHTML = "Nenhuma inauguração selecionada. Clique em <strong>+ Nova Loja</strong> para começar.";
                 const badgeStatus = document.getElementById("badge-status-inauguracao");
-                if (badgeStatus) badgeStatus.textContent = "• Sem Loja Ativa";
                 document.getElementById("cnt-dias").textContent = "00";
-                document.getElementById("cnt-horas").textContent = "00";
-                document.getElementById("cnt-minutos").textContent = "00";
                 document.getElementById("bar-progresso-fill").style.width = "0%";
                 document.getElementById("lbl-progresso-percent").textContent = "0% Concluído";
                 if (countdownTimer) clearInterval(countdownTimer);
@@ -1319,14 +1301,10 @@
             }
 
             const cntDias = document.getElementById("cnt-dias");
-            const cntHoras = document.getElementById("cnt-horas");
-            const cntMin = document.getElementById("cnt-minutos");
             const feriadosCache = {};
 
             if (!targetDate || isNaN(targetDate.getTime())) {
-                cntDias.textContent = "00";
-                cntHoras.textContent = "00";
-                cntMin.textContent = "00";
+                if (cntDias) cntDias.textContent = "00";
                 return;
             }
 
@@ -1335,32 +1313,25 @@
                 const diffMs = targetDate.getTime() - agora.getTime();
 
                 if (diffMs <= 0) {
-                    cntDias.textContent = "00";
-                    cntHoras.textContent = "00";
-                    cntMin.textContent = "00";
+                    if (cntDias) cntDias.textContent = "00";
                     const badge = document.getElementById("badge-status-inauguracao");
                     if (badge) badge.textContent = "• Loja Aberta 🎉";
                     atualizarMilestones(0);
                     return;
                 }
 
-                // 1. Cálculo de Dias Úteis
+                // Cálculo exato de Dias Úteis restantes
                 const diasUteis = contarDiasUteisRestantes(agora, targetDate, feriadosCache);
 
-                // 2. Horas e minutos restantes no ciclo diário até o horário da inauguração
-                const totalSegundosRestantes = Math.floor(diffMs / 1000);
-                const horas = Math.floor((totalSegundosRestantes % (3600 * 24)) / 3600);
-                const minutos = Math.floor((totalSegundosRestantes % 3600) / 60);
-
-                cntDias.textContent = String(diasUteis).padStart(2, '0');
-                cntHoras.textContent = String(horas).padStart(2, '0');
-                cntMin.textContent = String(minutos).padStart(2, '0');
+                if (cntDias) {
+                    cntDias.textContent = String(diasUteis).padStart(2, '0');
+                }
 
                 atualizarMilestones(diasUteis);
             }
 
             updateTime();
-            countdownTimer = setInterval(updateTime, 1000);
+            countdownTimer = setInterval(updateTime, 30000); // Atualiza periodicamente
         }
 
         function atualizarMilestones(diasRestantes) {
