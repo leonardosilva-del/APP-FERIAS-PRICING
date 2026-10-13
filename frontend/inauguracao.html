@@ -974,6 +974,9 @@
                         <button id="btn-nova-inauguracao" class="btn-nav" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 14px;">
                             + Nova Loja
                         </button>
+                        <button id="btn-excluir-loja" class="btn-nav" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 10px 14px;" title="Excluir Loja Selecionada">
+                            🗑️ Excluir Loja
+                        </button>
                     </div>
                     <p id="loja-detalhes-sub" style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;">
                         Data prevista de inauguração: <strong>--/--/----</strong>
@@ -1482,9 +1485,21 @@
                 }
             });
 
-            // Detalhes do Subtítulo
-            const dataInaug = new Date(loja.data_inauguracao);
-            const dataFormatada = !isNaN(dataInaug.getTime()) ? 
+            // Parser seguro de Data da Inauguração (suporta ISO, YYYY-MM-DD, e strings locais)
+            let dataInaug = null;
+            if (loja.data_inauguracao) {
+                dataInaug = new Date(loja.data_inauguracao);
+                if (isNaN(dataInaug.getTime())) {
+                    // Tenta parser de data pura caso venha em formato YYYY-MM-DD
+                    const partes = String(loja.data_inauguracao).split(/[-T :]/);
+                    if (partes.length >= 3) {
+                        dataInaug = new Date(partes[0], partes[1] - 1, partes[2], partes[3] || 8, partes[4] || 0);
+                    }
+                }
+            }
+
+            const dataValida = dataInaug && !isNaN(dataInaug.getTime());
+            const dataFormatada = dataValida ? 
                 dataInaug.toLocaleDateString('pt-BR') + ' às ' + dataInaug.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 
                 'Data indefinida';
 
@@ -1510,33 +1525,52 @@
 
         // COUNTDOWN TIMER
         function iniciarCountdown(targetDate) {
-            if (countdownTimer) clearInterval(countdownTimer);
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+
+            const cntDias = document.getElementById("cnt-dias");
+            const cntHoras = document.getElementById("cnt-horas");
+            const cntMin = document.getElementById("cnt-minutos");
+
+            if (!targetDate || isNaN(targetDate.getTime())) {
+                cntDias.textContent = "00";
+                cntHoras.textContent = "00";
+                cntMin.textContent = "00";
+                return;
+            }
 
             function updateTime() {
-                const agora = new Date().getTime();
+                const agora = Date.now();
                 const diff = targetDate.getTime() - agora;
 
                 if (diff <= 0) {
-                    document.getElementById("cnt-dias").textContent = "00";
-                    document.getElementById("cnt-horas").textContent = "00";
-                    document.getElementById("cnt-minutos").textContent = "00";
+                    // Data chegou ou passou (Inaugurada ou Hoje)
+                    cntDias.textContent = "00";
+                    cntHoras.textContent = "00";
+                    cntMin.textContent = "00";
+                    const badge = document.getElementById("badge-status-inauguracao");
+                    if (badge) badge.textContent = "• Loja Aberta 🎉";
+                    atualizarMilestones(0);
                     return;
                 }
 
-                const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const totalSegundos = Math.floor(diff / 1000);
+                const dias = Math.floor(totalSegundos / (3600 * 24));
+                const horas = Math.floor((totalSegundos % (3600 * 24)) / 3600);
+                const minutos = Math.floor((totalSegundos % 3600) / 60);
 
-                document.getElementById("cnt-dias").textContent = String(dias).padStart(2, '0');
-                document.getElementById("cnt-horas").textContent = String(horas).padStart(2, '0');
-                document.getElementById("cnt-minutos").textContent = String(minutos).padStart(2, '0');
+                cntDias.textContent = String(dias).padStart(2, '0');
+                cntHoras.textContent = String(horas).padStart(2, '0');
+                cntMin.textContent = String(minutos).padStart(2, '0');
 
                 // Atualizar milestones da timeline
                 atualizarMilestones(dias);
             }
 
             updateTime();
-            countdownTimer = setInterval(updateTime, 60000); // atualiza a cada minuto
+            countdownTimer = setInterval(updateTime, 1000); // atualiza a cada segundo para precisao imediata
         }
 
         function atualizarMilestones(diasRestantes) {
@@ -1836,6 +1870,51 @@
                 btn.textContent = "Criar Inauguração";
             }
         };
+
+        // ==========================================
+        // EXCLUIR LOJA / INAUGURAÇÃO SELECIONADA
+        // ==========================================
+        const btnExcluirLoja = document.getElementById("btn-excluir-loja");
+        if (btnExcluirLoja) {
+            btnExcluirLoja.onclick = async () => {
+                if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
+                    alert("Nenhuma loja selecionada para exclusão.");
+                    return;
+                }
+
+                const nomeLoja = lojasData[lojaAtivaId].nome || "esta loja";
+                const confirmacao = confirm(`⚠️ ATENÇÃO: Tem certeza que deseja excluir o cronograma de "${nomeLoja}"?\n\nEsta ação apagará todos os checkpoints e registros desta filial.`);
+                
+                if (!confirmacao) return;
+
+                try {
+                    btnExcluirLoja.disabled = true;
+                    btnExcluirLoja.textContent = "Excluindo...";
+
+                    await remove(ref(db, `inauguracoes/${lojaAtivaId}`));
+
+                    delete lojasData[lojaAtivaId];
+                    const chavesRestantes = Object.keys(lojasData);
+                    lojaAtivaId = chavesRestantes.length > 0 ? chavesRestantes[0] : null;
+
+                    popularSelectLojas();
+                    if (lojaAtivaId) {
+                        renderLojaAtiva();
+                    } else {
+                        // Se não restar nenhuma, recria a demonstração
+                        criarLojaInicialDemonstracao();
+                    }
+
+                    window.showToast(`Loja "${nomeLoja}" excluída com sucesso!`);
+                } catch (err) {
+                    console.error("Erro ao excluir loja:", err);
+                    alert("Erro ao excluir loja do banco: " + (err.message || err));
+                } finally {
+                    btnExcluirLoja.disabled = false;
+                    btnExcluirLoja.textContent = "🗑️ Excluir Loja";
+                }
+            };
+        }
 
         // ==========================================
         // EDITAR NOME DA FASE/ETAPA
