@@ -18,6 +18,9 @@
 
     <!-- Canvas Confetti para gamificação de conclusão -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    
+    <!-- SortableJS para Drag and Drop Avançado (Reordenação) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <!-- SCRIPT DO MODO DARK GLOBAL -->
     <script>
@@ -277,7 +280,7 @@
             box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
         }
 
-        /* WIDGET DO CONTADOR REGRESSIVO (FOCO EXCLUSIVO EM DIAS ÚTEIS) */
+        /* WIDGET DO CONTADOR REGRESSIVO */
         .countdown-widget {
             display: flex;
             align-items: center;
@@ -552,6 +555,37 @@
         .checklist-table tbody tr.concluido .task-title {
             text-decoration: line-through;
             color: var(--text-muted);
+        }
+
+        /* -------------------------------------------
+           UX DE ARRASTAR E SOLTAR (SORTABLE JS)
+        ------------------------------------------- */
+        .drag-handle {
+            cursor: grab;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .drag-handle:hover {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* Classe fantasma durante o arrasto */
+        .sortable-ghost {
+            opacity: 0.5;
+            background-color: var(--pill-bg) !important;
+            border: 2px dashed var(--primary);
         }
 
         /* CUSTOM CHECKBOX */
@@ -979,7 +1013,7 @@
                     <h2 class="table-title">
                         <span>📋 Checklist Oficial de Inauguração</span>
                     </h2>
-                    <p class="table-subtitle">Tabela sequencial de atividades, prazos e controle de entrega da filial.</p>
+                    <p class="table-subtitle">Tabela sequencial. Arraste as linhas pelo ícone à esquerda para reordenar a prioridade.</p>
                 </div>
                 <div class="table-actions">
                     <button id="btn-add-checkpoint" class="btn-add-primary">
@@ -992,6 +1026,7 @@
                 <table class="checklist-table">
                     <thead>
                         <tr>
+                            <th style="width: 40px;"></th> <!-- Coluna do Grip de arrastar -->
                             <th style="width: 45px; text-align: center;">Status</th>
                             <th class="col-seq">#</th>
                             <th>Atividade / Demanda</th>
@@ -1003,7 +1038,7 @@
                     </thead>
                     <tbody id="tbody-checkpoints">
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
                                 Carregando atividades da filial...
                             </td>
                         </tr>
@@ -1085,6 +1120,7 @@
         let lojasData = {};
         let lojaAtivaId = null;
         let countdownTimer = null;
+        let sortableInstance = null; // Instância do drag and drop
 
         // TOAST
         window.showToast = (msg) => {
@@ -1139,18 +1175,16 @@
                 selectLojaEl.appendChild(opt);
             });
 
-            // Se a loja ativa atual não existir mais na lista, seleciona a primeira disponível
             if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
                 lojaAtivaId = keys[0];
             }
             selectLojaEl.value = lojaAtivaId;
         }
 
-        // RENDERIZAR A LOJA ATUALMENTE SELECIONADA
         function renderLojaAtiva() {
             if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
                 document.getElementById("loja-detalhes-sub").innerHTML = "Nenhuma inauguração selecionada. Clique em <strong>+ Nova Loja</strong> para começar.";
-                const badgeStatus = document.getElementById("badge-status-inauguracao");
+                document.getElementById("badge-status-inauguracao").textContent = "• Em Planejamento";
                 document.getElementById("cnt-dias").textContent = "00";
                 document.getElementById("bar-progresso-fill").style.width = "0%";
                 document.getElementById("lbl-progresso-percent").textContent = "0% Concluído";
@@ -1158,21 +1192,13 @@
 
                 const tbody = document.getElementById("tbody-checkpoints");
                 if (tbody) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
-                                Nenhuma loja selecionada. Cadastre uma filial para gerenciar as demandas.
-                            </td>
-                        </tr>
-                    `;
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">Nenhuma loja selecionada. Cadastre uma filial para gerenciar as demandas.</td></tr>`;
                 }
                 atualizarCardsStats(0, 0);
                 return;
             }
 
             const loja = lojasData[lojaAtivaId];
-
-            // Parser seguro de Data da Inauguração
             let dataInaug = null;
             if (loja.data_inauguracao) {
                 dataInaug = new Date(loja.data_inauguracao);
@@ -1191,115 +1217,63 @@
 
             document.getElementById("loja-detalhes-sub").innerHTML = 
                 `Data prevista: <strong>${dataFormatada}</strong> | Gestor: <strong>${loja.gestor || 'Equipe Pricing'}</strong>`;
+            document.getElementById("badge-status-inauguracao").textContent = `• ${loja.status || 'Em Andamento'}`;
 
-            // Badge status
-            const badgeStatus = document.getElementById("badge-status-inauguracao");
-            badgeStatus.textContent = `• ${loja.status || 'Em Andamento'}`;
-
-            // Iniciar Relógio Contagem Regressiva
             iniciarCountdown(dataInaug);
-
-            // Renderizar Tabelão Único
             renderTabelaoCheckpoints(loja);
         }
 
         // ==========================================
-        // CÁLCULO DE DIAS ÚTEIS E FERIADOS NACIONAIS
+        // CÁLCULO DE DIAS ÚTEIS E FERIADOS
         // ==========================================
         function calcularFeriadosNacionais(ano) {
-            // Algoritmo de Butcher/Meeus para cálculo da Páscoa
-            const a = ano % 19;
-            const b = Math.floor(ano / 100);
-            const c = ano % 100;
-            const d = Math.floor(b / 4);
-            const e = b % 4;
-            const f = Math.floor((b + 8) / 25);
-            const g = Math.floor((b - f + 1) / 3);
-            const h = (19 * a + b - d - g + 15) % 30;
-            const i = Math.floor(c / 4);
-            const k = c % 4;
-            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const a = ano % 19; const b = Math.floor(ano / 100); const c = ano % 100;
+            const d = Math.floor(b / 4); const e = b % 4; const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3); const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4); const k = c % 4; const l = (32 + 2 * e + 2 * i - h - k) % 7;
             const m = Math.floor((a + 11 * h + 22 * l) / 451);
             const mesPascoa = Math.floor((h + l - 7 * m + 114) / 31);
             const diaPascoa = ((h + l - 7 * m + 114) % 31) + 1;
             const pascoa = new Date(ano, mesPascoa - 1, diaPascoa);
 
-            // Feriados móveis derivados da Páscoa
-            const carnaval = new Date(pascoa); carnaval.setDate(pascoa.getDate() - 47); // Terça de carnaval
-            const sextaSanta = new Date(pascoa); sextaSanta.setDate(pascoa.getDate() - 2); // Sexta-feira da Paixão
-            const corpusChristi = new Date(pascoa); corpusChristi.setDate(pascoa.getDate() + 60); // Corpus Christi
+            const carnaval = new Date(pascoa); carnaval.setDate(pascoa.getDate() - 47);
+            const sextaSanta = new Date(pascoa); sextaSanta.setDate(pascoa.getDate() - 2);
+            const corpusChristi = new Date(pascoa); corpusChristi.setDate(pascoa.getDate() + 60);
 
-            // Formatação YYYY-MM-DD
-            const fmt = (dt) => {
-                const y = dt.getFullYear();
-                const m = String(dt.getMonth() + 1).padStart(2, '0');
-                const d = String(dt.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            };
-
-            const feriadosFixos = [
-                `${ano}-01-01`, // Confraternização Universal
-                `${ano}-04-21`, // Tiradentes
-                `${ano}-05-01`, // Dia do Trabalho
-                `${ano}-09-07`, // Independência do Brasil
-                `${ano}-10-12`, // Nossa Senhora Aparecida
-                `${ano}-11-02`, // Finados
-                `${ano}-11-15`, // Proclamação da República
-                `${ano}-11-20`, // Dia Nacional de Zumbi e da Consciência Negra (Lei 14.759/2023)
-                `${ano}-12-25`  // Natal
-            ];
+            const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
 
             return new Set([
-                ...feriadosFixos,
-                fmt(carnaval),
-                fmt(sextaSanta),
-                fmt(corpusChristi)
+                `${ano}-01-01`, `${ano}-04-21`, `${ano}-05-01`, `${ano}-09-07`, 
+                `${ano}-10-12`, `${ano}-11-02`, `${ano}-11-15`, `${ano}-11-20`, `${ano}-12-25`,
+                fmt(carnaval), fmt(sextaSanta), fmt(corpusChristi)
             ]);
         }
 
         function isDiaUtil(dataObj, feriadosCache) {
             const diaSemana = dataObj.getDay();
-            if (diaSemana === 0 || diaSemana === 6) return false; // Sábado (6) ou Domingo (0)
-
+            if (diaSemana === 0 || diaSemana === 6) return false;
             const ano = dataObj.getFullYear();
-            if (!feriadosCache[ano]) {
-                feriadosCache[ano] = calcularFeriadosNacionais(ano);
-            }
-
-            const y = dataObj.getFullYear();
-            const m = String(dataObj.getMonth() + 1).padStart(2, '0');
-            const d = String(dataObj.getDate()).padStart(2, '0');
-            const dataStr = `${y}-${m}-${d}`;
-
+            if (!feriadosCache[ano]) feriadosCache[ano] = calcularFeriadosNacionais(ano);
+            const dataStr = `${ano}-${String(dataObj.getMonth() + 1).padStart(2, '0')}-${String(dataObj.getDate()).padStart(2, '0')}`;
             return !feriadosCache[ano].has(dataStr);
         }
 
-        // Calcula a quantidade exata de dias úteis inteiros entre hoje e a data alvo
         function contarDiasUteisRestantes(dataInicio, dataFim, feriadosCache) {
             let cursor = new Date(dataInicio);
             cursor.setHours(0, 0, 0, 0);
-            cursor.setDate(cursor.getDate() + 1); // Começa a contar a partir do próximo dia
-
+            cursor.setDate(cursor.getDate() + 1);
             const fim = new Date(dataFim);
             fim.setHours(0, 0, 0, 0);
-
             let diasUteis = 0;
             while (cursor <= fim) {
-                if (isDiaUtil(cursor, feriadosCache)) {
-                    diasUteis++;
-                }
+                if (isDiaUtil(cursor, feriadosCache)) diasUteis++;
                 cursor.setDate(cursor.getDate() + 1);
             }
             return diasUteis;
         }
 
-        // COUNTDOWN TIMER (CONSIDERA APENAS DIAS ÚTEIS, EXCLUINDO FINAIS DE SEMANA E FERIADOS NACIONAIS)
         function iniciarCountdown(targetDate) {
-            if (countdownTimer) {
-                clearInterval(countdownTimer);
-                countdownTimer = null;
-            }
-
+            if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
             const cntDias = document.getElementById("cnt-dias");
             const feriadosCache = {};
 
@@ -1320,94 +1294,80 @@
                     return;
                 }
 
-                // Cálculo exato de Dias Úteis restantes
                 const diasUteis = contarDiasUteisRestantes(agora, targetDate, feriadosCache);
-
-                if (cntDias) {
-                    cntDias.textContent = String(diasUteis).padStart(2, '0');
-                }
-
+                if (cntDias) cntDias.textContent = String(diasUteis).padStart(2, '0');
                 atualizarMilestones(diasUteis);
             }
 
             updateTime();
-            countdownTimer = setInterval(updateTime, 30000); // Atualiza periodicamente
+            countdownTimer = setInterval(updateTime, 30000);
         }
 
         function atualizarMilestones(diasRestantes) {
             const msMap = [
-                { id: "ms-d30", dias: 30 },
-                { id: "ms-d7", dias: 7 },
-                { id: "ms-d3", dias: 3 },
-                { id: "ms-d1", dias: 1 },
-                { id: "ms-d0", dias: 0 }
+                { id: "ms-d30", dias: 30 }, { id: "ms-d7", dias: 7 },
+                { id: "ms-d3", dias: 3 }, { id: "ms-d1", dias: 1 }, { id: "ms-d0", dias: 0 }
             ];
-
             msMap.forEach(ms => {
                 const el = document.getElementById(ms.id);
-                if (el) {
-                    if (diasRestantes <= ms.dias) {
-                        el.classList.add("active");
-                    } else {
-                        el.classList.remove("active");
-                    }
-                }
+                if (el) el.classList.toggle("active", diasRestantes <= ms.dias);
             });
         }
 
         // ==========================================
-        // RENDER DO TABELÃO ÚNICO SEQUENCIAL
+        // RENDER DO TABELÃO ÚNICO SEQUENCIAL & SORTABLE
         // ==========================================
         function renderTabelaoCheckpoints(loja) {
             const tbody = document.getElementById("tbody-checkpoints");
+            
+            // Destrói a instância de drag and drop anterior antes de reescrever o DOM
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+            
             tbody.innerHTML = "";
 
             const cps = loja.checkpoints || {};
             const keys = Object.keys(cps);
 
             if (keys.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
-                            Nenhuma atividade cadastrada ainda. Clique em <strong>+ Nova Demanda / Tarefa</strong> acima para começar seu checklist.
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">Nenhuma atividade cadastrada ainda. Clique em <strong>+ Nova Demanda / Tarefa</strong> acima para começar seu checklist.</td></tr>`;
                 atualizarCardsStats(0, 0);
                 return;
             }
 
-            // Converter para array para ordenação sequencial
-            const lista = keys.map((id, index) => ({
+            // Mapeia e ordena baseando-se na propriedade 'ordem' gravada no Firebase (ou fallback para criação)
+            const lista = keys.map((id) => ({
                 id,
                 ...cps[id],
-                ordemOriginal: index + 1
+                ordem: cps[id].ordem !== undefined ? cps[id].ordem : cps[id].criadoEm
             }));
 
-            // Ordena primeiro as pendentes no topo ou pela ordem cronológica
+            // Ordena as tarefas de acordo com a ordem configurada
+            lista.sort((a, b) => a.ordem - b.ordem);
+
             let total = lista.length;
             let concluidos = 0;
+            const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
 
             lista.forEach((item, idx) => {
                 if (item.concluido) concluidos++;
 
                 const tr = document.createElement("tr");
                 tr.className = item.concluido ? "concluido" : "";
+                tr.setAttribute("data-id", item.id); // Identificador para salvar no arrastar e soltar
 
-                const podeEditar = (window.perfilUsuario === "Gestor" || window.perfilUsuario === "Pricing");
-
-                // Formatar data limite
                 let dataDisplay = "—";
                 if (item.data_limite) {
                     const partes = item.data_limite.split("-");
-                    if (partes.length === 3) {
-                        dataDisplay = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                    } else {
-                        dataDisplay = item.data_limite;
-                    }
+                    dataDisplay = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : item.data_limite;
                 }
 
                 tr.innerHTML = `
+                    <td style="text-align: center;">
+                        ${podeEditar ? `<span class="drag-handle" title="Arraste para reordenar">⋮⋮</span>` : ``}
+                    </td>
                     <td style="text-align: center;">
                         <input type="checkbox" class="custom-checkbox" ${item.concluido ? 'checked' : ''} 
                             ${!podeEditar ? 'disabled' : ''} 
@@ -1420,7 +1380,7 @@
                         </div>
                         ${item.concluido && item.concluidoPor ? `
                             <div class="task-details">
-                                ✓ Finalizado por <strong>${item.concluidoPor}</strong> em ${item.concluidoEm || ''}
+                                ✓ Finalizado por <strong>${item.concluidoPor}</strong> em${item.concluidoEm || ''}
                             </div>
                         ` : ''}
                     </td>
@@ -1449,15 +1409,41 @@
             });
 
             atualizarCardsStats(total, concluidos);
+
+            // Reinicializa o Drag and Drop na tabela caso o usuário tenha permissão
+            if (podeEditar) {
+                sortableInstance = new Sortable(tbody, {
+                    handle: '.drag-handle', // O arrasto só funciona se clicar no ícone
+                    animation: 150, // Animação suave
+                    ghostClass: 'sortable-ghost', // Classe aplicada na linha que está "voando"
+                    onEnd: async function (evt) {
+                        if (evt.oldIndex === evt.newIndex) return; // Nenhuma ordem mudou
+                        
+                        const rows = tbody.querySelectorAll("tr[data-id]");
+                        const updates = {};
+                        
+                        // Recalcula e prepara a nova ordem para salvar em Lote no Firebase
+                        rows.forEach((row, index) => {
+                            const cpId = row.getAttribute("data-id");
+                            updates[`inauguracoes/${lojaAtivaId}/checkpoints/${cpId}/ordem`] = index + 1;
+                        });
+
+                        try {
+                            await update(ref(db), updates);
+                            window.showToast("Ordem do checklist atualizada com sucesso!");
+                        } catch (err) {
+                            console.error("Erro ao reordenar:", err);
+                            alert("Falha ao salvar a nova ordem no servidor.");
+                        }
+                    }
+                });
+            }
         }
 
-        // ATUALIZA BARRA DE PROGRESSO E CARDS VIVOS
         function atualizarCardsStats(total, concluidos) {
             const percentual = total > 0 ? Math.round((concluidos / total) * 100) : 0;
-
             document.getElementById("lbl-progresso-percent").textContent = `${percentual}% Concluído`;
             document.getElementById("bar-progresso-fill").style.width = `${percentual}%`;
-
             document.getElementById("stat-total-concluido").textContent = concluidos;
             document.getElementById("stat-total-pendente").textContent = (total - concluidos);
             document.getElementById("stat-total-tarefas").textContent = total;
@@ -1468,7 +1454,6 @@
             }
         }
 
-        // TOGGLE CHECKPOINT NO FIREBASE
         window.toggleCheckpoint = async (cpId, checked) => {
             if (!lojaAtivaId) return;
             const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -1481,17 +1466,13 @@
             await update(ref(db), updates);
 
             if (checked && typeof confetti === 'function') {
-                confetti({
-                    particleCount: 40,
-                    spread: 60,
-                    origin: { y: 0.8 }
-                });
+                confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
             }
             window.showToast(checked ? "Demanda concluída! Progresso atualizado." : "Demanda reaberta.");
         };
 
         // ==========================================
-        // MODAL DE NOVA LOJA / INAUGURAÇÃO
+        // MODAIS E CADASTROS
         // ==========================================
         const btnNovaLoja = document.getElementById("btn-nova-inauguracao");
         const modalLoja = document.getElementById("modal-loja");
@@ -1511,78 +1492,56 @@
             const horaStr = document.getElementById("inp-loja-hora").value || "08:00";
             const gestor = document.getElementById("inp-loja-gestor").value.trim();
 
-            if (!nome) {
-                alert("Por favor, preencha o nome da filial.");
-                return;
-            }
-            if (!dataStr) {
-                alert("Por favor, selecione a data prevista de inauguração.");
+            if (!nome || !dataStr) {
+                alert("Por favor, preencha o nome da filial e a data da inauguração.");
                 return;
             }
 
             try {
                 btn.disabled = true;
                 btn.textContent = "Criando...";
-
                 const [ano, mes, dia] = dataStr.split("-").map(Number);
                 const [hora, min] = horaStr.split(":").map(Number);
                 const dataInaug = new Date(ano, mes - 1, dia, hora || 8, min || 0);
 
                 const novaRef = push(inauguracoesRef);
-                const novaLoja = {
+                await set(novaRef, {
                     nome: nome,
                     data_inauguracao: dataInaug.toISOString(),
                     gestor: gestor || window.userName,
                     status: "Em Andamento",
                     checkpoints: {}
-                };
-
-                await set(novaRef, novaLoja);
+                });
                 lojaAtivaId = novaRef.key;
                 window.fecharModalLoja();
                 window.showToast("Inauguração criada com sucesso!");
             } catch (err) {
-                console.error("Erro ao salvar loja:", err);
-                alert("Erro ao criar inauguração no banco de dados: " + (err.message || err));
+                alert("Erro ao criar inauguração: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Criar Inauguração";
             }
         };
 
-        // ==========================================
-        // EXCLUIR LOJA / INAUGURAÇÃO SELECIONADA
-        // ==========================================
         const btnExcluirLoja = document.getElementById("btn-excluir-loja");
         if (btnExcluirLoja) {
             btnExcluirLoja.onclick = async () => {
-                if (!lojaAtivaId || !lojasData[lojaAtivaId]) {
-                    alert("Nenhuma loja selecionada para exclusão.");
-                    return;
-                }
-
+                if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
                 const nomeLoja = lojasData[lojaAtivaId].nome || "esta loja";
-                const confirmacao = confirm(`⚠️ ATENÇÃO: Tem certeza que deseja excluir o cronograma de "${nomeLoja}"?\n\nEsta ação apagará todos os checkpoints e registros desta filial.`);
-                
-                if (!confirmacao) return;
+                if (!confirm(`⚠️ ATENÇÃO: Tem certeza que deseja excluir o cronograma de "${nomeLoja}"?\n\nEsta ação apagará todos os checkpoints e registros desta filial.`)) return;
 
                 try {
                     btnExcluirLoja.disabled = true;
                     btnExcluirLoja.textContent = "Excluindo...";
-
                     await remove(ref(db, `inauguracoes/${lojaAtivaId}`));
-
                     delete lojasData[lojaAtivaId];
-                    const chavesRestantes = Object.keys(lojasData);
-                    lojaAtivaId = chavesRestantes.length > 0 ? chavesRestantes[0] : null;
-
+                    const chaves = Object.keys(lojasData);
+                    lojaAtivaId = chaves.length > 0 ? chaves[0] : null;
                     popularSelectLojas();
                     renderLojaAtiva();
-
-                    window.showToast(`Loja "${nomeLoja}" excluída com sucesso!`);
+                    window.showToast(`Loja "${nomeLoja}" excluída!`);
                 } catch (err) {
-                    console.error("Erro ao excluir loja:", err);
-                    alert("Erro ao excluir loja do banco: " + (err.message || err));
+                    alert("Erro ao excluir loja: " + err.message);
                 } finally {
                     btnExcluirLoja.disabled = false;
                     btnExcluirLoja.textContent = "🗑️ Excluir Loja";
@@ -1590,16 +1549,10 @@
             };
         }
 
-        // ==========================================
-        // MODAL ADICIONAR / EDITAR DEMANDA (TABELÃO)
-        // ==========================================
         const btnAddCp = document.getElementById("btn-add-checkpoint");
         const modalCp = document.getElementById("modal-checkpoint");
         btnAddCp.onclick = () => { 
-            if (!lojaAtivaId) {
-                alert("Cadastre ou selecione uma filial primeiro antes de adicionar demandas.");
-                return;
-            }
+            if (!lojaAtivaId) { alert("Cadastre ou selecione uma filial primeiro."); return; }
             document.getElementById("modal-cp-titulo-header").textContent = "Nova Atividade / Demanda";
             document.getElementById("inp-cp-edit-id").value = "";
             document.getElementById("inp-cp-titulo").value = "";
@@ -1612,26 +1565,20 @@
             if (!lojaAtivaId || !lojasData[lojaAtivaId]) return;
             const cp = lojasData[lojaAtivaId].checkpoints?.[cpId];
             if (!cp) return;
-
             document.getElementById("modal-cp-titulo-header").textContent = "Editar Atividade / Demanda";
             document.getElementById("inp-cp-edit-id").value = cpId;
             document.getElementById("inp-cp-titulo").value = cp.titulo || "";
             document.getElementById("inp-cp-setor").value = cp.setor || "Pricing";
             document.getElementById("inp-cp-data").value = cp.data_limite || "";
-
             modalCp.style.display = "flex";
         };
 
         window.excluirCheckpoint = async (cpId) => {
-            if (!lojaAtivaId) return;
-            if (!confirm("Tem certeza que deseja excluir esta atividade?")) return;
-
+            if (!lojaAtivaId || !confirm("Tem certeza que deseja excluir esta atividade?")) return;
             try {
                 await remove(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints/${cpId}`));
                 window.showToast("Tarefa excluída.");
-            } catch (err) {
-                alert("Erro ao excluir: " + err.message);
-            }
+            } catch (err) { alert("Erro ao excluir: " + err.message); }
         };
 
         document.getElementById("btn-salvar-cp").onclick = async () => {
@@ -1640,12 +1587,7 @@
             const setor = document.getElementById("inp-cp-setor").value;
             const data = document.getElementById("inp-cp-data").value;
 
-            if (!titulo) {
-                alert("Informe o título da atividade/demanda.");
-                return;
-            }
-
-            if (!lojaAtivaId) return;
+            if (!titulo || !lojaAtivaId) return;
 
             try {
                 if (editId) {
@@ -1654,43 +1596,38 @@
                     updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/setor`] = setor;
                     updates[`inauguracoes/${lojaAtivaId}/checkpoints/${editId}/data_limite`] = data || "";
                     await update(ref(db), updates);
-                    window.showToast("Demanda atualizada com sucesso!");
+                    window.showToast("Demanda atualizada!");
                 } else {
+                    // Descobre a maior 'ordem' existente para colocar a nova tarefa no final da fila
+                    const cpsAtuais = Object.values(lojasData[lojaAtivaId].checkpoints || {});
+                    const maxOrdem = cpsAtuais.reduce((max, cp) => Math.max(max, cp.ordem || 0), 0);
+
                     const novoCpRef = push(ref(db, `inauguracoes/${lojaAtivaId}/checkpoints`));
                     await set(novoCpRef, {
                         titulo: titulo,
                         setor: setor,
                         data_limite: data || "",
+                        ordem: maxOrdem + 1, // Nova tarefa sempre entra no final por padrão
                         concluido: false,
                         concluidoPor: "",
                         concluidoEm: "",
                         criadoEm: Date.now()
                     });
-                    window.showToast("Nova demanda adicionada ao checklist!");
+                    window.showToast("Nova demanda adicionada!");
                 }
-
-                document.getElementById("inp-cp-titulo").value = "";
                 window.fecharModalCp();
-            } catch (err) {
-                alert("Erro ao salvar tarefa: " + err.message);
-            }
+            } catch (err) { alert("Erro ao salvar: " + err.message); }
         };
 
         // AUTENTICAÇÃO
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = "/";
-                return;
-            }
-
+            if (!user) { window.location.href = "/"; return; }
             const photoEl = document.getElementById('user-photo');
             if (photoEl) photoEl.src = user.photoURL || 'https://via.placeholder.com/40';
-
             const nameEl = document.getElementById('user-name-widget');
             if (nameEl) nameEl.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
-            const userRef = ref(db, 'usuarios/' + user.uid);
-            get(userRef).then((snapshot) => {
+            get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     window.perfilUsuario = snapshot.val().perfil || "Colaborador";
                     if (snapshot.val().nome) {
@@ -1698,27 +1635,19 @@
                         if (nameEl) nameEl.textContent = window.userName.split(' ')[0];
                     }
                 }
-
                 const roleEl = document.getElementById('user-role-widget');
                 if (roleEl) roleEl.textContent = window.perfilUsuario;
-
-                if (lojaAtivaId && lojasData[lojaAtivaId]) {
-                    renderLojaAtiva();
-                }
+                if (lojaAtivaId && lojasData[lojaAtivaId]) renderLojaAtiva();
             });
         });
 
-        // LOGOUT
         const btnLogout = document.getElementById('btn-logout');
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
-                signOut(auth).then(() => {
-                    window.location.href = "/";
-                });
+                signOut(auth).then(() => { window.location.href = "/"; });
             });
         }
     </script>
-    <!-- ALERTA GLOBAL PRICING -->
     <script type="module" src="./alerta-global-pricing.js"></script>
 </body>
 </html>
