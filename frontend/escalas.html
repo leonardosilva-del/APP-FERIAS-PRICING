@@ -326,15 +326,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .form-card {
@@ -675,17 +668,17 @@
         }
         .btn-close-modal:hover { background: rgba(255,255,255,0.2); }
 
-        /* Estrutura da Imagem Canvas para o WhatsApp */
+        /* Estrutura da Imagem Canvas para o WhatsApp (Alinhamento Automático) */
         #canvas-wpp-container {
-            width: 100%; max-width: 600px; aspect-ratio: 16/9; /* Proporção ideal */
-            background-image: url('aviso-plantao.jpg'); /* A IMAGEM DE FUNDO QUE VOCÊ ME MANDOU */
+            width: 100%; max-width: 600px; aspect-ratio: 16/9; /* Proporção 1920x1080 */
+            background-image: url('aviso-plantao.jpg'); /* A SUA IMAGEM DE FUNDO LIMPA */
             background-size: cover; background-position: center; background-repeat: no-repeat;
             position: relative; border-radius: 12px; overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.1);
         }
 
-        /* Textos por cima da Imagem */
+        /* Textos e Ícones por cima da Imagem */
         .wpp-data {
             position: absolute; top: 15px; right: 20px;
             color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.2rem; font-weight: 800;
@@ -694,31 +687,47 @@
         }
 
         .wpp-textos {
-            position: absolute; bottom: 15%; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+            position: absolute;
+            bottom: 12%; /* Posiciona no terço inferior da imagem preta */
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza tudo horizontalmente */
+            gap: 12px; /* Espaço entre a linha do nome e do telefone */
         }
 
-        .wpp-nome-container {
-            display: flex; align-items: center; gap: 10px;
-        }
-
-        .wpp-nome {
-            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 2.2rem; font-weight: 800;
-            text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-            letter-spacing: 1px; margin-left: 55px; /* Empurrando pra alinhar com a foto de base */
-        }
-
-        .wpp-telefone {
-            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 2.2rem; font-weight: 800;
+        .wpp-linha {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-            margin-left: 20px;
+        }
+
+        .wpp-icon {
+            color: #ffffff;
+            width: 24px;
+            height: 24px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8));
+        }
+
+        .wpp-label {
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .wpp-valor {
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
         @media (max-width: 600px) {
-            .wpp-nome { font-size: 1.5rem; margin-left: 35px;}
-            .wpp-telefone { font-size: 1.5rem; margin-left: 10px;}
-            .wpp-data { font-size: 0.9rem; }
+            .wpp-label, .wpp-valor { font-size: 1.2rem; }
+            .wpp-icon { width: 20px; height: 20px; }
+            .wpp-data { font-size: 0.9rem; top: 10px; right: 10px; }
             .btn-download-wpp { font-size: 1rem; }
+            .wpp-textos { gap: 8px; bottom: 10%; }
         }
 
         /* Toasts */
@@ -752,20 +761,32 @@
         </button>
     </div>
 
-    <!-- MODAL GERADOR DE IMAGEM WHATSAPP -->
+    <!-- MODAL GERADOR DE IMAGEM WHATSAPP COM ALINHAMENTO AUTOMÁTICO -->
     <div id="modalWhatsapp" class="modal-overlay">
         <div class="modal-card-wpp">
             
             <!-- O CARD QUE SERÁ "PRINTADO" -->
             <div id="canvas-wpp-container">
+                <!-- Data Fixa no Topo -->
                 <div class="wpp-data" id="wpp-data-texto">00/00 - 00/00</div>
                 
+                <!-- Container Flexbox Inferior para centralizar tudo -->
                 <div class="wpp-textos">
-                    <div class="wpp-nome-container">
-                        <!-- O ícone de pessoa já está desenhado na imagem de fundo que vc mandou, vou apenas posicionar o texto na frente dele -->
-                        <div class="wpp-nome" id="wpp-nome-texto">NOME AQUI</div>
+                    <!-- Linha do Nome -->
+                    <div class="wpp-linha">
+                        <!-- Ícone User SVG -->
+                        <svg class="wpp-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <span class="wpp-label">COLABORADOR:</span>
+                        <span class="wpp-valor" id="wpp-nome-texto">NOME AQUI</span>
                     </div>
-                    <div class="wpp-telefone" id="wpp-telefone-texto">(00) 00000-0000</div>
+                    
+                    <!-- Linha do Telefone -->
+                    <div class="wpp-linha">
+                        <!-- Ícone Telefone SVG -->
+                        <svg class="wpp-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                        <span class="wpp-label">TELEFONE:</span>
+                        <span class="wpp-valor" id="wpp-telefone-texto">(00) 00000-0000</span>
+                    </div>
                 </div>
             </div>
 
