@@ -21,10 +21,14 @@
     <meta property="og:type" content="website">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    
     <!-- SheetJS for Excel Reading and Writing -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <!-- html2pdf for PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- html2canvas para Gerar Imagem do WhatsApp -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <!-- SCRIPT DO MODO DARK GLOBAL (Impede a tela de piscar branco) -->
     <script>
@@ -478,11 +482,13 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            cursor: pointer; /* Adicionado cursor de clique no card inteiro */
         }
 
         .escala-card:hover {
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             transform: translateY(-4px);
+            border-color: #94a3b8;
         }
 
         .date-badge {
@@ -553,6 +559,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 10; /* Para o click do card não conflitar */
         }
 
         .btn-delete:hover {
@@ -642,6 +649,86 @@
             color: var(--text-muted);
         }
 
+        /* --- ESTILOS DO MODAL GERADOR DE IMAGEM WHATSAPP --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; z-index: 2000; padding: 15px;
+        }
+
+        .modal-card-wpp {
+            background: transparent; width: 100%; max-width: 600px;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+
+        .btn-download-wpp {
+            background-color: #25d366; /* Verde WhatsApp */
+            color: white; border: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 1.1rem;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
+        }
+        .btn-download-wpp:hover { background-color: #128c7e; transform: translateY(-2px); }
+
+        .btn-close-modal {
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 16px; border-radius: 50px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-close-modal:hover { background: rgba(255,255,255,0.2); }
+
+        /* Estrutura da Imagem Canvas para o WhatsApp */
+        #canvas-wpp-container {
+            width: 100%; max-width: 600px; aspect-ratio: 16/9; /* Proporção ideal */
+            background-image: url('aviso-plantao.jpg'); /* A IMAGEM DE FUNDO QUE VOCÊ ME MANDOU */
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            position: relative; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        /* Textos por cima da Imagem */
+        .wpp-data {
+            position: absolute; top: 15px; right: 20px;
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.2rem; font-weight: 800;
+            background: rgba(220, 38, 38, 0.9); padding: 4px 12px; border-radius: 8px; border: 2px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .wpp-textos {
+            position: absolute; bottom: 15%; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .wpp-nome-container {
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .wpp-nome {
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 2.2rem; font-weight: 800;
+            text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            letter-spacing: 1px; margin-left: 55px; /* Empurrando pra alinhar com a foto de base */
+        }
+
+        .wpp-telefone {
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 2.2rem; font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            margin-left: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .wpp-nome { font-size: 1.5rem; margin-left: 35px;}
+            .wpp-telefone { font-size: 1.5rem; margin-left: 10px;}
+            .wpp-data { font-size: 0.9rem; }
+            .btn-download-wpp { font-size: 1rem; }
+        }
+
+        /* Toasts */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; animation: slideIn 0.3s forwards; }
+        .toast.success { background-color: var(--status-success); }
+        .toast.error { background-color: var(--status-danger); }
+        .toast.info { background-color: #3b82f6; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
     </style>
 </head>
 
@@ -663,6 +750,36 @@
                 </path>
             </svg>
         </button>
+    </div>
+
+    <!-- MODAL GERADOR DE IMAGEM WHATSAPP -->
+    <div id="modalWhatsapp" class="modal-overlay">
+        <div class="modal-card-wpp">
+            
+            <!-- O CARD QUE SERÁ "PRINTADO" -->
+            <div id="canvas-wpp-container">
+                <div class="wpp-data" id="wpp-data-texto">00/00 - 00/00</div>
+                
+                <div class="wpp-textos">
+                    <div class="wpp-nome-container">
+                        <!-- O ícone de pessoa já está desenhado na imagem de fundo que vc mandou, vou apenas posicionar o texto na frente dele -->
+                        <div class="wpp-nome" id="wpp-nome-texto">NOME AQUI</div>
+                    </div>
+                    <div class="wpp-telefone" id="wpp-telefone-texto">(00) 00000-0000</div>
+                </div>
+            </div>
+
+            <!-- CONTROLES -->
+            <div style="display: flex; gap: 15px; width: 100%; justify-content: center; padding: 0 20px;">
+                <button class="btn-close-modal" onclick="fecharModalWpp()">Cancelar</button>
+                <button class="btn-download-wpp" onclick="baixarImagemWpp()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Baixar Card 📸
+                </button>
+            </div>
+            
+            <p style="color: #94a3b8; font-size: 0.85rem; text-align: center; margin-top: -10px;">Clique em baixar para salvar a imagem pronta para enviar no WhatsApp.</p>
+        </div>
     </div>
 
     <div class="container" id="pdf-content">
@@ -776,6 +893,7 @@
             </div>
         </div>
 
+        <!-- Clique no card abrirá o modal! -->
         <div class="escalas-grid" id="lista-escalas">
             <!-- Escalas serão carregadas aqui -->
         </div>
@@ -906,7 +1024,7 @@
                     item.className = 'autocomplete-item';
                     item.innerHTML = `<span>${user.nome}</span><small>${user.telefone || user.email || ''}</small>`;
                     item.addEventListener('mousedown', function(e) {
-                        e.preventDefault(); // Impede o blur de fechar a lista antes do click
+                        e.preventDefault(); 
                         inputNome.value = user.nome;
                         inputTelefone.value = user.telefone || '';
                         listContainer.classList.remove('show');
@@ -946,7 +1064,6 @@
             }
 
             inputNome.addEventListener('blur', function() {
-                // Delay para permitir o click no item
                 setTimeout(() => listContainer.classList.remove('show'), 150);
             });
 
@@ -1036,7 +1153,9 @@
             document.getElementById('telefoneColaborador').value = '';
         };
 
-        window.deletarEscala = function (id) {
+        window.deletarEscala = function (event, id) {
+            event.stopPropagation(); // Impede o card de abrir o modal do whatsapp quando clica na lixeira
+            
             if (perfilUsuario !== "Gestor") { showToast("Apenas o gestor pode excluir escalas.", "error"); return; }
             if (confirm("Tem certeza que deseja excluir este plantão?")) {
                 remove(ref(db, `escalas_plantao/${id}`)).then(() => {
@@ -1138,7 +1257,7 @@
                 return dtA - dtB;
             });
 
-            // Encontrar qual é o próximo plantão (A data mais próxima a partir de hoje)
+            // Encontrar qual é o próximo plantão
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             
@@ -1146,7 +1265,6 @@
             let menorDiferenca = Infinity;
 
             arrayEscalas.forEach(escala => {
-                // Compara pela data FIM do plantão para garantir que um plantão em andamento ainda fique destacado
                 const dtFim = parseFormatData(escala.dataFim || escala.dataInicio || escala.data);
                 if (dtFim && dtFim >= hoje) {
                     const diferenca = dtFim - hoje;
@@ -1164,29 +1282,35 @@
                 let diasTexto = "";
                 let mesTexto = "";
                 let anoTexto = "";
+                let textoWpp = ""; // Para o Canvas
 
                 if (dtI && dtF) {
                     const diaI = String(dtI.getDate()).padStart(2, '0');
                     const diaF = String(dtF.getDate()).padStart(2, '0');
+                    const mesNumI = String(dtI.getMonth() + 1).padStart(2, '0');
+                    const mesNumF = String(dtF.getMonth() + 1).padStart(2, '0');
 
                     if (dtI.getMonth() === dtF.getMonth()) {
                         diasTexto = diaI === diaF ? diaI : `${diaI} - ${diaF}`;
                         mesTexto = meses[dtI.getMonth()];
+                        textoWpp = diaI === diaF ? `${diaI}/${mesNumI}` : `${diaI}/${mesNumI} a ${diaF}/${mesNumF}`;
                     } else {
                         diasTexto = `${diaI}/${meses[dtI.getMonth()]} - ${diaF}/${meses[dtF.getMonth()]}`;
                         mesTexto = "";
+                        textoWpp = `${diaI}/${mesNumI} a ${diaF}/${mesNumF}`;
                     }
                     anoTexto = dtI.getFullYear();
                 } else {
                     diasTexto = escala.dataInicio || escala.data || "?";
                     mesTexto = "";
                     anoTexto = escala.dataFim || "";
+                    textoWpp = diasTexto;
                 }
 
                 let btnLixeira = '';
                 if (perfilUsuario === "Gestor") {
                     btnLixeira = `
-                <button class="btn-delete no-print" onclick="deletarEscala('${escala.id}')" title="Remover Plantão">
+                <button class="btn-delete no-print" onclick="window.deletarEscala(event, '${escala.id}')" title="Remover Plantão">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>`;
                 }
@@ -1202,13 +1326,20 @@
                 </div>`;
                 }
 
-                // Verifica se este é o próximo plantão para adicionar as classes de destaque
                 const isDestaque = (escala.id === idProximoPlantao);
                 const classCard = isDestaque ? "escala-card destaque-plantao" : "escala-card";
                 const badgeDestaque = isDestaque ? `<span class="badge-plantao">Próximo Plantão</span>` : "";
 
+                // ESCAPE DAS ASPAS PARA PASSAR PRO ONCLICK
+                const escapeNome = escala.nome ? escala.nome.replace(/'/g, "\\'") : '';
+                const escapeTel = escala.telefone ? escala.telefone.replace(/'/g, "\\'") : '';
+
                 const card = document.createElement('div');
                 card.className = classCard;
+                
+                // --- CHAMA A FUNÇÃO DE ABRIR O MODAL WPP ---
+                card.setAttribute('onclick', `window.abrirModalWpp('${escapeNome}', '${escapeTel}', '${textoWpp}')`);
+                
                 card.innerHTML = `
                 <div class="date-badge">
                     <div class="day">${diasTexto}</div>
@@ -1369,8 +1500,75 @@
             reader.readAsBinaryString(file);
             event.target.value = '';
         };
+
+        // =========================================================
+        // FUNÇÕES DO NOVO GERADOR DE IMAGEM WHATSAPP (HTML2CANVAS)
+        // =========================================================
+        
+        window.abrirModalWpp = function(nome, telefone, dataText) {
+            document.getElementById('wpp-nome-texto').innerText = nome;
+            document.getElementById('wpp-telefone-texto').innerText = telefone || "(Não informado)";
+            document.getElementById('wpp-data-texto').innerText = dataText;
+            
+            document.getElementById('modalWhatsapp').style.display = 'flex';
+        }
+
+        window.fecharModalWpp = function() {
+            document.getElementById('modalWhatsapp').style.display = 'none';
+        }
+
+        window.baixarImagemWpp = function() {
+            showToast("Gerando imagem, aguarde...", "info");
+            
+            const btn = document.querySelector('.btn-download-wpp');
+            btn.disabled = true;
+            btn.innerText = "Processando...";
+
+            const elementToCapture = document.getElementById('canvas-wpp-container');
+
+            // html2canvas vai "tirar foto" do container exatamente como ele está na tela
+            html2canvas(elementToCapture, {
+                scale: 2, // Dobra a resolução para o WhatsApp não embaçar a foto
+                useCORS: true, // Permite carregar imagens de fora sem dar erro de segurança
+                backgroundColor: null // Mantém as bordas arredondadas e transparência, se houver
+            }).then(canvas => {
+                // Cria um link temporário para baixar a imagem
+                const link = document.createElement('a');
+                link.download = `Aviso_Plantao_${document.getElementById('wpp-nome-texto').innerText.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                showToast("Imagem pronta! Pode enviar no WhatsApp! 🚀", "success");
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg> Baixar Card 📸`;
+                
+                // Fecha o modal depois que baixa
+                setTimeout(() => window.fecharModalWpp(), 1000);
+            }).catch(err => {
+                console.error(err);
+                showToast("Erro ao gerar a imagem.", "error");
+                btn.disabled = false;
+                btn.innerHTML = `Tentar Novamente`;
+            });
+        }
+
+        // Fechar modal no botão ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                window.fecharModalWpp();
+            }
+        });
+        
+        // Clicar fora para fechar o modal
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('modalWhatsapp');
+            if (event.target === modal) {
+                window.fecharModalWpp();
+            }
+        });
+
     </script>
-    <script type="module" src="./alerta-global-pricing.js"></script>
+
 </body>
 
 </html>
