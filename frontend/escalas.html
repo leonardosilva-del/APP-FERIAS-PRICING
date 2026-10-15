@@ -600,7 +600,7 @@
         }
         .btn-close-modal:hover { background: rgba(255,255,255,0.2); }
 
-        /* Estrutura da Imagem Canvas para o WhatsApp (Ajuste Final para Nomes Longos) */
+        /* Estrutura da Imagem Canvas para o WhatsApp */
         #canvas-wpp-container {
             width: 100%; max-width: 600px; aspect-ratio: 16/9;
             background-image: url('aviso-plantao.jpg');
@@ -610,10 +610,11 @@
             border: 2px solid rgba(255,255,255,0.1);
         }
 
+        /* Badge da Data Movida para o Canto Inferior Direito */
         .wpp-data {
             position: absolute; 
-            top: 25px; 
-            right: 25px;
+            bottom: 35px; 
+            right: 35px;
             color: #ffffff; 
             font-family: 'Montserrat', sans-serif; 
             font-size: 1.1rem; 
@@ -628,7 +629,7 @@
 
         .wpp-textos {
             position: absolute;
-            bottom: 5%; 
+            bottom: 6%; 
             left: 0;
             width: 100%;
             display: flex;
@@ -666,7 +667,6 @@
         .wpp-valor {
             color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 800;
             text-transform: uppercase; letter-spacing: 1px;
-            /* Proteções Contra Quebra de Layout */
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis;
@@ -677,7 +677,7 @@
             .wpp-label { font-size: 1rem; width: 140px; }
             .wpp-valor { max-width: 200px; }
             .wpp-icon { width: 18px; height: 18px; }
-            .wpp-data { font-size: 0.9rem; top: 15px; right: 15px; }
+            .wpp-data { font-size: 0.9rem; bottom: 20px; right: 20px; }
             .btn-download-wpp { font-size: 1rem; }
             .wpp-textos { bottom: 4%; }
             .wpp-textos-inner { gap: 8px; }
@@ -720,7 +720,7 @@
             
             <!-- O CARD QUE SERÁ "PRINTADO" -->
             <div id="canvas-wpp-container">
-                <!-- Data Ajustada fora da Logo -->
+                <!-- Data Ajustada Canto Inferior Direito -->
                 <div class="wpp-data" id="wpp-data-texto">00/00 - 00/00</div>
                 
                 <!-- Container Flexbox Inferior para centralizar tudo -->
@@ -1464,7 +1464,6 @@
             const elNome = document.getElementById('wpp-nome-texto');
             elNome.innerText = nome;
             
-            // Ajuste dinâmico de fonte para nomes grandes!
             if (nome.length > 20) {
                 elNome.style.fontSize = "1.0rem";
             } else if (nome.length > 15) {
