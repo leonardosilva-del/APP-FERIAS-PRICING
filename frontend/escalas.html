@@ -600,36 +600,45 @@
         }
         .btn-close-modal:hover { background: rgba(255,255,255,0.2); }
 
-        /* Estrutura da Imagem Canvas para o WhatsApp */
+        /* Estrutura da Imagem Canvas para o WhatsApp (Alinhamento Automático Corrigido) */
         #canvas-wpp-container {
-            width: 100%; max-width: 600px; aspect-ratio: 16/9;
+            width: 100%; 
+            max-width: 600px; 
+            /* Aumentamos a proporção para 16/10.5 para dar mais espaço vertical sem distorcer visivelmente a imagem */
+            aspect-ratio: 16/10.5;
             background-image: url('aviso-plantao.jpg');
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            position: relative; border-radius: 12px; overflow: hidden;
+            background-size: 100% 100%; /* Preenche todo o novo espaço */
+            background-position: center; 
+            background-repeat: no-repeat;
+            position: relative; 
+            border-radius: 12px; 
+            overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.1);
         }
 
-        /* Badge da Data Movida para o Canto Inferior Direito */
+        /* Badge da Data Movida para o Centro Inferior */
         .wpp-data {
             position: absolute; 
-            bottom: 35px; 
-            right: 35px;
+            bottom: 25px; 
+            left: 50%;
+            transform: translateX(-50%);
             color: #ffffff; 
             font-family: 'Montserrat', sans-serif; 
             font-size: 1.1rem; 
             font-weight: 800;
             background: rgba(220, 38, 38, 0.95); 
-            padding: 6px 14px; 
+            padding: 6px 18px; 
             border-radius: 8px; 
             border: 2px solid white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             z-index: 10;
+            white-space: nowrap;
         }
 
         .wpp-textos {
             position: absolute;
-            bottom: 6%; 
+            bottom: 22%; /* Sobe os textos para o espaço que abrimos no meio */
             left: 0;
             width: 100%;
             display: flex;
@@ -642,6 +651,8 @@
             flex-direction: column;
             align-items: flex-start; 
             gap: 12px; 
+            width: 90%;
+            max-width: 500px;
         }
 
         .wpp-linha {
@@ -657,11 +668,12 @@
             width: 22px;
             height: 22px;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8));
+            flex-shrink: 0;
         }
 
         .wpp-label {
             color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.3rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px; width: 190px; 
+            text-transform: uppercase; letter-spacing: 1px; width: 190px; flex-shrink: 0;
         }
 
         .wpp-valor {
@@ -670,16 +682,16 @@
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 320px;
+            max-width: 300px;
         }
 
         @media (max-width: 600px) {
-            .wpp-label { font-size: 1rem; width: 140px; }
-            .wpp-valor { max-width: 200px; }
+            .wpp-label { font-size: 1rem; width: 145px; }
+            .wpp-valor { max-width: 180px; }
             .wpp-icon { width: 18px; height: 18px; }
-            .wpp-data { font-size: 0.9rem; bottom: 20px; right: 20px; }
+            .wpp-data { font-size: 0.95rem; bottom: 15px; }
             .btn-download-wpp { font-size: 1rem; }
-            .wpp-textos { bottom: 4%; }
+            .wpp-textos { bottom: 20%; }
             .wpp-textos-inner { gap: 8px; }
         }
 
@@ -720,7 +732,8 @@
             
             <!-- O CARD QUE SERÁ "PRINTADO" -->
             <div id="canvas-wpp-container">
-                <!-- Data Ajustada Canto Inferior Direito -->
+                
+                <!-- Data Ajustada no Centro Inferior -->
                 <div class="wpp-data" id="wpp-data-texto">00/00 - 00/00</div>
                 
                 <!-- Container Flexbox Inferior para centralizar tudo -->
