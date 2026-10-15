@@ -30,7 +30,7 @@
     <!-- html2canvas para Gerar Imagem do WhatsApp -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
-    <!-- SCRIPT DO MODO DARK GLOBAL (Impede a tela de piscar branco) -->
+    <!-- SCRIPT DO MODO DARK GLOBAL -->
     <script>
         if (localStorage.getItem('tema-intranet') === 'dark') {
             document.documentElement.classList.add('dark-theme');
@@ -40,7 +40,6 @@
             const isDark = document.documentElement.classList.contains('dark-theme');
             localStorage.setItem('tema-intranet', isDark ? 'dark' : 'light');
             
-            // Troca o ícone do botão
             const btnIcon = document.getElementById('icon-theme');
             if (btnIcon) {
                 btnIcon.textContent = isDark ? '☀️' : '🌙';
@@ -61,7 +60,6 @@
             --border: #e2e8f0;
         }
 
-        /* --- MODO DARK --- */
         html.dark-theme {
             --bg-color: #0f172a;        
             --card-bg: #1e293b;     
@@ -70,7 +68,6 @@
             --border: #334155;   
         }
 
-        /* Ajustes finos adicionais pro Dark Mode na Escala */
         html.dark-theme body { background-image: radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.1) 0, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 23, 42, 1) 0, transparent 50%); }
         html.dark-theme .input-box input, html.dark-theme .filter-group input, html.dark-theme .filter-group select { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
         html.dark-theme .btn-template { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
@@ -79,7 +76,6 @@
         html.dark-theme .back-btn:hover { background-color: #1e293b; color: #f8fafc; border-color: #475569; }
         html.dark-theme .info .phone { background-color: rgba(5, 150, 105, 0.15); color: #34d399; }
         
-        /* Ajuste do Destaque para Modo Dark */
         html.dark-theme .destaque-plantao {
             background-color: rgba(38, 65, 126, 0.1); 
             border-left: 4px solid #3b82f6; 
@@ -92,7 +88,6 @@
         html.dark-theme .autocomplete-item { color: #f8fafc; }
         html.dark-theme .autocomplete-item:hover, html.dark-theme .autocomplete-item.selected { background: #0f172a; }
         html.dark-theme .autocomplete-item small { color: #64748b; }
-        /* Fim Modo Dark */
 
         * {
             margin: 0;
@@ -119,7 +114,6 @@
             margin: 0 auto;
         }
 
-        /* --- WIDGET DE PERFIL --- */
         .user-profile-widget {
             position: absolute;
             top: 24px;
@@ -195,7 +189,6 @@
             flex-wrap: wrap;
             gap: 1rem;
             padding-right: 220px;
-            /* Espaço para o widget de perfil */
         }
 
         .header-title {
@@ -239,7 +232,6 @@
             color: var(--text-main);
         }
 
-        /* Botão discreto de PDF */
         .btn-export-pdf {
             background: transparent;
             border: 1px solid transparent;
@@ -262,7 +254,6 @@
             transform: translateY(-2px);
         }
 
-        /* Botões de Ações de Gestão */
         .header-actions {
             display: flex;
             gap: 10px;
@@ -302,7 +293,6 @@
             transform: translateY(-2px);
         }
 
-        /* BTN DE TEMA ESPECIAL */
         .btn-theme {
             background: var(--card-bg);
             color: var(--text-main);
@@ -319,7 +309,6 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
-        /* Área restrita (Inclusão/Importação) */
         #area-gestao {
             display: none;
             animation: fadeIn 0.3s ease;
@@ -397,7 +386,6 @@
             transform: translateY(-2px);
         }
 
-        /* Barra de Filtros */
         .filters-section {
             display: flex;
             gap: 1rem;
@@ -427,9 +415,7 @@
             cursor: pointer;
         }
 
-        .filter-group input {
-            cursor: text;
-        }
+        .filter-group input { cursor: text; }
 
         .filter-group input:focus,
         .filter-group select:focus {
@@ -438,26 +424,13 @@
         }
 
         .filter-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-            font-size: 1.1rem;
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 1.1rem;
         }
 
         .select-arrow {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-            font-size: 0.8rem;
+            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 0.8rem;
         }
 
-        /* Grade de Escalas */
         .escalas-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -475,7 +448,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            cursor: pointer; /* Adicionado cursor de clique no card inteiro */
+            cursor: pointer;
         }
 
         .escala-card:hover {
@@ -508,9 +481,7 @@
             letter-spacing: 0.5px;
         }
 
-        .info {
-            flex: 1;
-        }
+        .info { flex: 1; }
 
         .info h3 {
             font-size: 1.05rem;
@@ -552,7 +523,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10; /* Para o click do card não conflitar */
+            z-index: 10;
         }
 
         .btn-delete:hover {
@@ -570,12 +541,8 @@
             border: 1px dashed var(--border);
         }
 
-        /* Ocultar elementos na hora de gerar o PDF */
-        body.gerando-pdf .no-print {
-            display: none !important;
-        }
+        body.gerando-pdf .no-print { display: none !important; }
 
-        /* --- ESTILOS DO DESTAQUE --- */
         .destaque-plantao {
             background-color: #f8fafc;
             border-left: 4px solid #26417E; 
@@ -595,54 +562,20 @@
             white-space: nowrap;
         }
 
-        /* --- AUTOCOMPLETE DO COLABORADOR --- */
-        .input-autocomplete-wrapper {
-            position: relative;
-            width: 100%;
-        }
+        .input-autocomplete-wrapper { position: relative; width: 100%; }
 
         .autocomplete-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 0.5rem 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            display: none;
+            position: absolute; top: 100%; left: 0; right: 0; background: #fff;
+            border: 1px solid var(--border); border-top: none; border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.1); display: none;
         }
 
-        .autocomplete-list.show {
-            display: block;
-        }
+        .autocomplete-list.show { display: block; }
+        .autocomplete-item { padding: 10px 14px; cursor: pointer; font-size: 0.9rem; color: var(--text-main); transition: background 0.15s; display: flex; flex-direction: column; gap: 2px; }
+        .autocomplete-item:hover, .autocomplete-item.selected { background: #f1f5f9; }
+        .autocomplete-item small { font-size: 0.75rem; color: var(--text-muted); }
 
-        .autocomplete-item {
-            padding: 10px 14px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            transition: background 0.15s;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .autocomplete-item:hover,
-        .autocomplete-item.selected {
-            background: #f1f5f9;
-        }
-
-        .autocomplete-item small {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* --- ESTILOS DO MODAL GERADOR DE IMAGEM WHATSAPP --- */
+        /* --- ESTILOS DO MODAL GERADOR DE IMAGEM WHATSAPP (CORRIGIDO) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
@@ -655,8 +588,7 @@
         }
 
         .btn-download-wpp {
-            background-color: #25d366; /* Verde WhatsApp */
-            color: white; border: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 1.1rem;
+            background-color: #25d366; color: white; border: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 1.1rem;
             cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
             box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
         }
@@ -668,17 +600,16 @@
         }
         .btn-close-modal:hover { background: rgba(255,255,255,0.2); }
 
-        /* Estrutura da Imagem Canvas para o WhatsApp (Alinhamento Automático) */
+        /* Estrutura da Imagem Canvas para o WhatsApp (Alinhamento Automático Corrigido) */
         #canvas-wpp-container {
-            width: 100%; max-width: 600px; aspect-ratio: 16/9; /* Proporção 1920x1080 */
-            background-image: url('aviso-plantao.jpg'); /* A SUA IMAGEM DE FUNDO LIMPA */
+            width: 100%; max-width: 600px; aspect-ratio: 16/9;
+            background-image: url('aviso-plantao.jpg');
             background-size: cover; background-position: center; background-repeat: no-repeat;
             position: relative; border-radius: 12px; overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.1);
         }
 
-        /* Textos e Ícones por cima da Imagem */
         .wpp-data {
             position: absolute; top: 15px; right: 20px;
             color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.2rem; font-weight: 800;
@@ -688,19 +619,25 @@
 
         .wpp-textos {
             position: absolute;
-            bottom: 12%; /* Posiciona no terço inferior da imagem preta */
+            bottom: 6%; /* Abaixado para não sobrepor o texto EQUIPE PRICING */
             left: 0;
             width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centraliza tudo horizontalmente */
-            gap: 12px; /* Espaço entre a linha do nome e do telefone */
+            align-items: center; /* Centraliza a caixa inteira no canvas */
+        }
+
+        .wpp-textos-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Alinha os ícones e textos à esquerda para ficarem retos */
+            gap: 12px; 
         }
 
         .wpp-linha {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
@@ -714,7 +651,7 @@
 
         .wpp-label {
             color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px;
+            text-transform: uppercase; letter-spacing: 1px; width: 230px; /* Força o mesmo espaço para as duas labels */
         }
 
         .wpp-valor {
@@ -724,10 +661,12 @@
 
         @media (max-width: 600px) {
             .wpp-label, .wpp-valor { font-size: 1.2rem; }
+            .wpp-label { width: 175px; }
             .wpp-icon { width: 20px; height: 20px; }
             .wpp-data { font-size: 0.9rem; top: 10px; right: 10px; }
             .btn-download-wpp { font-size: 1rem; }
-            .wpp-textos { gap: 8px; bottom: 10%; }
+            .wpp-textos { bottom: 4%; }
+            .wpp-textos-inner { gap: 8px; }
         }
 
         /* Toasts */
@@ -761,7 +700,7 @@
         </button>
     </div>
 
-    <!-- MODAL GERADOR DE IMAGEM WHATSAPP COM ALINHAMENTO AUTOMÁTICO -->
+    <!-- MODAL GERADOR DE IMAGEM WHATSAPP -->
     <div id="modalWhatsapp" class="modal-overlay">
         <div class="modal-card-wpp">
             
@@ -772,20 +711,22 @@
                 
                 <!-- Container Flexbox Inferior para centralizar tudo -->
                 <div class="wpp-textos">
-                    <!-- Linha do Nome -->
-                    <div class="wpp-linha">
-                        <!-- Ícone User SVG -->
-                        <svg class="wpp-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                        <span class="wpp-label">COLABORADOR:</span>
-                        <span class="wpp-valor" id="wpp-nome-texto">NOME AQUI</span>
-                    </div>
-                    
-                    <!-- Linha do Telefone -->
-                    <div class="wpp-linha">
-                        <!-- Ícone Telefone SVG -->
-                        <svg class="wpp-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                        <span class="wpp-label">TELEFONE:</span>
-                        <span class="wpp-valor" id="wpp-telefone-texto">(00) 00000-0000</span>
+                    <div class="wpp-textos-inner">
+                        <!-- Linha do Nome -->
+                        <div class="wpp-linha">
+                            <!-- Ícone User SVG -->
+                            <svg class="wpp-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            <span class="wpp-label">COLABORADOR:</span>
+                            <span class="wpp-valor" id="wpp-nome-texto">NOME AQUI</span>
+                        </div>
+                        
+                        <!-- Linha do Telefone -->
+                        <div class="wpp-linha">
+                            <!-- Ícone Telefone SVG -->
+                            <svg class="wpp-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            <span class="wpp-label">TELEFONE:</span>
+                            <span class="wpp-valor" id="wpp-telefone-texto">(00) 00000-0000</span>
+                        </div>
                     </div>
                 </div>
             </div>
