@@ -583,7 +583,7 @@
         }
 
         .modal-card-wpp {
-            background: transparent; width: 100%; max-width: 600px;
+            background: transparent; width: 100%; max-width: 650px;
             display: flex; flex-direction: column; align-items: center; gap: 20px;
         }
 
@@ -600,15 +600,14 @@
         }
         .btn-close-modal:hover { background: rgba(255,255,255,0.2); }
 
-        /* Estrutura da Imagem Canvas para o WhatsApp (Alinhamento Automático Corrigido) */
+        /* Estrutura da Imagem Canvas para o WhatsApp (Ajuste Panorâmico 16:9) */
         #canvas-wpp-container {
             width: 100%; 
-            max-width: 600px; 
-            /* Aumentamos a proporção para 16/10.5 para dar mais espaço vertical sem distorcer visivelmente a imagem */
-            aspect-ratio: 16/10.5;
+            max-width: 650px; /* Mais largo na tela */
+            aspect-ratio: 16/9; /* Proporção original para não esmagar a logo */
             background-image: url('aviso-plantao.jpg');
-            background-size: 100% 100%; /* Preenche todo o novo espaço */
-            background-position: center; 
+            background-size: cover; /* Cobre o container mantendo a proporção */
+            background-position: center top; 
             background-repeat: no-repeat;
             position: relative; 
             border-radius: 12px; 
@@ -617,18 +616,17 @@
             border: 2px solid rgba(255,255,255,0.1);
         }
 
-        /* Badge da Data Movida para o Centro Inferior */
+        /* Badge da Data Movida para o Canto Inferior Direito (Livre de textos e logos) */
         .wpp-data {
             position: absolute; 
-            bottom: 25px; 
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 20px; 
+            right: 25px;
             color: #ffffff; 
             font-family: 'Montserrat', sans-serif; 
             font-size: 1.1rem; 
             font-weight: 800;
             background: rgba(220, 38, 38, 0.95); 
-            padding: 6px 18px; 
+            padding: 6px 14px; 
             border-radius: 8px; 
             border: 2px solid white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -638,7 +636,7 @@
 
         .wpp-textos {
             position: absolute;
-            bottom: 22%; /* Sobe os textos para o espaço que abrimos no meio */
+            bottom: 8%; /* Bem abaixo de EQUIPE PRICING */
             left: 0;
             width: 100%;
             display: flex;
@@ -650,17 +648,18 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start; 
-            gap: 12px; 
+            gap: 6px; 
             width: 90%;
-            max-width: 500px;
+            max-width: 580px;
         }
 
         .wpp-linha {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 10px;
+            gap: 8px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            width: 100%;
         }
 
         .wpp-icon {
@@ -672,27 +671,28 @@
         }
 
         .wpp-label {
-            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.3rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px; width: 190px; flex-shrink: 0;
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 1.2rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px; width: 175px; flex-shrink: 0;
         }
 
         .wpp-valor {
             color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 800;
             text-transform: uppercase; letter-spacing: 1px;
+            /* Flex 1 faz ele ocupar todo o espaço à direita sem quebrar a linha */
+            flex: 1; 
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 300px;
         }
 
         @media (max-width: 600px) {
-            .wpp-label { font-size: 1rem; width: 145px; }
-            .wpp-valor { max-width: 180px; }
+            .wpp-label { font-size: 0.95rem; width: 140px; }
+            .wpp-valor { font-size: 1rem; }
             .wpp-icon { width: 18px; height: 18px; }
-            .wpp-data { font-size: 0.95rem; bottom: 15px; }
+            .wpp-data { font-size: 0.9rem; bottom: 15px; right: 15px; }
             .btn-download-wpp { font-size: 1rem; }
-            .wpp-textos { bottom: 20%; }
-            .wpp-textos-inner { gap: 8px; }
+            .wpp-textos { bottom: 5%; }
+            .wpp-textos-inner { gap: 4px; }
         }
 
         /* Toasts */
@@ -733,7 +733,7 @@
             <!-- O CARD QUE SERÁ "PRINTADO" -->
             <div id="canvas-wpp-container">
                 
-                <!-- Data Ajustada no Centro Inferior -->
+                <!-- Data Ajustada no Canto Inferior Direito -->
                 <div class="wpp-data" id="wpp-data-texto">00/00 - 00/00</div>
                 
                 <!-- Container Flexbox Inferior para centralizar tudo -->
@@ -1477,10 +1477,10 @@
             const elNome = document.getElementById('wpp-nome-texto');
             elNome.innerText = nome;
             
-            if (nome.length > 20) {
+            if (nome.length > 22) {
                 elNome.style.fontSize = "1.0rem";
-            } else if (nome.length > 15) {
-                elNome.style.fontSize = "1.2rem";
+            } else if (nome.length > 16) {
+                elNome.style.fontSize = "1.15rem";
             } else {
                 elNome.style.fontSize = "1.4rem";
             }
