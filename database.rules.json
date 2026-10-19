@@ -63,6 +63,10 @@
     "listas_tv": {
       ".read": "auth != null",
       ".write": "auth != null"
+    },
+    "base_precificacao_regioes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
 }

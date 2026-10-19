@@ -633,9 +633,84 @@
             align-items: center;
             gap: 5px;
         }
-        .btn-preencher-custo:hover {
-            background: rgba(245, 158, 11, 0.2);
-            color: #b45309;
+        .btn-base-precificacao {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .btn-base-precificacao:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* GRID DAS 5 REGIÕES */
+        .grid-regioes-upload {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        .card-regiao-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .card-regiao-box.has-base {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.03);
+        }
+
+        .card-regiao-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-regiao-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        .btn-subir-regiao {
+            background: var(--card-bg);
+            border: 1px dashed var(--primary);
+            color: var(--primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            margin-top: 5px;
+        }
+        .btn-subir-regiao:hover {
+            background: rgba(37, 99, 235, 0.08);
+            border-style: solid;
         }
 
         /* MODAL LATERAL DE HISTÓRICO DE AUDITORIA */
@@ -822,14 +897,21 @@
                     </p>
                 </div>
 
-                <!-- Botão de Upload -->
-                <label class="btn-upload">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                    </svg>
-                    Subir Planilha da TV
-                    <input type="file" id="upload-tv" accept=".xlsx, .xls" style="display:none;" onchange="processarUploadExcel(event)">
-                </label>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <!-- Botão para Abrir Modal das 5 Bases de Precificação -->
+                    <button class="btn-base-precificacao" onclick="abrirModalBasesRegioes()" title="Gerenciar bases de precificação do DF, Entorno, LEM, Gurupi e Goiânia">
+                        📊 Bases de Precificação (5 Regiões)
+                    </button>
+
+                    <!-- Botão de Upload -->
+                    <label class="btn-upload">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        Subir Planilha da TV
+                        <input type="file" id="upload-tv" accept=".xlsx, .xls" style="display:none;" onchange="processarUploadExcel(event)">
+                    </label>
+                </div>
             </div>
 
             <!-- BARRA DE FILTROS -->
@@ -881,8 +963,10 @@
                             <th>CÓD</th>
                             <th>Produto</th>
                             <th style="color: var(--primary);">Preço Venda (Editável)</th>
-                            <th style="color: var(--warning);" title="Apenas para simulação de margem">Custo Base (Simulação)</th>
-                            <th>Margem %</th>
+                            <th style="color: var(--warning);" title="Custo líquido gerencial vindo da base regional do Consinco ou digitado">Custo Líq. Gerencial</th>
+                            <th style="color: #10b981;" title="Verba Sell-Out vinculada da base regional do Consinco">Verba</th>
+                            <th title="Imposto médio da região (%)">Imposto %</th>
+                            <th>Margem Consinco %</th>
                             <th>Observação</th>
                         </tr>
                     </thead>
@@ -915,6 +999,95 @@
         </div>
     </div>
 
+    <!-- MODAL DAS 5 BASES DE PRECIFICAÇÃO (CONSINCO) -->
+    <div class="modal-overlay" id="modalBasesRegioes">
+        <div class="modal-content" style="max-width: 1000px; height: auto; max-height: 90vh;">
+            <div class="modal-header">
+                <h2>
+                    <span>📊 Bases de Precificação das 5 Regiões</span>
+                </h2>
+                <button class="btn-close" onclick="fecharModalBasesRegioes()">&times;</button>
+            </div>
+
+            <div style="padding: 24px; overflow-y: auto;">
+                <p style="margin: 0 0 15px 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+                    Faça o upload periódico das planilhas de precificação extraídas do Consinco para cada uma das 5 regiões. O sistema armazenará os <strong>Custos Líquidos Gerenciais</strong>, <strong>Verbas de Sell-out</strong> e <strong>Impostos</strong> para calcular a margem exata em cada aba da TV.
+                </p>
+
+                <div class="grid-regioes-upload">
+                    <!-- 1. DISTRITO FEDERAL (DF) -->
+                    <div class="card-regiao-box" id="box-regiao-df">
+                        <div class="card-regiao-title">
+                            <span>🏛️ DISTRITO FEDERAL</span>
+                            <span class="badge" id="badge-base-df" style="background:#fee2e2; color:#b91c1c;">Vazia</span>
+                        </div>
+                        <div class="card-regiao-meta" id="meta-base-df">Nenhuma base importada ainda.</div>
+                        <label class="btn-subir-regiao">
+                            📁 Subir Planilha DF
+                            <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="processarUploadBaseRegiao('DF', event)">
+                        </label>
+                    </div>
+
+                    <!-- 2. ENTORNO (GO) -->
+                    <div class="card-regiao-box" id="box-regiao-entorno">
+                        <div class="card-regiao-title">
+                            <span>🏘️ ENTORNO (GO)</span>
+                            <span class="badge" id="badge-base-entorno" style="background:#fee2e2; color:#b91c1c;">Vazia</span>
+                        </div>
+                        <div class="card-regiao-meta" id="meta-base-entorno">Nenhuma base importada ainda.</div>
+                        <label class="btn-subir-regiao">
+                            📁 Subir Planilha Entorno
+                            <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="processarUploadBaseRegiao('ENTORNO', event)">
+                        </label>
+                    </div>
+
+                    <!-- 3. GOIÂNIAS (GOIÁS) -->
+                    <div class="card-regiao-box" id="box-regiao-goias">
+                        <div class="card-regiao-title">
+                            <span>🌾 GOIÂNIAS (GOIÁS)</span>
+                            <span class="badge" id="badge-base-goias" style="background:#fee2e2; color:#b91c1c;">Vazia</span>
+                        </div>
+                        <div class="card-regiao-meta" id="meta-base-goias">Nenhuma base importada ainda.</div>
+                        <label class="btn-subir-regiao">
+                            📁 Subir Planilha Goiânias
+                            <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="processarUploadBaseRegiao('GOIAS', event)">
+                        </label>
+                    </div>
+
+                    <!-- 4. LUÍS EDUARDO MAGALHÃES (BA) -->
+                    <div class="card-regiao-box" id="box-regiao-lem">
+                        <div class="card-regiao-title">
+                            <span>🚜 L. E. MAGALHÃES</span>
+                            <span class="badge" id="badge-base-lem" style="background:#fee2e2; color:#b91c1c;">Vazia</span>
+                        </div>
+                        <div class="card-regiao-meta" id="meta-base-lem">Nenhuma base importada ainda.</div>
+                        <label class="btn-subir-regiao">
+                            📁 Subir Planilha LEM
+                            <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="processarUploadBaseRegiao('LEM', event)">
+                        </label>
+                    </div>
+
+                    <!-- 5. GURUPI (TO) -->
+                    <div class="card-regiao-box" id="box-regiao-gurupi">
+                        <div class="card-regiao-title">
+                            <span>☀️ GURUPI (TO)</span>
+                            <span class="badge" id="badge-base-gurupi" style="background:#fee2e2; color:#b91c1c;">Vazia</span>
+                        </div>
+                        <div class="card-regiao-meta" id="meta-base-gurupi">Nenhuma base importada ainda.</div>
+                        <label class="btn-subir-regiao">
+                            📁 Subir Planilha Gurupi
+                            <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="processarUploadBaseRegiao('GURUPI', event)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: flex-end;">
+                <button class="btn-action btn-salvar" onclick="fecharModalBasesRegioes()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- DRAWER LATERAL DE AUDITORIA / HISTÓRICO -->
     <div class="drawer-overlay" id="drawerHistorico" onclick="if(event.target === this) fecharDrawerHistorico()">
         <div class="drawer-content">
@@ -937,11 +1110,55 @@
         let nomeUsuario = "Usuário";
         let listasGlobais = {};
         let baseProdutos = {};
+        let basesRegioes = {}; // Armazena as 5 bases de precificação por região
 
         let idListaAtual = null;
         let abaAtivaAtual = null;
         let copiaDadosEmEdicao = null;
-        let historicoMudancasSessao = []; // Rastreia alterações feitas na sessão atual
+        let historicoMudancasSessao = [];
+
+        // MAPEAMENTO DAS 5 REGIÕES E EQUIVALENTES DE NOMES DE ABAS
+        const CONFIG_REGIOES = {
+            "DF": {
+                label: "Distrito Federal (DF)",
+                aliases: ["DF", "DISTRITO FEDERAL", "BRASILIA", "BSB", "DF_ENT", "DF_GERAL"],
+                impostoPadrao: 0
+            },
+            "ENTORNO": {
+                label: "Entorno (GO)",
+                aliases: ["ENTORNO", "ENT", "ENTORNO_GO", "LUZIANIA", "AGUAS LINDAS", "VALPARAISO", "FORMOSA"],
+                impostoPadrao: 0
+            },
+            "GOIAS": {
+                label: "Goiânias (Goiás)",
+                aliases: ["GOIAS", "GO", "GOIANIA", "GOIANIAS", "GNA", "ANAPOLIS", "RIO VERDE"],
+                impostoPadrao: 0
+            },
+            "LEM": {
+                label: "Luís Eduardo Magalhães (BA)",
+                aliases: ["LEM", "L.E.M", "BA", "BAHIA", "LUIZ EDUARDO", "LUIS EDUARDO", "BARREIRAS"],
+                impostoPadrao: 0
+            },
+            "GURUPI": {
+                label: "Gurupi (TO)",
+                aliases: ["GURUPI", "TO", "TOCANTINS", "PALMAS", "GRP"],
+                impostoPadrao: 0
+            }
+        };
+
+        // Identifica qual das 5 regiões corresponde a uma aba do Excel
+        function identificarRegiaoPorNomeAba(sheetName) {
+            if (!sheetName) return "DF";
+            const upper = sheetName.toUpperCase().replace(/[^A-Z0-9]/g, ' ').trim();
+            for (const [regKey, conf] of Object.entries(CONFIG_REGIOES)) {
+                for (const alias of conf.aliases) {
+                    if (upper === alias || upper.startsWith(alias + ' ') || upper.endsWith(' ' + alias) || upper.includes(alias)) {
+                        return regKey;
+                    }
+                }
+            }
+            return "DF"; // Padrão se não identificado
+        }
 
         // TOAST NOTIFICATIONS
         window.showToast = function (message, type = 'info') {
@@ -963,7 +1180,7 @@
         function parseNumeroPtBr(valor) {
             if (valor === undefined || valor === null || valor === '') return null;
             if (typeof valor === 'number') return isNaN(valor) ? null : valor;
-            let str = String(valor).trim().replace('R$', '').trim();
+            let str = String(valor).trim().replace('R$', '').replace('%', '').trim();
             if (str.includes(',') && str.includes('.')) {
                 str = str.replace(/\./g, '').replace(',', '.');
             } else if (str.includes(',')) {
@@ -973,10 +1190,18 @@
             return isNaN(num) ? null : num;
         }
 
-        // CARREGA A BASE DE PRODUTOS PARA PREENCHIMENTO AUTOMÁTICO
+        // CARREGA A BASE SIMPLES DE PRODUTOS
         function carregarBaseProdutos() {
             onValue(ref(db, 'base_produtos'), (snapshot) => {
                 baseProdutos = snapshot.exists() ? snapshot.val() : {};
+            });
+        }
+
+        // CARREGA AS 5 BASES DE PRECIFICAÇÃO REGIONAIS DO CONSINCO
+        function carregarBasesRegioes() {
+            onValue(ref(db, 'base_precificacao_regioes'), (snapshot) => {
+                basesRegioes = snapshot.exists() ? snapshot.val() : {};
+                atualizarCardsModalRegioes();
             });
         }
 
@@ -1004,7 +1229,6 @@
                     const roleEl = document.getElementById('user-role-widget');
                     if (roleEl) roleEl.textContent = perfilUsuario;
 
-                    // Regra de Permissão: Comercial só envia, Pricing e Gestor aprovam/reprovam
                     if (perfilUsuario === 'Comercial') {
                         const btnReprovar = document.getElementById('btn-acao-reprovar');
                         const btnAprovar = document.getElementById('btn-acao-aprovar');
@@ -1014,6 +1238,7 @@
                 }
                 iniciarListenerDeListas();
                 carregarBaseProdutos();
+                carregarBasesRegioes();
             });
         });
 
@@ -1025,7 +1250,178 @@
             });
         }
 
-        // LISTENER DO FIREBASE EM TEMPO REAL
+        // ==========================================
+        // GESTÃO DAS 5 BASES REGIONAIS (CONSINCO)
+        // ==========================================
+        window.abrirModalBasesRegioes = function() {
+            atualizarCardsModalRegioes();
+            document.getElementById('modalBasesRegioes').style.display = 'flex';
+        };
+
+        window.fecharModalBasesRegioes = function() {
+            document.getElementById('modalBasesRegioes').style.display = 'none';
+        };
+
+        function atualizarCardsModalRegioes() {
+            const regioes = ["df", "entorno", "goias", "lem", "gurupi"];
+            regioes.forEach(reg => {
+                const regKey = reg.toUpperCase();
+                const dadosReg = basesRegioes[regKey];
+                const box = document.getElementById(`box-regiao-${reg}`);
+                const badge = document.getElementById(`badge-base-${reg}`);
+                const meta = document.getElementById(`meta-base-${reg}`);
+
+                if (dadosReg && dadosReg.itens) {
+                    const qtdItens = Object.keys(dadosReg.itens).length;
+                    const dataFmt = dadosReg.atualizadoEm ? new Date(dadosReg.atualizadoEm).toLocaleDateString('pt-BR') : '-';
+                    if (box) box.classList.add('has-base');
+                    if (badge) {
+                        badge.style.background = '#d1fae5';
+                        badge.style.color = '#047857';
+                        badge.innerText = `Ativa (${qtdItens} itens)`;
+                    }
+                    if (meta) {
+                        meta.innerHTML = `Atualizado em: <strong>${dataFmt}</strong> por ${dadosReg.atualizadoPor || 'Pricing'}`;
+                    }
+                } else {
+                    if (box) box.classList.remove('has-base');
+                    if (badge) {
+                        badge.style.background = '#fee2e2';
+                        badge.style.color = '#b91c1c';
+                        badge.innerText = 'Vazia';
+                    }
+                    if (meta) meta.innerText = 'Nenhuma base importada ainda.';
+                }
+            });
+        }
+
+        // UPLOAD DA BASE REGIONAL DO CONSINCO
+        window.processarUploadBaseRegiao = function(regiaoKey, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast(`Lendo base de precificação (${regiaoKey})...`, "info");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = e.target.result;
+                    let jsonRaw = [];
+
+                    if (file.name.endsWith('.csv')) {
+                        // Trata CSV com ponto e vírgula
+                        const workbook = XLSX.read(data, { type: 'binary', raw: true });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        jsonRaw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    } else {
+                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        jsonRaw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    }
+
+                    if (!jsonRaw || jsonRaw.length === 0) {
+                        showToast("Planilha vazia ou com formato não suportado.", "error");
+                        return;
+                    }
+
+                    // Identifica chaves de colunas no padrão Consinco
+                    const chaves = Object.keys(jsonRaw[0]);
+                    const keyCod = chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u === 'PRD_C5' || u === 'COD PROD' || u === 'CODIGO' || u === 'SEQPRODUTO' || u === 'CÓD' || u === 'COD';
+                    });
+                    const keyDesc = chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u === 'DESCCOMPLETA' || u === 'DESCRICAO' || u === 'DESCRIÇÃO' || u === 'PRODUTO';
+                    });
+                    const keyCustoLiq = chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u === 'CUSTO_LIQ_GERENCIAL' || u === 'CUSTO GERENCIAL' || u === 'CUSTO LIQUIDO' || u === 'CUSTO_LIQUIDO';
+                    }) || chaves.find(k => k.toUpperCase().includes('GERENCIAL') || k.toUpperCase() === 'CUSTO');
+                    const keyVerba = chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u === 'VLRUNITVERBA' || u === 'VERBA SELL OUT' || u === 'VERBA' || u === 'VERBA_SELL_OUT';
+                    });
+                    const keyImposto = chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u === 'IMPOSTO' || u === 'ALIQ_IMPOSTO' || u === 'ALIQIMPOSTO' || u === 'IMPOSTOS';
+                    });
+                    const keyMargemCadastro = chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u === 'MARGEMCATEG' || u === 'MARGEM CADASTRO' || u === 'MARGEMCADASTRO' || u === 'MGMLUCRO';
+                    });
+
+                    let itensMapeados = {};
+                    let contador = 0;
+
+                    jsonRaw.forEach(row => {
+                        const cod = String(row[keyCod] || '').trim();
+                        if (!cod) return;
+
+                        const custoLiq = parseNumeroPtBr(row[keyCustoLiq]);
+                        const verba = parseNumeroPtBr(row[keyVerba]) || 0;
+                        const imposto = parseNumeroPtBr(row[keyImposto]) || 0;
+                        const margemAlvo = parseNumeroPtBr(row[keyMargemCadastro]);
+                        const desc = String(row[keyDesc] || '').trim();
+
+                        itensMapeados[cod] = {
+                            cod: cod,
+                            desc: desc,
+                            custoLiq: custoLiq !== null ? custoLiq : 0,
+                            verba: verba,
+                            imposto: imposto,
+                            margemAlvo: margemAlvo
+                        };
+                        contador++;
+                    });
+
+                    if (contador === 0) {
+                        showToast("Não foi possível identificar a coluna de código do produto (PRD_C5 / CÓD).", "error");
+                        return;
+                    }
+
+                    const payload = {
+                        regiao: regiaoKey,
+                        arquivoNome: file.name,
+                        atualizadoEm: Date.now(),
+                        atualizadoPor: nomeUsuario,
+                        totalItens: contador,
+                        itens: itensMapeados
+                    };
+
+                    update(ref(db, `base_precificacao_regioes/${regiaoKey}`), payload).then(() => {
+                        showToast(`Base ${regiaoKey} salva com sucesso! (${contador} produtos mapeados)`, "success");
+                    }).catch(err => {
+                        showToast("Erro ao salvar no banco: " + err.message, "error");
+                    });
+
+                } catch (error) {
+                    console.error(error);
+                    showToast("Erro ao ler planilha: " + error.message, "error");
+                }
+            };
+            reader.readAsBinaryString(file);
+            event.target.value = '';
+        };
+
+        // FÓRMULA OFICIAL DE MARGEM CONSINCO
+        // Venda Líquida = PVENDA * (1 - (IMPOSTO / 100))
+        // Custo Efetivo = CUSTO_LIQUIDO - VERBA
+        // Margem Consinco % = ((Venda Líquida - Custo Efetivo) / Venda Líquida) * 100
+        function calcularMargemConsinco(pvenda, custoLiq, verba = 0, impostoPerc = 0) {
+            if (pvenda === null || custoLiq === null || pvenda <= 0) return null;
+
+            const taxaImposto = impostoPerc > 0 ? (impostoPerc > 1 ? impostoPerc / 100 : impostoPerc) : 0;
+            const vendaLiquida = pvenda * (1 - taxaImposto);
+
+            if (vendaLiquida <= 0) return null;
+
+            const custoEfetivo = custoLiq - (verba || 0);
+            const margem = ((vendaLiquida - custoEfetivo) / vendaLiquida) * 100;
+            return margem;
+        }
+
+        // LISTENER DO FIREBASE EM TEMPO REAL DAS LISTAS DE TV
         function iniciarListenerDeListas() {
             onValue(ref(db, 'listas_tv'), (snapshot) => {
                 listasGlobais = snapshot.exists() ? snapshot.val() : {};
@@ -1033,7 +1429,6 @@
             });
         }
 
-        // RENDERIZADOR DOS CARDS COM FILTRO
         window.filtrarCardsListas = function() {
             renderizarCardsListas();
         };
@@ -1115,12 +1510,12 @@
             });
         };
 
-        // PROCESSAMENTO DO UPLOAD DO EXCEL
+        // PROCESSAMENTO DO UPLOAD DO EXCEL DE TV
         window.processarUploadExcel = function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            showToast("Lendo abas do Excel...", "info");
+            showToast("Lendo abas regionais do Excel...", "info");
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -1135,6 +1530,9 @@
                         const sheet = workbook.Sheets[sheetName];
                         const jsonRaw = XLSX.utils.sheet_to_json(sheet, { range: 1, defval: '' });
 
+                        const regiaoDaAba = identificarRegiaoPorNomeAba(sheetName);
+                        const baseRegiao = basesRegioes[regiaoDaAba]?.itens || {};
+
                         let cleanJson = jsonRaw.map(row => {
                             let newRow = {};
                             Object.keys(row).forEach(k => {
@@ -1144,18 +1542,24 @@
                                 newRow[newKey] = val;
                             });
 
-                            // Se o produto tiver custo registrado no banco, preenche automaticamente
                             const codProd = String(newRow['CÓD'] || '').trim();
-                            let custoAuto = '';
-                            if (baseProdutos && baseProdutos[codProd]) {
-                                const prodInfo = baseProdutos[codProd];
-                                if (typeof prodInfo === 'object' && prodInfo.custo !== undefined) {
-                                    custoAuto = prodInfo.custo;
-                                }
+                            let custoLiq = '';
+                            let verba = '';
+                            let imposto = '';
+
+                            // Cruza com a base regional do Consinco
+                            if (codProd && baseRegiao[codProd]) {
+                                const info = baseRegiao[codProd];
+                                custoLiq = info.custoLiq !== undefined ? info.custoLiq : '';
+                                verba = info.verba || '';
+                                imposto = info.imposto || '';
                             }
 
-                            newRow['CUSTO_SIMULADO'] = custoAuto || '';
-                            newRow['MARGEM_SIMULADA'] = '';
+                            newRow['CUSTO_LIQ'] = custoLiq;
+                            newRow['VERBA'] = verba;
+                            newRow['IMPOSTO'] = imposto;
+                            newRow['REGIAO'] = regiaoDaAba;
+                            newRow['MARGEM_CONSINCO'] = '';
                             return newRow;
                         }).filter(row => row['CÓD'] || row['PRODUTO']);
 
@@ -1179,7 +1583,7 @@
                         autor: nomeUsuario,
                         perfil: perfilUsuario,
                         acao: "Upload da planilha",
-                        detalhes: `Arquivo original: ${file.name} (${totalItens} itens)`
+                        detalhes: `Arquivo: ${file.name} (${totalItens} itens)`
                     }];
 
                     const payload = {
@@ -1200,48 +1604,51 @@
 
                 } catch (error) {
                     console.error(error);
-                    showToast("Erro ao processar o arquivo Excel: " + error.message, "error");
+                    showToast("Erro ao processar arquivo: " + error.message, "error");
                 }
             };
             reader.readAsBinaryString(file);
             event.target.value = '';
         };
 
-        // PREENCHIMENTO AUTOMÁTICO DE CUSTOS NA ABA ATIVA OU EM TODAS AS ABAS
+        // PREENCHIMENTO AUTOMÁTICO DOS CUSTOS CONSINCO NA ABA ATIVA
         window.preencherCustosAutomaticos = function() {
             if (!copiaDadosEmEdicao || !abaAtivaAtual) {
                 showToast("Abra uma lista para aplicar o preenchimento.", "info");
                 return;
             }
 
+            const regiao = identificarRegiaoPorNomeAba(abaAtivaAtual);
+            const baseRegiao = basesRegioes[regiao]?.itens || {};
+            const qtdItensBase = Object.keys(baseRegiao).length;
+
+            if (qtdItensBase === 0) {
+                showToast(`A base de precificação para ${CONFIG_REGIOES[regiao].label} ainda não foi importada.`, "warning");
+                return;
+            }
+
             let preenchidos = 0;
             const dadosAba = copiaDadosEmEdicao[abaAtivaAtual] || [];
 
-            dadosAba.forEach((row, rowIndex) => {
+            dadosAba.forEach(row => {
                 const codProd = String(row['CÓD'] || '').trim();
-                if (codProd && baseProdutos && baseProdutos[codProd]) {
-                    const prodInfo = baseProdutos[codProd];
-                    let custoEncontrado = null;
-                    if (typeof prodInfo === 'object' && prodInfo.custo !== undefined) {
-                        custoEncontrado = prodInfo.custo;
-                    } else if (typeof prodInfo === 'string' && prodInfo.includes('R$')) {
-                        custoEncontrado = prodInfo;
-                    }
-
-                    if (custoEncontrado !== null && !row['CUSTO_SIMULADO']) {
-                        row['CUSTO_SIMULADO'] = custoEncontrado;
-                        preenchidos++;
-                    }
+                if (codProd && baseRegiao[codProd]) {
+                    const info = baseRegiao[codProd];
+                    row['CUSTO_LIQ'] = info.custoLiq !== undefined ? info.custoLiq : row['CUSTO_LIQ'];
+                    row['VERBA'] = info.verba !== undefined ? info.verba : row['VERBA'];
+                    row['IMPOSTO'] = info.imposto !== undefined ? info.imposto : row['IMPOSTO'];
+                    row['REGIAO'] = regiao;
+                    preenchidos++;
                 }
             });
 
             if (preenchidos > 0) {
                 const btnAtivo = document.querySelector('.tab-btn.active');
                 renderizarTabelaAba(abaAtivaAtual, btnAtivo);
-                showToast(`${preenchidos} custos preenchidos automaticamente com base no cadastro!`, "success");
-                historicoMudancasSessao.push(`${nomeUsuario} preencheu ${preenchidos} custos automáticos na aba ${abaAtivaAtual}`);
+                showToast(`${preenchidos} produtos sincronizados com a base ${CONFIG_REGIOES[regiao].label}!`, "success");
+                historicoMudancasSessao.push(`${nomeUsuario} sincronizou ${preenchidos} itens da base ${regiao} na aba ${abaAtivaAtual}`);
             } else {
-                showToast("Nenhum custo pendente foi encontrado na base de produtos cadastrados.", "info");
+                showToast(`Nenhum item correspondente encontrado na base de ${CONFIG_REGIOES[regiao].label}.`, "info");
             }
         };
 
@@ -1273,9 +1680,10 @@
 
             const sheetNames = Object.keys(copiaDadosEmEdicao);
             sheetNames.forEach((sheetName, index) => {
+                const regiao = identificarRegiaoPorNomeAba(sheetName);
                 const btn = document.createElement('button');
                 btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
-                btn.innerText = sheetName;
+                btn.innerHTML = `${sheetName} <span style="font-size:0.75rem; opacity:0.8;">(${regiao})</span>`;
                 btn.onclick = () => renderizarTabelaAba(sheetName, btn);
                 tabsContainer.appendChild(btn);
             });
@@ -1283,7 +1691,7 @@
             if (sheetNames.length > 0) {
                 renderizarTabelaAba(sheetNames[0], tabsContainer.firstChild);
             } else {
-                document.getElementById('modal-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">Sem dados nesta planilha.</td></tr>';
+                document.getElementById('modal-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">Sem dados nesta planilha.</td></tr>';
             }
 
             document.getElementById('modalValidacao').style.display = 'flex';
@@ -1298,12 +1706,15 @@
             historicoMudancasSessao = [];
         };
 
-        // RENDERIZAÇÃO DA TABELA POR ABA
+        // RENDERIZAÇÃO DA TABELA POR ABA COM MARGEM CONSINCO
         window.renderizarTabelaAba = function(sheetName, tabBtn) {
             abaAtivaAtual = sheetName;
 
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if (tabBtn) tabBtn.classList.add('active');
+
+            const regiaoAba = identificarRegiaoPorNomeAba(sheetName);
+            const baseRegiao = basesRegioes[regiaoAba]?.itens || {};
 
             const termoBusca = (document.getElementById('busca-tabela')?.value || '').toLowerCase().trim();
             const tbody = document.getElementById('modal-tbody');
@@ -1322,14 +1733,32 @@
                 tr.id = `row-${sheetName}-${rowIndex}`;
 
                 const pvenda = parseNumeroPtBr(row['PVENDA']);
-                const custo = parseNumeroPtBr(row['CUSTO_SIMULADO']);
+
+                // Se CUSTO_LIQ não estiver na linha, mas CUSTO_SIMULADO existir (compatibilidade com envios anteriores)
+                let custoLiqVal = row['CUSTO_LIQ'] !== undefined ? row['CUSTO_LIQ'] : (row['CUSTO_SIMULADO'] || '');
+                let verbaVal = row['VERBA'] !== undefined ? row['VERBA'] : '';
+                let impostoVal = row['IMPOSTO'] !== undefined ? row['IMPOSTO'] : '';
+
+                // Se não preenchido, tenta buscar dinamicamente na base regional
+                const codProd = String(row['CÓD'] || '').trim();
+                if (codProd && baseRegiao[codProd]) {
+                    const info = baseRegiao[codProd];
+                    if (!custoLiqVal && info.custoLiq !== undefined) custoLiqVal = info.custoLiq;
+                    if (!verbaVal && info.verba !== undefined) verbaVal = info.verba;
+                    if (!impostoVal && info.imposto !== undefined) impostoVal = info.imposto;
+                }
+
+                const custoLiqNum = parseNumeroPtBr(custoLiqVal);
+                const verbaNum = parseNumeroPtBr(verbaVal) || 0;
+                const impostoNum = parseNumeroPtBr(impostoVal) || 0;
+
+                const margemCalc = calcularMargemConsinco(pvenda, custoLiqNum, verbaNum, impostoNum);
 
                 let margemFormatada = '-';
                 let corMargem = 'var(--text-main)';
                 let classeLinha = '';
 
-                if (pvenda !== null && custo !== null && pvenda > 0) {
-                    const margemCalc = ((pvenda - custo) / pvenda) * 100;
+                if (margemCalc !== null) {
                     margemFormatada = margemCalc.toFixed(2) + '%';
                     if (margemCalc < 0) {
                         corMargem = 'var(--danger)';
@@ -1346,21 +1775,32 @@
                     <td>${row['PRODUTO'] || ''}</td>
                     <td>
                         <div class="cell-edit" contenteditable="true" spellcheck="false"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'PVENDA', this.innerText, this)">
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'PVENDA', this.innerText)">
                             ${row['PVENDA'] !== undefined ? row['PVENDA'] : ''}
                         </div>
                     </td>
                     <td>
-                        <div class="cell-custo" contenteditable="true" spellcheck="false"
-                             placeholder="0,00"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'CUSTO_SIMULADO', this.innerText, this)">
-                            ${row['CUSTO_SIMULADO'] || ''}
+                        <div class="cell-custo" contenteditable="true" spellcheck="false" placeholder="0,00"
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'CUSTO_LIQ', this.innerText)">
+                            ${custoLiqVal}
                         </div>
                     </td>
-                    <td id="margem-cell-${rowIndex}" style="color: ${corMargem}; font-weight: 700;">${margemFormatada}</td>
+                    <td>
+                        <div class="cell-custo" style="border-color:#10b981; background:rgba(16,185,129,0.06); color:#047857;" contenteditable="true" spellcheck="false" placeholder="0,00"
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'VERBA', this.innerText)">
+                            ${verbaVal}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cell-edit" style="min-width:60px;" contenteditable="true" spellcheck="false" placeholder="0%"
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'IMPOSTO', this.innerText)">
+                            ${impostoVal}
+                        </div>
+                    </td>
+                    <td id="margem-cell-${rowIndex}" style="color: ${corMargem}; font-weight: 700; font-size: 0.95rem;">${margemFormatada}</td>
                     <td>
                         <div class="cell-obs" contenteditable="true" spellcheck="false"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'OBS', this.innerText, this)">
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'OBS', this.innerText)">
                             ${row['OBS'] || ''}
                         </div>
                     </td>
@@ -1376,8 +1816,8 @@
             }
         };
 
-        // EDIÇÃO INLINE SEM PERDER FOCO E COM AUDITORIA DE ALTERAÇÃO
-        window.atualizarCelulaInline = function(sheetName, rowIndex, campo, novoValor, elem) {
+        // EDIÇÃO INLINE COM RECÁLCULO DA MARGEM CONSINCO
+        window.atualizarCelulaInline = function(sheetName, rowIndex, campo, novoValor) {
             if (!copiaDadosEmEdicao || !copiaDadosEmEdicao[sheetName] || !copiaDadosEmEdicao[sheetName][rowIndex]) return;
 
             const valLimpo = (novoValor || '').trim();
@@ -1390,17 +1830,20 @@
 
             copiaDadosEmEdicao[sheetName][rowIndex][campo] = valLimpo;
 
-            if (campo === 'PVENDA' || campo === 'CUSTO_SIMULADO') {
+            if (campo === 'PVENDA' || campo === 'CUSTO_LIQ' || campo === 'VERBA' || campo === 'IMPOSTO') {
                 const row = copiaDadosEmEdicao[sheetName][rowIndex];
                 const pvenda = parseNumeroPtBr(row['PVENDA']);
-                const custo = parseNumeroPtBr(row['CUSTO_SIMULADO']);
+                const custoLiq = parseNumeroPtBr(row['CUSTO_LIQ'] !== undefined ? row['CUSTO_LIQ'] : row['CUSTO_SIMULADO']);
+                const verba = parseNumeroPtBr(row['VERBA']) || 0;
+                const imposto = parseNumeroPtBr(row['IMPOSTO']) || 0;
+
+                const margemCalc = calcularMargemConsinco(pvenda, custoLiq, verba, imposto);
 
                 const cellMargem = document.getElementById(`margem-cell-${rowIndex}`);
                 const trLinha = document.getElementById(`row-${sheetName}-${rowIndex}`);
 
                 if (cellMargem && trLinha) {
-                    if (pvenda !== null && custo !== null && pvenda > 0) {
-                        const margemCalc = ((pvenda - custo) / pvenda) * 100;
+                    if (margemCalc !== null) {
                         cellMargem.textContent = margemCalc.toFixed(2) + '%';
                         if (margemCalc < 0) {
                             cellMargem.style.color = 'var(--danger)';
