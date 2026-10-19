@@ -335,6 +335,16 @@
                 <div id="badge-aniversario" style="display: none; position: absolute; top: 12px; right: 12px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: pulseAlert 2s infinite; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">Festa hoje! 🎉</div>
             </a>
             
+            <!-- NOVO CARD: LISTAS DE TV -->
+            <a href="listas-tv.html" class="card" id="card-listas-tv">
+                <div class="icon-container" style="background: rgba(168, 85, 247, 0.1); color: #9333ea;">📺</div>
+                <h2>Listas de TV</h2>
+                <p>Validação e aprovação de ofertas de TV.</p>
+                <div id="badge-listas-tv" style="display: none; position: absolute; top: 12px; right: 12px; background: #f59e0b; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">
+                    <span id="badge-listas-tv-qtd">0</span> pendente(s)
+                </div>
+            </a>
+
             <a href="links.html" class="card links card-pricing" id="card-links">
                 <div class="icon-container">🔗</div>
                 <h2>Links Essenciais</h2>
@@ -394,12 +404,14 @@
             const cardUsuarios = document.getElementById('card-usuarios');
             const cardChamados = document.getElementById('card-chamados');
             const cardCriticas = document.getElementById('card-criticas');
+            const cardListasTv = document.getElementById('card-listas-tv');
 
             if (perfilDoBanco === "Comercial") {
                 pricingCards.forEach(c => c.style.display = 'none');
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
                 if (cardCriticas) cardCriticas.style.display = 'flex';
+                if (cardListasTv) cardListasTv.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Portal Comercial ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Acesse suas ferramentas abaixo.";
             } else if (perfilDoBanco === "Gestor") {
@@ -407,6 +419,7 @@
                 if (cardUsuarios) cardUsuarios.style.display = 'flex';
                 if (cardChamados) cardChamados.style.display = 'flex';
                 if (cardCriticas) cardCriticas.style.display = 'flex';
+                if (cardListasTv) cardListasTv.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             } else {
@@ -414,6 +427,7 @@
                 if (cardUsuarios) cardUsuarios.style.display = 'none';
                 if (cardChamados) cardChamados.style.display = 'flex';
                 if (cardCriticas) cardCriticas.style.display = 'flex';
+                if (cardListasTv) cardListasTv.style.display = 'flex';
                 if (headerTitle) headerTitle.textContent = "Intranet Pricing ;DD";
                 if (headerSubtitle) headerSubtitle.textContent = "Selecione uma ferramenta abaixo para iniciar.";
             }
@@ -535,6 +549,30 @@
                     setInterval(atualizarBadgeChamados, 10000);
                 }
             }
+
+            // LISTENER EM TEMPO REAL PARA BADGE DE LISTAS DE TV PENDENTES
+            const listasTvRef = ref(db, 'listas_tv');
+            onValue(listasTvRef, (snapshot) => {
+                let pendentes = 0;
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const val = child.val();
+                        if (val && val.status === 'Pendente') {
+                            pendentes++;
+                        }
+                    });
+                }
+                const badgeTv = document.getElementById('badge-listas-tv');
+                const badgeTvQtd = document.getElementById('badge-listas-tv-qtd');
+                if (badgeTv && badgeTvQtd) {
+                    if (pendentes > 0) {
+                        badgeTvQtd.textContent = pendentes;
+                        badgeTv.style.display = 'block';
+                    } else {
+                        badgeTv.style.display = 'none';
+                    }
+                }
+            });
         };
 
         onAuthStateChanged(auth, (user) => {

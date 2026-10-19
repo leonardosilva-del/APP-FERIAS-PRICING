@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de TV - Pricing ;DD</title>
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/favicon.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <script>
+        if (localStorage.getItem('tema-intranet') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+        function toggleDark() {
+            document.documentElement.classList.toggle('dark-theme');
+            localStorage.setItem('tema-intranet', document.documentElement.classList.contains('dark-theme') ? 'dark' : 'light');
+            const btnIcon = document.getElementById('icon-theme');
+            if (btnIcon) btnIcon.textContent = document.documentElement.classList.contains('dark-theme') ? '☀️' : '🌙';
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --border: #e2e8f0;
+            --border-subtle: #f1f5f9;
+            --pill-bg: #f1f5f9;
+        }
+
+        html.dark-theme {
+            --bg-color: #0b1120;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-subtle: #1e293b;
+            --pill-bg: #334155;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 1.5rem 2rem;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container { max-width: 1440px; margin: 0 auto; }
+
+        /* NAVBAR SUPERIOR PADRÃO */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand-section img {
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .brand-section h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* WIDGET DE PERFIL PADRÃO */
+        .user-profile-widget {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 4px 12px 4px 4px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            background-color: #f1f5f9;
+        }
+
+        .user-info-widget {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .user-name-widget {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .user-role-widget {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: capitalize;
+        }
+
+        .btn-logout-widget {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .btn-logout-widget:hover {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        /* PAINEL PRINCIPAL */
+        .panel-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 10px 22px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        /* FILTROS / BUSCA RÁPIDA */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 240px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .filter-input:focus {
+            border-color: var(--primary);
+        }
+
+        /* GRID DE LISTAS */
+        .listas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card-lista {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .card-lista:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+        }
+
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge.pendente { background: #fef3c7; color: #b45309; }
+        .badge.aprovada { background: #d1fae5; color: #047857; }
+        .badge.reprovada { background: #fee2e2; color: #b91c1c; }
+
+        html.dark-theme .badge.pendente { background: #78350f40; color: #fde68a; }
+        html.dark-theme .badge.aprovada { background: #064e3b40; color: #6ee7b7; }
+        html.dark-theme .badge.reprovada { background: #7f1d1d40; color: #fca5a5; }
+
+        .btn-card-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-card-delete:hover {
+            color: var(--danger);
+            background: #fee2e2;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* MODAL DE VALIDAÇÃO GIGANTE */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 1440px;
+            height: 94vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 18px 28px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-color);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 1.6rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0 6px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .btn-close:hover { color: var(--danger); }
+
+        .modal-subbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 28px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover { color: var(--primary); background: var(--pill-bg); }
+        .tab-btn.active {
+            color: #ffffff;
+            background: var(--primary);
+        }
+
+        .modal-search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-search-box input {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+            width: 220px;
+        }
+
+        .modal-search-box input:focus { border-color: var(--primary); }
+
+        /* TABELA DE VALIDAÇÃO */
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            background: var(--card-bg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            padding: 12px 18px;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px 18px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        tr:hover td {
+            background-color: rgba(37, 99, 235, 0.02);
+        }
+
+        .cell-edit {
+            background: rgba(37, 99, 235, 0.06);
+            border: 1px dashed var(--primary);
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: text;
+            transition: all 0.2s;
+            min-width: 80px;
+            display: inline-block;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .cell-edit:focus {
+            background: var(--card-bg);
+            border-style: solid;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .cell-custo {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px dashed var(--warning);
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: text;
+            outline: none;
+            display: inline-block;
+            min-width: 80px;
+            font-weight: 600;
+        }
+
+        .cell-custo:focus {
+            background: var(--card-bg);
+            border-style: solid;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        .cell-obs {
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: text;
+            outline: none;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        .cell-obs:focus {
+            border-color: var(--border);
+            background: var(--bg-color);
+        }
+
+        .row-negativa {
+            background-color: rgba(239, 68, 68, 0.08) !important;
+        }
+
+        /* FOOTER DE AÇÕES */
+        .modal-footer {
+            padding: 16px 28px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-comentarios {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .footer-comentarios input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: inherit;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .footer-comentarios input:focus { border-color: var(--primary); }
+
+        .footer-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-reprovar { background: var(--danger); color: white; }
+        .btn-reprovar:hover { background: var(--danger-hover); }
+
+        .btn-aprovar { background: var(--success); color: white; }
+        .btn-aprovar:hover { background: #059669; }
+
+        .btn-export { background: #059669; color: white; display: none; }
+        .btn-export.show { display: inline-flex; animation: pulseBtn 2s infinite; }
+        .btn-export:hover { background: #047857; }
+
+        .btn-salvar {
+            background: var(--card-bg);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        .btn-salvar:hover { background: rgba(37, 99, 235, 0.08); }
+
+        .btn-historico {
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .btn-historico:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+        }
+
+        .btn-preencher-custo {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-preencher-custo:hover {
+            background: rgba(245, 158, 11, 0.2);
+            color: #b45309;
+        }
+
+        /* MODAL LATERAL DE HISTÓRICO DE AUDITORIA */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            display: none;
+            justify-content: flex-end;
+            z-index: 1100;
+        }
+
+        .drawer-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 440px;
+            height: 100%;
+            box-shadow: -10px 0 25px -5px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border);
+            animation: slideInDrawer 0.25s ease-out;
+        }
+
+        @keyframes slideInDrawer {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .drawer-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-color);
+        }
+
+        .drawer-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .audit-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.85rem;
+        }
+
+        .audit-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .audit-autor {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .audit-desc {
+            color: var(--text-main);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        @keyframes pulseBtn {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* TOAST CONTAINER */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: slideInToast 0.3s forwards;
+            pointer-events: auto;
+        }
+
+        .toast.success { background-color: var(--success); }
+        .toast.error { background-color: var(--danger); }
+        .toast.info { background-color: var(--primary); }
+
+        @keyframes slideInToast {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .top-navbar { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .modal-content { height: 100vh; border-radius: 0; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toast-container"></div>
+
+    <div class="container">
+        <!-- TOPBAR PADRÃO DA INTRANET -->
+        <header class="top-navbar">
+            <div class="brand-section">
+                <img src="/logo.png" alt="DIA A DIA ;DD" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';" />
+                <span id="alt-logo" style="display: none; font-weight: 800; font-size: 1.4rem;">Intranet Pricing</span>
+                <div>
+                    <h1>Painel de Listas de TV</h1>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <a href="/" class="btn-nav" title="Voltar para a Home">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Voltar ao Início
+                </a>
+
+                <button onclick="toggleDark()" class="btn-nav" title="Alternar Modo Escuro/Claro">
+                    <span id="icon-theme">🌙</span>
+                </button>
+
+                <!-- WIDGET DE PERFIL -->
+                <div class="user-profile-widget">
+                    <img id="user-photo" src="" class="user-avatar" alt="Foto">
+                    <div class="user-info-widget">
+                        <span id="user-name-widget" class="user-name-widget">Carregando...</span>
+                        <span id="user-role-widget" class="user-role-widget">Colaborador</span>
+                    </div>
+                    <button id="btn-logout" class="btn-logout-widget" title="Sair da Intranet">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CAIXA PRINCIPAL -->
+        <div class="panel-box">
+            <div class="header-actions">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Gestão e Validação de Ofertas</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 0.88rem; color: var(--text-muted);">
+                        Envio de planilhas de TV pelo Comercial e simulação de margens pelo Pricing antes da aprovação final.
+                    </p>
+                </div>
+
+                <!-- Botão de Upload -->
+                <label class="btn-upload">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Subir Planilha da TV
+                    <input type="file" id="upload-tv" accept=".xlsx, .xls" style="display:none;" onchange="processarUploadExcel(event)">
+                </label>
+            </div>
+
+            <!-- BARRA DE FILTROS -->
+            <div class="filter-bar">
+                <input type="text" id="filtro-busca" class="filter-input" placeholder="🔍 Filtrar lista por nome ou criador..." oninput="filtrarCardsListas()">
+                <select id="filtro-status" class="filter-input" style="max-width: 180px;" onchange="filtrarCardsListas()">
+                    <option value="TODOS">Todos os Status</option>
+                    <option value="Pendente">⏳ Pendente</option>
+                    <option value="Aprovada">✅ Aprovada</option>
+                    <option value="Reprovada">❌ Reprovada</option>
+                </select>
+            </div>
+
+            <div class="listas-grid" id="grid-listas">
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">Carregando listas...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VALIDAÇÃO GIGANTE -->
+    <div class="modal-overlay" id="modalValidacao">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <span id="modal-titulo-lista">Nome da Lista</span>
+                    <span id="modal-badge-status" class="badge">Pendente</span>
+                </h2>
+                <button class="btn-close" onclick="fecharModal()">&times;</button>
+            </div>
+
+            <div class="modal-subbar">
+                <div class="tabs-container" id="modal-tabs">
+                    <!-- Abas geradas dinamicamente -->
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap;">
+                    <button class="btn-preencher-custo" onclick="preencherCustosAutomaticos()" title="Buscar custos da base cadastrada para os produtos desta aba">
+                        ⚡ Preencher Custos Automáticos
+                    </button>
+                    <div class="modal-search-box">
+                        <input type="text" id="busca-tabela" placeholder="Buscar código ou produto..." oninput="filtrarTabelaModal()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="tabela-itens">
+                    <thead>
+                        <tr>
+                            <th>CÓD</th>
+                            <th>Produto</th>
+                            <th style="color: var(--primary);">Preço Venda (Editável)</th>
+                            <th style="color: var(--warning);" title="Apenas para simulação de margem">Custo Base (Simulação)</th>
+                            <th>Margem %</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tbody">
+                        <!-- Linhas geradas via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <div class="footer-comentarios">
+                    <input type="text" id="input-comentarios" placeholder="Digite uma observação ou o motivo de reprovação...">
+                </div>
+
+                <div class="footer-buttons">
+                    <button class="btn-action btn-historico" onclick="abrirDrawerHistorico()" title="Ver histórico de edições e alterações">
+                        📜 Histórico
+                    </button>
+
+                    <!-- Exportar travado condicionalmente: só libera se Aprovada -->
+                    <button id="btn-exportar-final" class="btn-action btn-export" onclick="baixarExcelFinal()">
+                        📥 Baixar Excel Corrigido
+                    </button>
+
+                    <button class="btn-action btn-salvar" onclick="salvarAlteracoesLista()">💾 Salvar Correções</button>
+                    <button id="btn-acao-reprovar" class="btn-action btn-reprovar" onclick="alterarStatusLista('Reprovada')">❌ Reprovar Ajuste</button>
+                    <button id="btn-acao-aprovar" class="btn-action btn-aprovar" onclick="alterarStatusLista('Aprovada')">✅ Aprovar Lista</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRAWER LATERAL DE AUDITORIA / HISTÓRICO -->
+    <div class="drawer-overlay" id="drawerHistorico" onclick="if(event.target === this) fecharDrawerHistorico()">
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <h3>📜 Histórico de Alterações</h3>
+                <button class="btn-close" onclick="fecharDrawerHistorico()">&times;</button>
+            </div>
+            <div class="drawer-body" id="drawer-historico-body">
+                <div style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando histórico...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, auth } from "./firebase-config.js";
+        import { ref, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+        let perfilUsuario = "Comercial";
+        let nomeUsuario = "Usuário";
+        let listasGlobais = {};
+        let baseProdutos = {};
+
+        let idListaAtual = null;
+        let abaAtivaAtual = null;
+        let copiaDadosEmEdicao = null;
+        let historicoMudancasSessao = []; // Rastreia alterações feitas na sessão atual
+
+        // TOAST NOTIFICATIONS
+        window.showToast = function (message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s, transform 0.3s';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        };
+
+        // PARSER DE NÚMEROS BRASILEIROS ROBUSTO
+        function parseNumeroPtBr(valor) {
+            if (valor === undefined || valor === null || valor === '') return null;
+            if (typeof valor === 'number') return isNaN(valor) ? null : valor;
+            let str = String(valor).trim().replace('R$', '').trim();
+            if (str.includes(',') && str.includes('.')) {
+                str = str.replace(/\./g, '').replace(',', '.');
+            } else if (str.includes(',')) {
+                str = str.replace(',', '.');
+            }
+            const num = parseFloat(str);
+            return isNaN(num) ? null : num;
+        }
+
+        // CARREGA A BASE DE PRODUTOS PARA PREENCHIMENTO AUTOMÁTICO
+        function carregarBaseProdutos() {
+            onValue(ref(db, 'base_produtos'), (snapshot) => {
+                baseProdutos = snapshot.exists() ? snapshot.val() : {};
+            });
+        }
+
+        // AUTH & CARREGAMENTO DE PERFIL
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "/";
+                return;
+            }
+
+            const photoEl = document.getElementById('user-photo');
+            if (photoEl) photoEl.src = user.photoURL || 'https://via.placeholder.com/32';
+            const nameEl = document.getElementById('user-name-widget');
+            nomeUsuario = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
+            if (nameEl) nameEl.textContent = nomeUsuario;
+
+            get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const dados = snapshot.val();
+                    perfilUsuario = dados.perfil || "Comercial";
+                    if (dados.nome) {
+                        nomeUsuario = dados.nome.split(' ')[0];
+                        if (nameEl) nameEl.textContent = nomeUsuario;
+                    }
+                    const roleEl = document.getElementById('user-role-widget');
+                    if (roleEl) roleEl.textContent = perfilUsuario;
+
+                    // Regra de Permissão: Comercial só envia, Pricing e Gestor aprovam/reprovam
+                    if (perfilUsuario === 'Comercial') {
+                        const btnReprovar = document.getElementById('btn-acao-reprovar');
+                        const btnAprovar = document.getElementById('btn-acao-aprovar');
+                        if (btnReprovar) btnReprovar.style.display = 'none';
+                        if (btnAprovar) btnAprovar.style.display = 'none';
+                    }
+                }
+                iniciarListenerDeListas();
+                carregarBaseProdutos();
+            });
+        });
+
+        // LOGOUT
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                signOut(auth).then(() => { window.location.href = "/"; });
+            });
+        }
+
+        // LISTENER DO FIREBASE EM TEMPO REAL
+        function iniciarListenerDeListas() {
+            onValue(ref(db, 'listas_tv'), (snapshot) => {
+                listasGlobais = snapshot.exists() ? snapshot.val() : {};
+                renderizarCardsListas();
+            });
+        }
+
+        // RENDERIZADOR DOS CARDS COM FILTRO
+        window.filtrarCardsListas = function() {
+            renderizarCardsListas();
+        };
+
+        function renderizarCardsListas() {
+            const grid = document.getElementById('grid-listas');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const busca = (document.getElementById('filtro-busca')?.value || '').toLowerCase().trim();
+            const statusFiltro = document.getElementById('filtro-status')?.value || 'TODOS';
+
+            if (!listasGlobais || Object.keys(listasGlobais).length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">Nenhuma lista de TV foi enviada ainda. Suba uma planilha pelo botão acima.</div>`;
+                return;
+            }
+
+            let arrayListas = Object.entries(listasGlobais).map(([id, info]) => ({ id, ...info }));
+            arrayListas.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            arrayListas = arrayListas.filter(lista => {
+                const matchStatus = statusFiltro === 'TODOS' || lista.status === statusFiltro;
+                const matchBusca = !busca ||
+                    (lista.nome && lista.nome.toLowerCase().includes(busca)) ||
+                    (lista.criadoPor && lista.criadoPor.toLowerCase().includes(busca));
+                return matchStatus && matchBusca;
+            });
+
+            if (arrayListas.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">Nenhuma lista encontrada com os filtros selecionados.</div>`;
+                return;
+            }
+
+            arrayListas.forEach(lista => {
+                const statusNormal = (lista.status || 'Pendente').toLowerCase();
+                const iconStatus = lista.status === 'Aprovada' ? '✅' : (lista.status === 'Reprovada' ? '❌' : '⏳');
+                const dataFmt = lista.timestamp ? new Date(lista.timestamp).toLocaleString('pt-BR') : '-';
+
+                const card = document.createElement('div');
+                card.className = 'card-lista';
+                card.onclick = (e) => {
+                    if (e.target.closest('.btn-card-delete')) return;
+                    abrirModalEdicao(lista.id);
+                };
+
+                const permiteExcluir = perfilUsuario === 'Gestor' || perfilUsuario === 'Pricing' || lista.criadoPor === nomeUsuario;
+
+                card.innerHTML = `
+                    <div class="card-top-row">
+                        <span class="badge ${statusNormal}">${iconStatus} ${lista.status || 'Pendente'}</span>
+                        ${permiteExcluir ? `
+                            <button class="btn-card-delete" title="Excluir Lista" onclick="window.excluirListaTv('${lista.id}', event)">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <h3 class="card-title">${lista.nome}</h3>
+                    <div class="card-meta">👤 Enviado por: <strong>${lista.criadoPor || 'Comercial'}</strong></div>
+                    <div class="card-meta">📅 Em: ${dataFmt}</div>
+                    ${lista.comentarios ? `<div style="margin-top:6px; font-size:0.8rem; color:var(--danger); font-weight:600; background:rgba(239,68,68,0.06); padding:6px 10px; border-radius:6px;">💬 ${lista.comentarios}</div>` : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // EXCLUIR LISTA
+        window.excluirListaTv = function(id, event) {
+            if (event) event.stopPropagation();
+            const lista = listasGlobais[id];
+            const nome = lista ? lista.nome : "esta lista";
+            if (!confirm(`Tem certeza que deseja excluir "${nome}"? Esta ação não pode ser desfeita.`)) return;
+
+            remove(ref(db, `listas_tv/${id}`)).then(() => {
+                showToast("Lista excluída com sucesso!", "success");
+            }).catch(err => {
+                showToast("Erro ao excluir: " + err.message, "error");
+            });
+        };
+
+        // PROCESSAMENTO DO UPLOAD DO EXCEL
+        window.processarUploadExcel = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast("Lendo abas do Excel...", "info");
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+
+                    let parsedData = {};
+                    let totalItens = 0;
+
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheet = workbook.Sheets[sheetName];
+                        const jsonRaw = XLSX.utils.sheet_to_json(sheet, { range: 1, defval: '' });
+
+                        let cleanJson = jsonRaw.map(row => {
+                            let newRow = {};
+                            Object.keys(row).forEach(k => {
+                                let val = row[k];
+                                let newKey = k.includes('Unnamed') ? 'OBS' : k.trim().toUpperCase();
+                                if (newKey === 'COD') newKey = 'CÓD';
+                                newRow[newKey] = val;
+                            });
+
+                            // Se o produto tiver custo registrado no banco, preenche automaticamente
+                            const codProd = String(newRow['CÓD'] || '').trim();
+                            let custoAuto = '';
+                            if (baseProdutos && baseProdutos[codProd]) {
+                                const prodInfo = baseProdutos[codProd];
+                                if (typeof prodInfo === 'object' && prodInfo.custo !== undefined) {
+                                    custoAuto = prodInfo.custo;
+                                }
+                            }
+
+                            newRow['CUSTO_SIMULADO'] = custoAuto || '';
+                            newRow['MARGEM_SIMULADA'] = '';
+                            return newRow;
+                        }).filter(row => row['CÓD'] || row['PRODUTO']);
+
+                        if (cleanJson.length > 0) {
+                            parsedData[sheetName] = cleanJson;
+                            totalItens += cleanJson.length;
+                        }
+                    });
+
+                    if (totalItens === 0) {
+                        showToast("Planilha vazia ou em formato incorreto.", "error");
+                        return;
+                    }
+
+                    let nomeSugerido = file.name.replace(/\.[^/.]+$/, "");
+                    let novoNome = prompt("Planilha lida com sucesso! Como deseja nomear esta campanha de TV?", nomeSugerido);
+                    if (!novoNome) return;
+
+                    const historicoInicial = [{
+                        data: Date.now(),
+                        autor: nomeUsuario,
+                        perfil: perfilUsuario,
+                        acao: "Upload da planilha",
+                        detalhes: `Arquivo original: ${file.name} (${totalItens} itens)`
+                    }];
+
+                    const payload = {
+                        nome: novoNome.trim(),
+                        status: "Pendente",
+                        comentarios: "",
+                        criadoPor: nomeUsuario,
+                        timestamp: Date.now(),
+                        dados: parsedData,
+                        historico: historicoInicial
+                    };
+
+                    push(ref(db, 'listas_tv'), payload).then(() => {
+                        showToast("Lista de TV enviada para validação!", "success");
+                    }).catch(err => {
+                        showToast("Erro ao salvar lista: " + err.message, "error");
+                    });
+
+                } catch (error) {
+                    console.error(error);
+                    showToast("Erro ao processar o arquivo Excel: " + error.message, "error");
+                }
+            };
+            reader.readAsBinaryString(file);
+            event.target.value = '';
+        };
+
+        // PREENCHIMENTO AUTOMÁTICO DE CUSTOS NA ABA ATIVA OU EM TODAS AS ABAS
+        window.preencherCustosAutomaticos = function() {
+            if (!copiaDadosEmEdicao || !abaAtivaAtual) {
+                showToast("Abra uma lista para aplicar o preenchimento.", "info");
+                return;
+            }
+
+            let preenchidos = 0;
+            const dadosAba = copiaDadosEmEdicao[abaAtivaAtual] || [];
+
+            dadosAba.forEach((row, rowIndex) => {
+                const codProd = String(row['CÓD'] || '').trim();
+                if (codProd && baseProdutos && baseProdutos[codProd]) {
+                    const prodInfo = baseProdutos[codProd];
+                    let custoEncontrado = null;
+                    if (typeof prodInfo === 'object' && prodInfo.custo !== undefined) {
+                        custoEncontrado = prodInfo.custo;
+                    } else if (typeof prodInfo === 'string' && prodInfo.includes('R$')) {
+                        custoEncontrado = prodInfo;
+                    }
+
+                    if (custoEncontrado !== null && !row['CUSTO_SIMULADO']) {
+                        row['CUSTO_SIMULADO'] = custoEncontrado;
+                        preenchidos++;
+                    }
+                }
+            });
+
+            if (preenchidos > 0) {
+                const btnAtivo = document.querySelector('.tab-btn.active');
+                renderizarTabelaAba(abaAtivaAtual, btnAtivo);
+                showToast(`${preenchidos} custos preenchidos automaticamente com base no cadastro!`, "success");
+                historicoMudancasSessao.push(`${nomeUsuario} preencheu ${preenchidos} custos automáticos na aba ${abaAtivaAtual}`);
+            } else {
+                showToast("Nenhum custo pendente foi encontrado na base de produtos cadastrados.", "info");
+            }
+        };
+
+        // MODAL DE EDIÇÃO E REVISÃO
+        window.abrirModalEdicao = function(id) {
+            idListaAtual = id;
+            const lista = listasGlobais[id];
+            if (!lista) return;
+
+            copiaDadosEmEdicao = JSON.parse(JSON.stringify(lista.dados || {}));
+            historicoMudancasSessao = [];
+
+            document.getElementById('modal-titulo-lista').innerText = lista.nome;
+            const badge = document.getElementById('modal-badge-status');
+            badge.innerText = lista.status || 'Pendente';
+            badge.className = `badge ${(lista.status || 'pendente').toLowerCase()}`;
+
+            document.getElementById('input-comentarios').value = lista.comentarios || "";
+
+            const btnExport = document.getElementById('btn-exportar-final');
+            if (lista.status === 'Aprovada') {
+                btnExport.classList.add('show');
+            } else {
+                btnExport.classList.remove('show');
+            }
+
+            const tabsContainer = document.getElementById('modal-tabs');
+            tabsContainer.innerHTML = '';
+
+            const sheetNames = Object.keys(copiaDadosEmEdicao);
+            sheetNames.forEach((sheetName, index) => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+                btn.innerText = sheetName;
+                btn.onclick = () => renderizarTabelaAba(sheetName, btn);
+                tabsContainer.appendChild(btn);
+            });
+
+            if (sheetNames.length > 0) {
+                renderizarTabelaAba(sheetNames[0], tabsContainer.firstChild);
+            } else {
+                document.getElementById('modal-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">Sem dados nesta planilha.</td></tr>';
+            }
+
+            document.getElementById('modalValidacao').style.display = 'flex';
+        };
+
+        window.fecharModal = function() {
+            document.getElementById('modalValidacao').style.display = 'none';
+            fecharDrawerHistorico();
+            idListaAtual = null;
+            abaAtivaAtual = null;
+            copiaDadosEmEdicao = null;
+            historicoMudancasSessao = [];
+        };
+
+        // RENDERIZAÇÃO DA TABELA POR ABA
+        window.renderizarTabelaAba = function(sheetName, tabBtn) {
+            abaAtivaAtual = sheetName;
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (tabBtn) tabBtn.classList.add('active');
+
+            const termoBusca = (document.getElementById('busca-tabela')?.value || '').toLowerCase().trim();
+            const tbody = document.getElementById('modal-tbody');
+            tbody.innerHTML = '';
+
+            const dadosAba = copiaDadosEmEdicao[sheetName] || [];
+
+            dadosAba.forEach((row, rowIndex) => {
+                const codStr = String(row['CÓD'] || '').toLowerCase();
+                const prodStr = String(row['PRODUTO'] || '').toLowerCase();
+                if (termoBusca && !codStr.includes(termoBusca) && !prodStr.includes(termoBusca)) {
+                    return;
+                }
+
+                const tr = document.createElement('tr');
+                tr.id = `row-${sheetName}-${rowIndex}`;
+
+                const pvenda = parseNumeroPtBr(row['PVENDA']);
+                const custo = parseNumeroPtBr(row['CUSTO_SIMULADO']);
+
+                let margemFormatada = '-';
+                let corMargem = 'var(--text-main)';
+                let classeLinha = '';
+
+                if (pvenda !== null && custo !== null && pvenda > 0) {
+                    const margemCalc = ((pvenda - custo) / pvenda) * 100;
+                    margemFormatada = margemCalc.toFixed(2) + '%';
+                    if (margemCalc < 0) {
+                        corMargem = 'var(--danger)';
+                        classeLinha = 'row-negativa';
+                    } else {
+                        corMargem = 'var(--success)';
+                    }
+                }
+
+                tr.className = classeLinha;
+
+                tr.innerHTML = `
+                    <td><strong>${row['CÓD'] || ''}</strong></td>
+                    <td>${row['PRODUTO'] || ''}</td>
+                    <td>
+                        <div class="cell-edit" contenteditable="true" spellcheck="false"
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'PVENDA', this.innerText, this)">
+                            ${row['PVENDA'] !== undefined ? row['PVENDA'] : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cell-custo" contenteditable="true" spellcheck="false"
+                             placeholder="0,00"
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'CUSTO_SIMULADO', this.innerText, this)">
+                            ${row['CUSTO_SIMULADO'] || ''}
+                        </div>
+                    </td>
+                    <td id="margem-cell-${rowIndex}" style="color: ${corMargem}; font-weight: 700;">${margemFormatada}</td>
+                    <td>
+                        <div class="cell-obs" contenteditable="true" spellcheck="false"
+                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'OBS', this.innerText, this)">
+                            ${row['OBS'] || ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.filtrarTabelaModal = function() {
+            if (abaAtivaAtual) {
+                const btnAtivo = document.querySelector('.tab-btn.active');
+                renderizarTabelaAba(abaAtivaAtual, btnAtivo);
+            }
+        };
+
+        // EDIÇÃO INLINE SEM PERDER FOCO E COM AUDITORIA DE ALTERAÇÃO
+        window.atualizarCelulaInline = function(sheetName, rowIndex, campo, novoValor, elem) {
+            if (!copiaDadosEmEdicao || !copiaDadosEmEdicao[sheetName] || !copiaDadosEmEdicao[sheetName][rowIndex]) return;
+
+            const valLimpo = (novoValor || '').trim();
+            const valAnterior = String(copiaDadosEmEdicao[sheetName][rowIndex][campo] || '').trim();
+
+            if (valLimpo !== valAnterior) {
+                const codProd = copiaDadosEmEdicao[sheetName][rowIndex]['CÓD'] || `Linha ${rowIndex + 1}`;
+                historicoMudancasSessao.push(`${nomeUsuario} alterou ${campo} de "${valAnterior || 'vazio'}" para "${valLimpo}" no cód ${codProd} (${sheetName})`);
+            }
+
+            copiaDadosEmEdicao[sheetName][rowIndex][campo] = valLimpo;
+
+            if (campo === 'PVENDA' || campo === 'CUSTO_SIMULADO') {
+                const row = copiaDadosEmEdicao[sheetName][rowIndex];
+                const pvenda = parseNumeroPtBr(row['PVENDA']);
+                const custo = parseNumeroPtBr(row['CUSTO_SIMULADO']);
+
+                const cellMargem = document.getElementById(`margem-cell-${rowIndex}`);
+                const trLinha = document.getElementById(`row-${sheetName}-${rowIndex}`);
+
+                if (cellMargem && trLinha) {
+                    if (pvenda !== null && custo !== null && pvenda > 0) {
+                        const margemCalc = ((pvenda - custo) / pvenda) * 100;
+                        cellMargem.textContent = margemCalc.toFixed(2) + '%';
+                        if (margemCalc < 0) {
+                            cellMargem.style.color = 'var(--danger)';
+                            trLinha.classList.add('row-negativa');
+                        } else {
+                            cellMargem.style.color = 'var(--success)';
+                            trLinha.classList.remove('row-negativa');
+                        }
+                    } else {
+                        cellMargem.textContent = '-';
+                        cellMargem.style.color = 'var(--text-main)';
+                        trLinha.classList.remove('row-negativa');
+                    }
+                }
+            }
+        };
+
+        // SALVAR ALTERAÇÕES NO FIREBASE COM REGISTRO NO HISTÓRICO
+        window.salvarAlteracoesLista = function() {
+            if (!idListaAtual) return;
+
+            const obs = document.getElementById('input-comentarios').value;
+            const listaOriginal = listasGlobais[idListaAtual] || {};
+            const historicoExistente = Array.isArray(listaOriginal.historico) ? [...listaOriginal.historico] : [];
+
+            let detalhesAcao = "Edição e ajustes na planilha";
+            if (historicoMudancasSessao.length > 0) {
+                detalhesAcao = historicoMudancasSessao.slice(-5).join(" | ");
+                if (historicoMudancasSessao.length > 5) {
+                    detalhesAcao += ` (+${historicoMudancasSessao.length - 5} alterações)`;
+                }
+            }
+
+            historicoExistente.push({
+                data: Date.now(),
+                autor: nomeUsuario,
+                perfil: perfilUsuario,
+                acao: "Salvou alterações",
+                detalhes: detalhesAcao
+            });
+
+            update(ref(db, `listas_tv/${idListaAtual}`), {
+                dados: copiaDadosEmEdicao,
+                comentarios: obs,
+                historico: historicoExistente
+            }).then(() => {
+                showToast("Alterações e histórico salvos com sucesso!", "success");
+                historicoMudancasSessao = [];
+            }).catch(err => {
+                showToast("Erro ao salvar: " + err.message, "error");
+            });
+        };
+
+        // ALTERAR STATUS (APROVAR / REPROVAR) COM REGISTRO DE AUDITORIA
+        window.alterarStatusLista = function(novoStatus) {
+            if (!idListaAtual) return;
+
+            const obs = document.getElementById('input-comentarios').value;
+            if (novoStatus === 'Reprovada' && !obs.trim()) {
+                showToast("Por favor, preencha um motivo/comentário para a reprovação.", "error");
+                document.getElementById('input-comentarios').focus();
+                return;
+            }
+
+            const listaOriginal = listasGlobais[idListaAtual] || {};
+            const historicoExistente = Array.isArray(listaOriginal.historico) ? [...listaOriginal.historico] : [];
+
+            historicoExistente.push({
+                data: Date.now(),
+                autor: nomeUsuario,
+                perfil: perfilUsuario,
+                acao: `Status alterado para: ${novoStatus}`,
+                detalhes: obs ? `Motivo/Obs: ${obs}` : 'Aprovada sem ressalvas'
+            });
+
+            update(ref(db, `listas_tv/${idListaAtual}`), {
+                status: novoStatus,
+                comentarios: obs,
+                dados: copiaDadosEmEdicao,
+                historico: historicoExistente
+            }).then(() => {
+                showToast(`Lista definida como ${novoStatus}!`, "success");
+                fecharModal();
+            }).catch(err => {
+                showToast("Erro ao atualizar status: " + err.message, "error");
+            });
+        };
+
+        // HISTÓRICO / AUDITORIA DRAWER
+        window.abrirDrawerHistorico = function() {
+            if (!idListaAtual) return;
+            const lista = listasGlobais[idListaAtual] || {};
+            const drawerBody = document.getElementById('drawer-historico-body');
+            drawerBody.innerHTML = '';
+
+            const historico = Array.isArray(lista.historico) ? [...lista.historico] : [];
+
+            if (historico.length === 0) {
+                drawerBody.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhum registro de auditoria nesta lista.</div>';
+            } else {
+                historico.sort((a, b) => (b.data || 0) - (a.data || 0));
+                historico.forEach(item => {
+                    const dataFmt = item.data ? new Date(item.data).toLocaleString('pt-BR') : '-';
+                    const div = document.createElement('div');
+                    div.className = 'audit-item';
+                    div.innerHTML = `
+                        <div class="audit-item-top">
+                            <span class="audit-autor">👤 ${item.autor || 'Usuário'} (${item.perfil || 'Colaborador'})</span>
+                            <span>${dataFmt}</span>
+                        </div>
+                        <div style="font-weight: 700; color: var(--text-main); margin-top: 2px;">${item.acao || 'Ação registrada'}</div>
+                        ${item.detalhes ? `<div class="audit-desc">${item.detalhes}</div>` : ''}
+                    `;
+                    drawerBody.appendChild(div);
+                });
+            }
+
+            document.getElementById('drawerHistorico').style.display = 'flex';
+        };
+
+        window.fecharDrawerHistorico = function() {
+            const drawer = document.getElementById('drawerHistorico');
+            if (drawer) drawer.style.display = 'none';
+        };
+
+        // EXPORTAÇÃO DA PLANILHA EXCEL FINAL (DESBLOQUEADA APENAS QUANDO APROVADA)
+        window.baixarExcelFinal = function() {
+            if (!idListaAtual) return;
+            const listaOriginal = listasGlobais[idListaAtual];
+
+            if (listaOriginal.status !== 'Aprovada') {
+                showToast("A lista precisa estar aprovada pelo Pricing para gerar o Excel final.", "error");
+                return;
+            }
+
+            showToast("Gerando arquivo Excel corrigido...", "info");
+
+            const wb = XLSX.utils.book_new();
+
+            Object.keys(copiaDadosEmEdicao).forEach(sheetName => {
+                const sheetData = copiaDadosEmEdicao[sheetName].map(row => {
+                    return {
+                        "CÓD": row['CÓD'],
+                        "PRODUTO": row['PRODUTO'],
+                        "PVENDA": row['PVENDA'],
+                        "OBS": row['OBS'] || ""
+                    };
+                });
+
+                const ws = XLSX.utils.json_to_sheet(sheetData);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+
+            const nomeArquivo = `Lista_TV_Aprovada_${listaOriginal.nome.replace(/\s+/g, '_')}.xlsx`;
+            XLSX.writeFile(wb, nomeArquivo);
+            showToast("Download da planilha concluído!", "success");
+        };
+
+    </script>
+    <script type="module" src="./alerta-global-pricing.js"></script>
+</body>
+</html>

@@ -59,6 +59,10 @@
     "inauguracoes": {
       ".read": "auth != null",
       ".write": "auth != null"
+    },
+    "listas_tv": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
 }
