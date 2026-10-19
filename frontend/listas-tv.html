@@ -1103,7 +1103,7 @@
 
     <script type="module">
         import { db, auth } from "./firebase-config.js";
-        import { ref, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref as dbRef, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
         let perfilUsuario = "Comercial";
@@ -1192,14 +1192,14 @@
 
         // CARREGA A BASE SIMPLES DE PRODUTOS
         function carregarBaseProdutos() {
-            onValue(ref(db, 'base_produtos'), (snapshot) => {
+            onValue(dbRef(db, 'base_produtos'), (snapshot) => {
                 baseProdutos = snapshot.exists() ? snapshot.val() : {};
             });
         }
 
         // CARREGA AS 5 BASES DE PRECIFICAÇÃO REGIONAIS DO CONSINCO
         function carregarBasesRegioes() {
-            onValue(ref(db, 'base_precificacao_regioes'), (snapshot) => {
+            onValue(dbRef(db, 'base_precificacao_regioes'), (snapshot) => {
                 basesRegioes = snapshot.exists() ? snapshot.val() : {};
                 atualizarCardsModalRegioes();
             });
@@ -1218,7 +1218,7 @@
             nomeUsuario = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
             if (nameEl) nameEl.textContent = nomeUsuario;
 
-            get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
+            get(dbRef(db, 'usuarios/' + user.uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     const dados = snapshot.val();
                     perfilUsuario = dados.perfil || "Comercial";
@@ -1389,7 +1389,7 @@
                         itens: itensMapeados
                     };
 
-                    update(ref(db, `base_precificacao_regioes/${regiaoKey}`), payload).then(() => {
+                    update(dbRef(db, `base_precificacao_regioes/${regiaoKey}`), payload).then(() => {
                         showToast(`Base ${regiaoKey} salva com sucesso! (${contador} produtos mapeados)`, "success");
                     }).catch(err => {
                         showToast("Erro ao salvar no banco: " + err.message, "error");
@@ -1404,26 +1404,31 @@
             event.target.value = '';
         };
 
-        // FÓRMULA OFICIAL DE MARGEM CONSINCO
-        // Venda Líquida = PVENDA * (1 - (IMPOSTO / 100))
-        // Custo Efetivo = CUSTO_LIQUIDO - VERBA
-        // Margem Consinco % = ((Venda Líquida - Custo Efetivo) / Venda Líquida) * 100
+        // FÓRMULA OFICIAL DE MARGEM CONSINCO CORRIGIDA
         function calcularMargemConsinco(pvenda, custoLiq, verba = 0, impostoPerc = 0) {
             if (pvenda === null || custoLiq === null || pvenda <= 0) return null;
 
-            const taxaImposto = impostoPerc > 0 ? (impostoPerc > 1 ? impostoPerc / 100 : impostoPerc) : 0;
-            const vendaLiquida = pvenda * (1 - taxaImposto);
-
-            if (vendaLiquida <= 0) return null;
-
+            // Transforma o percentual digitado em decimal (ex: 9.25 vira 0.0925)
+            const taxaImposto = (Number(impostoPerc) || 0) / 100;
+            
+            // Calcula qual o valor em Reais que o imposto come do Preço de Venda
+            const valorImposto = pvenda * taxaImposto;
+            
+            // Abate a verba de Sell-out do custo (se houver)
             const custoEfetivo = custoLiq - (verba || 0);
-            const margem = ((vendaLiquida - custoEfetivo) / vendaLiquida) * 100;
+            
+            // Lucro = Preço de Venda Cheio - Custo Efetivo - Impostos
+            const lucro = pvenda - custoEfetivo - valorImposto;
+            
+            // A Margem Consinco divide o lucro pelo Preço de Venda Bruto (e não pelo líquido)
+            const margem = (lucro / pvenda) * 100;
+            
             return margem;
         }
 
         // LISTENER DO FIREBASE EM TEMPO REAL DAS LISTAS DE TV
         function iniciarListenerDeListas() {
-            onValue(ref(db, 'listas_tv'), (snapshot) => {
+            onValue(dbRef(db, 'listas_tv'), (snapshot) => {
                 listasGlobais = snapshot.exists() ? snapshot.val() : {};
                 renderizarCardsListas();
             });
@@ -1503,7 +1508,7 @@
             const nome = lista ? lista.nome : "esta lista";
             if (!confirm(`Tem certeza que deseja excluir "${nome}"? Esta ação não pode ser desfeita.`)) return;
 
-            remove(ref(db, `listas_tv/${id}`)).then(() => {
+            remove(dbRef(db, `listas_tv/${id}`)).then(() => {
                 showToast("Lista excluída com sucesso!", "success");
             }).catch(err => {
                 showToast("Erro ao excluir: " + err.message, "error");
@@ -1596,7 +1601,7 @@
                         historico: historicoInicial
                     };
 
-                    push(ref(db, 'listas_tv'), payload).then(() => {
+                    push(dbRef(db, 'listas_tv'), payload).then(() => {
                         showToast("Lista de TV enviada para validação!", "success");
                     }).catch(err => {
                         showToast("Erro ao salvar lista: " + err.message, "error");
@@ -1611,7 +1616,7 @@
             event.target.value = '';
         };
 
-        // PREENCHIMENTO AUTOMÁTICO DOS CUSTOS CONSINCO NA ABA ATIVA
+        // PREENCHIMENTO AUTOMÁTICO DOS CUSTOS E NOMES CONSINCO NA ABA ATIVA
         window.preencherCustosAutomaticos = function() {
             if (!copiaDadosEmEdicao || !abaAtivaAtual) {
                 showToast("Abra uma lista para aplicar o preenchimento.", "info");
@@ -1634,6 +1639,12 @@
                 const codProd = String(row['CÓD'] || '').trim();
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
+                    
+                    // CORREÇÃO: Substitui a descrição que o comercial digitou pela descrição oficial da Base do Consinco
+                    if (info.desc) {
+                        row['PRODUTO'] = info.desc;
+                    }
+                    
                     row['CUSTO_LIQ'] = info.custoLiq !== undefined ? info.custoLiq : row['CUSTO_LIQ'];
                     row['VERBA'] = info.verba !== undefined ? info.verba : row['VERBA'];
                     row['IMPOSTO'] = info.imposto !== undefined ? info.imposto : row['IMPOSTO'];
@@ -1706,7 +1717,7 @@
             historicoMudancasSessao = [];
         };
 
-        // RENDERIZAÇÃO DA TABELA POR ABA COM MARGEM CONSINCO
+        // RENDERIZAÇÃO DA TABELA POR ABA COM MARGEM CONSINCO E NOMES
         window.renderizarTabelaAba = function(sheetName, tabBtn) {
             abaAtivaAtual = sheetName;
 
@@ -1734,19 +1745,9 @@
 
                 const pvenda = parseNumeroPtBr(row['PVENDA']);
 
-                // Se CUSTO_LIQ não estiver na linha, mas CUSTO_SIMULADO existir (compatibilidade com envios anteriores)
                 let custoLiqVal = row['CUSTO_LIQ'] !== undefined ? row['CUSTO_LIQ'] : (row['CUSTO_SIMULADO'] || '');
                 let verbaVal = row['VERBA'] !== undefined ? row['VERBA'] : '';
                 let impostoVal = row['IMPOSTO'] !== undefined ? row['IMPOSTO'] : '';
-
-                // Se não preenchido, tenta buscar dinamicamente na base regional
-                const codProd = String(row['CÓD'] || '').trim();
-                if (codProd && baseRegiao[codProd]) {
-                    const info = baseRegiao[codProd];
-                    if (!custoLiqVal && info.custoLiq !== undefined) custoLiqVal = info.custoLiq;
-                    if (!verbaVal && info.verba !== undefined) verbaVal = info.verba;
-                    if (!impostoVal && info.imposto !== undefined) impostoVal = info.imposto;
-                }
 
                 const custoLiqNum = parseNumeroPtBr(custoLiqVal);
                 const verbaNum = parseNumeroPtBr(verbaVal) || 0;
@@ -1885,7 +1886,7 @@
                 detalhes: detalhesAcao
             });
 
-            update(ref(db, `listas_tv/${idListaAtual}`), {
+            update(dbRef(db, `listas_tv/${idListaAtual}`), {
                 dados: copiaDadosEmEdicao,
                 comentarios: obs,
                 historico: historicoExistente
@@ -1919,7 +1920,7 @@
                 detalhes: obs ? `Motivo/Obs: ${obs}` : 'Aprovada sem ressalvas'
             });
 
-            update(ref(db, `listas_tv/${idListaAtual}`), {
+            update(dbRef(db, `listas_tv/${idListaAtual}`), {
                 status: novoStatus,
                 comentarios: obs,
                 dados: copiaDadosEmEdicao,
