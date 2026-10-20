@@ -1110,21 +1110,43 @@
         let nomeUsuario = "Usuário";
         let listasGlobais = {};
         let baseProdutos = {};
-        let basesRegioes = {}; 
+        let basesRegioes = {}; // Armazena as 5 bases de precificação por região
 
         let idListaAtual = null;
         let abaAtivaAtual = null;
         let copiaDadosEmEdicao = null;
         let historicoMudancasSessao = [];
 
+        // MAPEAMENTO DAS 5 REGIÕES E EQUIVALENTES DE NOMES DE ABAS
         const CONFIG_REGIOES = {
-            "DF": { label: "Distrito Federal (DF)", aliases: ["DF", "DISTRITO FEDERAL", "BRASILIA", "BSB", "DF_ENT", "DF_GERAL"], impostoPadrao: 0 },
-            "ENTORNO": { label: "Entorno (GO)", aliases: ["ENTORNO", "ENT", "ENTORNO_GO", "LUZIANIA", "AGUAS LINDAS", "VALPARAISO", "FORMOSA"], impostoPadrao: 0 },
-            "GOIAS": { label: "Goiânias (Goiás)", aliases: ["GOIAS", "GO", "GOIANIA", "GOIANIAS", "GNA", "ANAPOLIS", "RIO VERDE"], impostoPadrao: 0 },
-            "LEM": { label: "Luís Eduardo Magalhães (BA)", aliases: ["LEM", "L.E.M", "BA", "BAHIA", "LUIZ EDUARDO", "LUIS EDUARDO", "BARREIRAS"], impostoPadrao: 0 },
-            "GURUPI": { label: "Gurupi (TO)", aliases: ["GURUPI", "TO", "TOCANTINS", "PALMAS", "GRP"], impostoPadrao: 0 }
+            "DF": {
+                label: "Distrito Federal (DF)",
+                aliases: ["DF", "DISTRITO FEDERAL", "BRASILIA", "BSB", "DF_ENT", "DF_GERAL"],
+                impostoPadrao: 0
+            },
+            "ENTORNO": {
+                label: "Entorno (GO)",
+                aliases: ["ENTORNO", "ENT", "ENTORNO_GO", "LUZIANIA", "AGUAS LINDAS", "VALPARAISO", "FORMOSA"],
+                impostoPadrao: 0
+            },
+            "GOIAS": {
+                label: "Goiânias (Goiás)",
+                aliases: ["GOIAS", "GO", "GOIANIA", "GOIANIAS", "GNA", "ANAPOLIS", "RIO VERDE"],
+                impostoPadrao: 0
+            },
+            "LEM": {
+                label: "Luís Eduardo Magalhães (BA)",
+                aliases: ["LEM", "L.E.M", "BA", "BAHIA", "LUIZ EDUARDO", "LUIS EDUARDO", "BARREIRAS"],
+                impostoPadrao: 0
+            },
+            "GURUPI": {
+                label: "Gurupi (TO)",
+                aliases: ["GURUPI", "TO", "TOCANTINS", "PALMAS", "GRP"],
+                impostoPadrao: 0
+            }
         };
 
+        // Identifica qual das 5 regiões corresponde a uma aba do Excel
         function identificarRegiaoPorNomeAba(sheetName) {
             if (!sheetName) return "DF";
             const upper = sheetName.toUpperCase().replace(/[^A-Z0-9]/g, ' ').trim();
@@ -1135,9 +1157,10 @@
                     }
                 }
             }
-            return "DF"; 
+            return "DF"; // Padrão se não identificado
         }
 
+        // TOAST NOTIFICATIONS
         window.showToast = function (message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1153,6 +1176,7 @@
             }, 3200);
         };
 
+        // PARSER DE NÚMEROS BRASILEIROS ROBUSTO
         function parseNumeroPtBr(valor) {
             if (valor === undefined || valor === null || valor === '') return null;
             if (typeof valor === 'number') return isNaN(valor) ? null : valor;
@@ -1166,12 +1190,14 @@
             return isNaN(num) ? null : num;
         }
 
+        // CARREGA A BASE SIMPLES DE PRODUTOS
         function carregarBaseProdutos() {
             onValue(dbRef(db, 'base_produtos'), (snapshot) => {
                 baseProdutos = snapshot.exists() ? snapshot.val() : {};
             });
         }
 
+        // CARREGA AS 5 BASES DE PRECIFICAÇÃO REGIONAIS DO CONSINCO
         function carregarBasesRegioes() {
             onValue(dbRef(db, 'base_precificacao_regioes'), (snapshot) => {
                 basesRegioes = snapshot.exists() ? snapshot.val() : {};
@@ -1179,6 +1205,7 @@
             });
         }
 
+        // AUTH & CARREGAMENTO DE PERFIL
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "/";
@@ -1215,6 +1242,7 @@
             });
         });
 
+        // LOGOUT
         const btnLogout = document.getElementById('btn-logout');
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
@@ -1222,6 +1250,9 @@
             });
         }
 
+        // ==========================================
+        // GESTÃO DAS 5 BASES REGIONAIS (CONSINCO)
+        // ==========================================
         window.abrirModalBasesRegioes = function() {
             atualizarCardsModalRegioes();
             document.getElementById('modalBasesRegioes').style.display = 'flex';
@@ -1264,6 +1295,7 @@
             });
         }
 
+        // UPLOAD DA BASE REGIONAL DO CONSINCO
         window.processarUploadBaseRegiao = function(regiaoKey, event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1277,6 +1309,7 @@
                     let jsonRaw = [];
 
                     if (file.name.endsWith('.csv')) {
+                        // Trata CSV com ponto e vírgula
                         const workbook = XLSX.read(data, { type: 'binary', raw: true });
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
                         jsonRaw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
@@ -1291,30 +1324,28 @@
                         return;
                     }
 
+                    // A MÁGICA INTELIGENTE DE BUSCA DAS COLUNAS
                     const chaves = Object.keys(jsonRaw[0]);
+                    
                     const keyCod = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u === 'PRD_C5' || u === 'COD PROD' || u === 'CODIGO' || u === 'SEQPRODUTO' || u === 'CÓD' || u === 'COD';
+                        return u === 'PRD_C5' || u === 'COD PROD' || u === 'CODIGO' || u === 'SEQPRODUTO' || u === 'CÓD' || u === 'COD' || u.includes('COD') || u.includes('CÓD');
                     });
                     const keyDesc = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u === 'DESCCOMPLETA' || u === 'DESCRICAO' || u === 'DESCRIÇÃO' || u === 'PRODUTO';
+                        return u.includes('DESC') || u.includes('PRODUTO') || u.includes('NOME');
                     });
                     const keyCustoLiq = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u === 'CUSTO_LIQ_GERENCIAL' || u === 'CUSTO GERENCIAL' || u === 'CUSTO LIQUIDO' || u === 'CUSTO_LIQUIDO';
-                    }) || chaves.find(k => k.toUpperCase().includes('GERENCIAL') || k.toUpperCase() === 'CUSTO');
+                        return u.includes('CUSTO_LIQ') || u.includes('CUSTO LIQ') || u.includes('GERENCIAL') || u.includes('CUSTO');
+                    });
                     const keyVerba = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u === 'VLRUNITVERBA' || u === 'VERBA SELL OUT' || u === 'VERBA' || u === 'VERBA_SELL_OUT';
+                        return u.includes('VERBA') || u.includes('SELL OUT') || u.includes('SELLOUT');
                     });
                     const keyImposto = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u === 'IMPOSTO' || u === 'ALIQ_IMPOSTO' || u === 'ALIQIMPOSTO' || u === 'IMPOSTOS';
-                    });
-                    const keyMargemCadastro = chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u === 'MARGEMCATEG' || u === 'MARGEM CADASTRO' || u === 'MARGEMCADASTRO' || u === 'MGMLUCRO';
+                        return u.includes('IMPOSTO') || u.includes('ALIQ');
                     });
 
                     let itensMapeados = {};
@@ -1327,7 +1358,6 @@
                         const custoLiq = parseNumeroPtBr(row[keyCustoLiq]);
                         const verba = parseNumeroPtBr(row[keyVerba]) || 0;
                         const imposto = parseNumeroPtBr(row[keyImposto]) || 0;
-                        const margemAlvo = parseNumeroPtBr(row[keyMargemCadastro]);
                         const desc = String(row[keyDesc] || '').trim();
 
                         itensMapeados[cod] = {
@@ -1335,14 +1365,13 @@
                             desc: desc, // Salva o nome oficial aqui
                             custoLiq: custoLiq !== null ? custoLiq : 0,
                             verba: verba,
-                            imposto: imposto,
-                            margemAlvo: margemAlvo
+                            imposto: imposto
                         };
                         contador++;
                     });
 
                     if (contador === 0) {
-                        showToast("Não foi possível identificar a coluna de código do produto (PRD_C5 / CÓD).", "error");
+                        showToast("Não foi possível identificar a coluna de código do produto na base.", "error");
                         return;
                     }
 
@@ -1392,6 +1421,7 @@
             return margem;
         }
 
+        // LISTENER DO FIREBASE EM TEMPO REAL DAS LISTAS DE TV
         function iniciarListenerDeListas() {
             onValue(dbRef(db, 'listas_tv'), (snapshot) => {
                 listasGlobais = snapshot.exists() ? snapshot.val() : {};
@@ -1466,6 +1496,7 @@
             });
         }
 
+        // EXCLUIR LISTA
         window.excluirListaTv = function(id, event) {
             if (event) event.stopPropagation();
             const lista = listasGlobais[id];
@@ -1479,6 +1510,7 @@
             });
         };
 
+        // PROCESSAMENTO DO UPLOAD DO EXCEL DE TV
         window.processarUploadExcel = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1516,12 +1548,13 @@
                             let imposto = '';
                             let prodOficial = newRow['PRODUTO'];
 
+                            // Cruza com a base regional do Consinco
                             if (codProd && baseRegiao[codProd]) {
                                 const info = baseRegiao[codProd];
                                 custoLiq = info.custoLiq !== undefined ? info.custoLiq : '';
                                 verba = info.verba || '';
                                 imposto = info.imposto || '';
-                                if (info.desc) prodOficial = info.desc; // Já corrige na entrada
+                                if (info.desc && info.desc.trim() !== '') prodOficial = info.desc; // Já corrige na entrada
                             }
 
                             newRow['PRODUTO'] = prodOficial;
@@ -1581,6 +1614,7 @@
             event.target.value = '';
         };
 
+        // PREENCHIMENTO AUTOMÁTICO DOS CUSTOS E NOMES CONSINCO NA ABA ATIVA
         window.preencherCustosAutomaticos = function() {
             if (!copiaDadosEmEdicao || !abaAtivaAtual) {
                 showToast("Abra uma lista para aplicar o preenchimento.", "info");
@@ -1604,6 +1638,7 @@
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
                     
+                    // CORREÇÃO: Substitui a descrição que o comercial digitou pela descrição oficial da Base do Consinco
                     if (info.desc && info.desc.trim() !== '') {
                         row['PRODUTO'] = info.desc;
                     }
@@ -1626,6 +1661,7 @@
             }
         };
 
+        // MODAL DE EDIÇÃO E REVISÃO
         window.abrirModalEdicao = function(id) {
             idListaAtual = id;
             const lista = listasGlobais[id];
@@ -1679,6 +1715,7 @@
             historicoMudancasSessao = [];
         };
 
+        // RENDERIZAÇÃO DA TABELA POR ABA COM MARGEM CONSINCO E NOMES
         window.renderizarTabelaAba = function(sheetName, tabBtn) {
             abaAtivaAtual = sheetName;
 
@@ -1698,7 +1735,8 @@
                 const codProd = String(row['CÓD'] || '').trim();
                 let prodNome = String(row['PRODUTO'] || '');
 
-                // AUTO-CORREÇÃO DE NOME DIRETO NA RENDERIZAÇÃO SE TIVER NA BASE
+                // AUTO-CORREÇÃO DE NOME DIRETO NA RENDERIZAÇÃO SE TIVER NA BASE E ESTIVER VAZIO
+                // OU AO CLICAR EM "PREENCHER CUSTOS AUTOMÁTICOS" (já tratado no botão)
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
                     if (info.desc && info.desc.trim() !== '') {
@@ -1713,269 +1751,3 @@
 
                 const tr = document.createElement('tr');
                 tr.id = `row-${sheetName}-${rowIndex}`;
-
-                const pvenda = parseNumeroPtBr(row['PVENDA']);
-                let custoLiqVal = row['CUSTO_LIQ'] !== undefined ? row['CUSTO_LIQ'] : (row['CUSTO_SIMULADO'] || '');
-                let verbaVal = row['VERBA'] !== undefined ? row['VERBA'] : '';
-                let impostoVal = row['IMPOSTO'] !== undefined ? row['IMPOSTO'] : '';
-
-                if (codProd && baseRegiao[codProd]) {
-                    const info = baseRegiao[codProd];
-                    if (!custoLiqVal && info.custoLiq !== undefined) custoLiqVal = info.custoLiq;
-                    if (!verbaVal && info.verba !== undefined) verbaVal = info.verba;
-                    if (!impostoVal && info.imposto !== undefined) impostoVal = info.imposto;
-                }
-
-                const custoLiqNum = parseNumeroPtBr(custoLiqVal);
-                const verbaNum = parseNumeroPtBr(verbaVal) || 0;
-                const impostoNum = parseNumeroPtBr(impostoVal) || 0;
-
-                const margemCalc = calcularMargemConsinco(pvenda, custoLiqNum, verbaNum, impostoNum);
-
-                let margemFormatada = '-';
-                let corMargem = 'var(--text-main)';
-                let classeLinha = '';
-
-                if (margemCalc !== null) {
-                    margemFormatada = margemCalc.toFixed(2) + '%';
-                    if (margemCalc < 0) {
-                        corMargem = 'var(--danger)';
-                        classeLinha = 'row-negativa';
-                    } else {
-                        corMargem = 'var(--success)';
-                    }
-                }
-
-                tr.className = classeLinha;
-
-                tr.innerHTML = `
-                    <td><strong>${row['CÓD'] || ''}</strong></td>
-                    <td>${prodNome}</td>
-                    <td>
-                        <div class="cell-edit" contenteditable="true" spellcheck="false"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'PVENDA', this.innerText)">
-                            ${row['PVENDA'] !== undefined ? row['PVENDA'] : ''}
-                        </div>
-                    </td>
-                    <td>
-                        <div class="cell-custo" contenteditable="true" spellcheck="false" placeholder="0,00"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'CUSTO_LIQ', this.innerText)">
-                            ${custoLiqVal}
-                        </div>
-                    </td>
-                    <td>
-                        <div class="cell-custo" style="border-color:#10b981; background:rgba(16,185,129,0.06); color:#047857;" contenteditable="true" spellcheck="false" placeholder="0,00"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'VERBA', this.innerText)">
-                            ${verbaVal}
-                        </div>
-                    </td>
-                    <td>
-                        <div class="cell-edit" style="min-width:60px;" contenteditable="true" spellcheck="false" placeholder="0%"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'IMPOSTO', this.innerText)">
-                            ${impostoVal}
-                        </div>
-                    </td>
-                    <td id="margem-cell-${rowIndex}" style="color: ${corMargem}; font-weight: 700; font-size: 0.95rem;">${margemFormatada}</td>
-                    <td>
-                        <div class="cell-obs" contenteditable="true" spellcheck="false"
-                             onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'OBS', this.innerText)">
-                            ${row['OBS'] || ''}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
-
-        window.filtrarTabelaModal = function() {
-            if (abaAtivaAtual) {
-                const btnAtivo = document.querySelector('.tab-btn.active');
-                renderizarTabelaAba(abaAtivaAtual, btnAtivo);
-            }
-        };
-
-        window.atualizarCelulaInline = function(sheetName, rowIndex, campo, novoValor) {
-            if (!copiaDadosEmEdicao || !copiaDadosEmEdicao[sheetName] || !copiaDadosEmEdicao[sheetName][rowIndex]) return;
-
-            const valLimpo = (novoValor || '').trim();
-            const valAnterior = String(copiaDadosEmEdicao[sheetName][rowIndex][campo] || '').trim();
-
-            if (valLimpo !== valAnterior) {
-                const codProd = copiaDadosEmEdicao[sheetName][rowIndex]['CÓD'] || `Linha ${rowIndex + 1}`;
-                historicoMudancasSessao.push(`${nomeUsuario} alterou ${campo} de "${valAnterior || 'vazio'}" para "${valLimpo}" no cód ${codProd} (${sheetName})`);
-            }
-
-            copiaDadosEmEdicao[sheetName][rowIndex][campo] = valLimpo;
-
-            if (campo === 'PVENDA' || campo === 'CUSTO_LIQ' || campo === 'VERBA' || campo === 'IMPOSTO') {
-                const row = copiaDadosEmEdicao[sheetName][rowIndex];
-                const pvenda = parseNumeroPtBr(row['PVENDA']);
-                const custoLiq = parseNumeroPtBr(row['CUSTO_LIQ'] !== undefined ? row['CUSTO_LIQ'] : row['CUSTO_SIMULADO']);
-                const verba = parseNumeroPtBr(row['VERBA']) || 0;
-                const imposto = parseNumeroPtBr(row['IMPOSTO']) || 0;
-
-                const margemCalc = calcularMargemConsinco(pvenda, custoLiq, verba, imposto);
-
-                const cellMargem = document.getElementById(`margem-cell-${rowIndex}`);
-                const trLinha = document.getElementById(`row-${sheetName}-${rowIndex}`);
-
-                if (cellMargem && trLinha) {
-                    if (margemCalc !== null) {
-                        cellMargem.textContent = margemCalc.toFixed(2) + '%';
-                        if (margemCalc < 0) {
-                            cellMargem.style.color = 'var(--danger)';
-                            trLinha.classList.add('row-negativa');
-                        } else {
-                            cellMargem.style.color = 'var(--success)';
-                            trLinha.classList.remove('row-negativa');
-                        }
-                    } else {
-                        cellMargem.textContent = '-';
-                        cellMargem.style.color = 'var(--text-main)';
-                        trLinha.classList.remove('row-negativa');
-                    }
-                }
-            }
-        };
-
-        window.salvarAlteracoesLista = function() {
-            if (!idListaAtual) return;
-
-            const obs = document.getElementById('input-comentarios').value;
-            const listaOriginal = listasGlobais[idListaAtual] || {};
-            const historicoExistente = Array.isArray(listaOriginal.historico) ? [...listaOriginal.historico] : [];
-
-            let detalhesAcao = "Edição e ajustes na planilha";
-            if (historicoMudancasSessao.length > 0) {
-                detalhesAcao = historicoMudancasSessao.slice(-5).join(" | ");
-                if (historicoMudancasSessao.length > 5) {
-                    detalhesAcao += ` (+${historicoMudancasSessao.length - 5} alterações)`;
-                }
-            }
-
-            historicoExistente.push({
-                data: Date.now(),
-                autor: nomeUsuario,
-                perfil: perfilUsuario,
-                acao: "Salvou alterações",
-                detalhes: detalhesAcao
-            });
-
-            update(dbRef(db, `listas_tv/${idListaAtual}`), {
-                dados: copiaDadosEmEdicao,
-                comentarios: obs,
-                historico: historicoExistente
-            }).then(() => {
-                showToast("Alterações e histórico salvos com sucesso!", "success");
-                historicoMudancasSessao = [];
-            }).catch(err => {
-                showToast("Erro ao salvar: " + err.message, "error");
-            });
-        };
-
-        window.alterarStatusLista = function(novoStatus) {
-            if (!idListaAtual) return;
-
-            const obs = document.getElementById('input-comentarios').value;
-            if (novoStatus === 'Reprovada' && !obs.trim()) {
-                showToast("Por favor, preencha um motivo/comentário para a reprovação.", "error");
-                document.getElementById('input-comentarios').focus();
-                return;
-            }
-
-            const listaOriginal = listasGlobais[idListaAtual] || {};
-            const historicoExistente = Array.isArray(listaOriginal.historico) ? [...listaOriginal.historico] : [];
-
-            historicoExistente.push({
-                data: Date.now(),
-                autor: nomeUsuario,
-                perfil: perfilUsuario,
-                acao: `Status alterado para: ${novoStatus}`,
-                detalhes: obs ? `Motivo/Obs: ${obs}` : 'Aprovada sem ressalvas'
-            });
-
-            update(dbRef(db, `listas_tv/${idListaAtual}`), {
-                status: novoStatus,
-                comentarios: obs,
-                dados: copiaDadosEmEdicao,
-                historico: historicoExistente
-            }).then(() => {
-                showToast(`Lista definida como ${novoStatus}!`, "success");
-                fecharModal();
-            }).catch(err => {
-                showToast("Erro ao atualizar status: " + err.message, "error");
-            });
-        };
-
-        window.abrirDrawerHistorico = function() {
-            if (!idListaAtual) return;
-            const lista = listasGlobais[idListaAtual] || {};
-            const drawerBody = document.getElementById('drawer-historico-body');
-            drawerBody.innerHTML = '';
-
-            const historico = Array.isArray(lista.historico) ? [...lista.historico] : [];
-
-            if (historico.length === 0) {
-                drawerBody.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhum registro de auditoria nesta lista.</div>';
-            } else {
-                historico.sort((a, b) => (b.data || 0) - (a.data || 0));
-                historico.forEach(item => {
-                    const dataFmt = item.data ? new Date(item.data).toLocaleString('pt-BR') : '-';
-                    const div = document.createElement('div');
-                    div.className = 'audit-item';
-                    div.innerHTML = `
-                        <div class="audit-item-top">
-                            <span class="audit-autor">👤 ${item.autor || 'Usuário'} (${item.perfil || 'Colaborador'})</span>
-                            <span>${dataFmt}</span>
-                        </div>
-                        <div style="font-weight: 700; color: var(--text-main); margin-top: 2px;">${item.acao || 'Ação registrada'}</div>
-                        ${item.detalhes ? `<div class="audit-desc">${item.detalhes}</div>` : ''}
-                    `;
-                    drawerBody.appendChild(div);
-                });
-            }
-
-            document.getElementById('drawerHistorico').style.display = 'flex';
-        };
-
-        window.fecharDrawerHistorico = function() {
-            const drawer = document.getElementById('drawerHistorico');
-            if (drawer) drawer.style.display = 'none';
-        };
-
-        window.baixarExcelFinal = function() {
-            if (!idListaAtual) return;
-            const listaOriginal = listasGlobais[idListaAtual];
-
-            if (listaOriginal.status !== 'Aprovada') {
-                showToast("A lista precisa estar aprovada pelo Pricing para gerar o Excel final.", "error");
-                return;
-            }
-
-            showToast("Gerando arquivo Excel corrigido...", "info");
-
-            const wb = XLSX.utils.book_new();
-
-            Object.keys(copiaDadosEmEdicao).forEach(sheetName => {
-                const sheetData = copiaDadosEmEdicao[sheetName].map(row => {
-                    return {
-                        "CÓD": row['CÓD'],
-                        "PRODUTO": row['PRODUTO'],
-                        "PVENDA": row['PVENDA'],
-                        "OBS": row['OBS'] || ""
-                    };
-                });
-
-                const ws = XLSX.utils.json_to_sheet(sheetData);
-                XLSX.utils.book_append_sheet(wb, ws, sheetName);
-            });
-
-            const nomeArquivo = `Lista_TV_Aprovada_${listaOriginal.nome.replace(/\s+/g, '_')}.xlsx`;
-            XLSX.writeFile(wb, nomeArquivo);
-            showToast("Download da planilha concluído!", "success");
-        };
-
-    </script>
-    <script type="module" src="./alerta-global-pricing.js"></script>
-</body>
-</html>
