@@ -1262,7 +1262,7 @@
             });
         }
 
-        // UPLOAD DA BASE REGIONAL DO CONSINCO (BLINDADO CONTRA COLUNA 'SEQPRODUTO')
+        // LÓGICA BLINDADA: CÓDIGO NA COLUNA B, DESCRIÇÃO NA COLUNA C
         window.processarUploadBaseRegiao = function(regiaoKey, event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1275,14 +1275,15 @@
                     const data = e.target.result;
                     let jsonRaw = [];
 
+                    // Força o SheetJS a usar "A, B, C..." como chaves do objeto json
                     if (file.name.endsWith('.csv')) {
                         const workbook = XLSX.read(data, { type: 'binary', raw: true });
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        jsonRaw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                        jsonRaw = XLSX.utils.sheet_to_json(sheet, { header: "A", defval: "" });
                     } else {
                         const workbook = XLSX.read(data, { type: 'binary' });
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        jsonRaw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                        jsonRaw = XLSX.utils.sheet_to_json(sheet, { header: "A", defval: "" });
                     }
 
                     if (!jsonRaw || jsonRaw.length === 0) {
@@ -1290,56 +1291,54 @@
                         return;
                     }
 
-                    const chaves = Object.keys(jsonRaw[0]);
-                    
-                    // Lógica blindada para achar o Código (SEQPRODUTO, etc)
-                    const keyCod = chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u === 'PRD_C5' || u === 'COD PROD' || u === 'CODIGO' || u === 'SEQPRODUTO' || u === 'CÓD' || u === 'COD';
-                    }) || chaves.find(k => k.toUpperCase().includes('COD') || k.toUpperCase().includes('CÓD') || k.toUpperCase().includes('SEQ'));
+                    let colCusto = '', colVerba = '', colImposto = '';
+                    let headerRowIdx = 0;
 
-                    // Lógica blindada para achar a Descrição (NÃO pode ser SEQPRODUTO)
-                    const keyDesc = chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u === 'DESCCOMPLETA' || u === 'DESCRICAO' || u === 'DESCRIÇÃO';
-                    }) || chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u.includes('DESC') && !u.includes('DESCONTO');
-                    }) || chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return (u.includes('PRODUTO') || u.includes('NOME')) && !u.includes('SEQ') && !u.includes('COD');
-                    });
-
-                    const keyCustoLiq = chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u.includes('CUSTO_LIQ') || u.includes('CUSTO LIQ') || u.includes('GERENCIAL') || u.includes('CUSTO');
-                    });
-                    
-                    const keyVerba = chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u.includes('VERBA') || u.includes('SELL OUT') || u.includes('SELLOUT');
-                    });
-                    
-                    const keyImposto = chaves.find(k => {
-                        const u = k.toUpperCase().trim();
-                        return u.includes('IMPOSTO') || u.includes('ALIQ');
-                    });
+                    // Escaneia as 15 primeiras linhas para achar em qual coluna caíram os custos e impostos
+                    for (let i = 0; i < Math.min(15, jsonRaw.length); i++) {
+                        let row = jsonRaw[i];
+                        let foundCusto = false;
+                        Object.keys(row).forEach(colKey => {
+                            let val = String(row[colKey]).toUpperCase().trim();
+                            if (val.includes('CUSTO_LIQ') || val.includes('CUSTO LIQ') || val.includes('GERENCIAL') || val === 'CUSTO') {
+                                colCusto = colKey;
+                                foundCusto = true;
+                            }
+                            if (val.includes('VERBA') || val.includes('SELL OUT') || val.includes('SELLOUT')) {
+                                colVerba = colKey;
+                            }
+                            if (val.includes('IMPOSTO') || val.includes('ALIQ')) {
+                                colImposto = colKey;
+                            }
+                        });
+                        if (foundCusto) {
+                            headerRowIdx = i;
+                            break;
+                        }
+                    }
 
                     let itensMapeados = {};
                     let contador = 0;
 
-                    jsonRaw.forEach(row => {
-                        const cod = String(row[keyCod] || '').trim();
-                        if (!cod) return;
+                    jsonRaw.forEach((row, index) => {
+                        // Ignora o cabeçalho e linhas que vieram antes dele
+                        if (index <= headerRowIdx) return;
 
-                        const custoLiq = parseNumeroPtBr(row[keyCustoLiq]);
-                        const verba = parseNumeroPtBr(row[keyVerba]) || 0;
-                        const imposto = parseNumeroPtBr(row[keyImposto]) || 0;
-                        const desc = String(row[keyDesc] || '').trim();
+                        // FORÇA A LER A COLUNA B COMO CÓDIGO
+                        const cod = String(row['B'] || '').trim();
+                        // Pula sujeiras como o próprio cabeçalho que pode ter se repetido
+                        if (!cod || cod.toUpperCase().includes('COD') || cod.toUpperCase().includes('CÓD')) return; 
+
+                        // FORÇA A LER A COLUNA C COMO DESCRIÇÃO
+                        const desc = String(row['C'] || '').trim();
+
+                        const custoLiq = parseNumeroPtBr(colCusto ? row[colCusto] : '');
+                        const verba = parseNumeroPtBr(colVerba ? row[colVerba] : '') || 0;
+                        const imposto = parseNumeroPtBr(colImposto ? row[colImposto] : '') || 0;
 
                         itensMapeados[cod] = {
                             cod: cod,
-                            desc: desc, // Agora a descrição vem certa
+                            desc: desc, // Sempre puxa da Coluna C
                             custoLiq: custoLiq !== null ? custoLiq : 0,
                             verba: verba,
                             imposto: imposto
@@ -1348,7 +1347,7 @@
                     });
 
                     if (contador === 0) {
-                        showToast("Não foi possível identificar a coluna de código do produto na base.", "error");
+                        showToast("Nenhum produto válido encontrado na Coluna B.", "error");
                         return;
                     }
 
@@ -1362,7 +1361,7 @@
                     };
 
                     update(dbRef(db, `base_precificacao_regioes/${regiaoKey}`), payload).then(() => {
-                        showToast(`Base ${regiaoKey} salva com sucesso! (${contador} produtos mapeados)`, "success");
+                        showToast(`Base ${regiaoKey} salva com sucesso! (${contador} produtos)`, "success");
                     }).catch(err => {
                         showToast("Erro ao salvar no banco: " + err.message, "error");
                     });
@@ -1376,7 +1375,6 @@
             event.target.value = '';
         };
 
-        // FÓRMULA OFICIAL DE MARGEM CONSINCO CORRIGIDA
         function calcularMargemConsinco(pvenda, custoLiq, verba = 0, impostoPerc = 0) {
             if (pvenda === null || custoLiq === null || pvenda <= 0) return null;
 
@@ -1519,8 +1517,7 @@
                                 verba = info.verba || '';
                                 imposto = info.imposto || '';
                                 
-                                // Trava de segurança: só substitui se a descrição for válida e não for o próprio código
-                                if (info.desc && String(info.desc).trim() !== '' && String(info.desc).trim() !== codProd) {
+                                if (info.desc && String(info.desc).trim() !== '') {
                                     prodOficial = info.desc;
                                 }
                             }
@@ -1605,7 +1602,7 @@
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
                     
-                    if (info.desc && String(info.desc).trim() !== '' && String(info.desc).trim() !== codProd) {
+                    if (info.desc && String(info.desc).trim() !== '') {
                         row['PRODUTO'] = info.desc;
                     }
                     
@@ -1701,7 +1698,7 @@
 
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
-                    if (info.desc && String(info.desc).trim() !== '' && String(info.desc).trim() !== codProd) {
+                    if (info.desc && String(info.desc).trim() !== '') {
                         prodNome = info.desc;
                         row['PRODUTO'] = prodNome;
                     }
