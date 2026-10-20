@@ -1110,43 +1110,21 @@
         let nomeUsuario = "Usuário";
         let listasGlobais = {};
         let baseProdutos = {};
-        let basesRegioes = {}; // Armazena as 5 bases de precificação por região
+        let basesRegioes = {}; 
 
         let idListaAtual = null;
         let abaAtivaAtual = null;
         let copiaDadosEmEdicao = null;
         let historicoMudancasSessao = [];
 
-        // MAPEAMENTO DAS 5 REGIÕES E EQUIVALENTES DE NOMES DE ABAS
         const CONFIG_REGIOES = {
-            "DF": {
-                label: "Distrito Federal (DF)",
-                aliases: ["DF", "DISTRITO FEDERAL", "BRASILIA", "BSB", "DF_ENT", "DF_GERAL"],
-                impostoPadrao: 0
-            },
-            "ENTORNO": {
-                label: "Entorno (GO)",
-                aliases: ["ENTORNO", "ENT", "ENTORNO_GO", "LUZIANIA", "AGUAS LINDAS", "VALPARAISO", "FORMOSA"],
-                impostoPadrao: 0
-            },
-            "GOIAS": {
-                label: "Goiânias (Goiás)",
-                aliases: ["GOIAS", "GO", "GOIANIA", "GOIANIAS", "GNA", "ANAPOLIS", "RIO VERDE"],
-                impostoPadrao: 0
-            },
-            "LEM": {
-                label: "Luís Eduardo Magalhães (BA)",
-                aliases: ["LEM", "L.E.M", "BA", "BAHIA", "LUIZ EDUARDO", "LUIS EDUARDO", "BARREIRAS"],
-                impostoPadrao: 0
-            },
-            "GURUPI": {
-                label: "Gurupi (TO)",
-                aliases: ["GURUPI", "TO", "TOCANTINS", "PALMAS", "GRP"],
-                impostoPadrao: 0
-            }
+            "DF": { label: "Distrito Federal (DF)", aliases: ["DF", "DISTRITO FEDERAL", "BRASILIA", "BSB", "DF_ENT", "DF_GERAL"], impostoPadrao: 0 },
+            "ENTORNO": { label: "Entorno (GO)", aliases: ["ENTORNO", "ENT", "ENTORNO_GO", "LUZIANIA", "AGUAS LINDAS", "VALPARAISO", "FORMOSA"], impostoPadrao: 0 },
+            "GOIAS": { label: "Goiânias (Goiás)", aliases: ["GOIAS", "GO", "GOIANIA", "GOIANIAS", "GNA", "ANAPOLIS", "RIO VERDE"], impostoPadrao: 0 },
+            "LEM": { label: "Luís Eduardo Magalhães (BA)", aliases: ["LEM", "L.E.M", "BA", "BAHIA", "LUIZ EDUARDO", "LUIS EDUARDO", "BARREIRAS"], impostoPadrao: 0 },
+            "GURUPI": { label: "Gurupi (TO)", aliases: ["GURUPI", "TO", "TOCANTINS", "PALMAS", "GRP"], impostoPadrao: 0 }
         };
 
-        // Identifica qual das 5 regiões corresponde a uma aba do Excel
         function identificarRegiaoPorNomeAba(sheetName) {
             if (!sheetName) return "DF";
             const upper = sheetName.toUpperCase().replace(/[^A-Z0-9]/g, ' ').trim();
@@ -1157,10 +1135,9 @@
                     }
                 }
             }
-            return "DF"; // Padrão se não identificado
+            return "DF"; 
         }
 
-        // TOAST NOTIFICATIONS
         window.showToast = function (message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1176,7 +1153,6 @@
             }, 3200);
         };
 
-        // PARSER DE NÚMEROS BRASILEIROS ROBUSTO
         function parseNumeroPtBr(valor) {
             if (valor === undefined || valor === null || valor === '') return null;
             if (typeof valor === 'number') return isNaN(valor) ? null : valor;
@@ -1190,14 +1166,12 @@
             return isNaN(num) ? null : num;
         }
 
-        // CARREGA A BASE SIMPLES DE PRODUTOS
         function carregarBaseProdutos() {
             onValue(dbRef(db, 'base_produtos'), (snapshot) => {
                 baseProdutos = snapshot.exists() ? snapshot.val() : {};
             });
         }
 
-        // CARREGA AS 5 BASES DE PRECIFICAÇÃO REGIONAIS DO CONSINCO
         function carregarBasesRegioes() {
             onValue(dbRef(db, 'base_precificacao_regioes'), (snapshot) => {
                 basesRegioes = snapshot.exists() ? snapshot.val() : {};
@@ -1205,7 +1179,6 @@
             });
         }
 
-        // AUTH & CARREGAMENTO DE PERFIL
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "/";
@@ -1242,7 +1215,6 @@
             });
         });
 
-        // LOGOUT
         const btnLogout = document.getElementById('btn-logout');
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
@@ -1250,9 +1222,6 @@
             });
         }
 
-        // ==========================================
-        // GESTÃO DAS 5 BASES REGIONAIS (CONSINCO)
-        // ==========================================
         window.abrirModalBasesRegioes = function() {
             atualizarCardsModalRegioes();
             document.getElementById('modalBasesRegioes').style.display = 'flex';
@@ -1295,7 +1264,6 @@
             });
         }
 
-        // UPLOAD DA BASE REGIONAL DO CONSINCO
         window.processarUploadBaseRegiao = function(regiaoKey, event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1309,7 +1277,6 @@
                     let jsonRaw = [];
 
                     if (file.name.endsWith('.csv')) {
-                        // Trata CSV com ponto e vírgula
                         const workbook = XLSX.read(data, { type: 'binary', raw: true });
                         const sheet = workbook.Sheets[workbook.SheetNames[0]];
                         jsonRaw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
@@ -1324,7 +1291,6 @@
                         return;
                     }
 
-                    // Identifica chaves de colunas no padrão Consinco
                     const chaves = Object.keys(jsonRaw[0]);
                     const keyCod = chaves.find(k => {
                         const u = k.toUpperCase().trim();
@@ -1366,7 +1332,7 @@
 
                         itensMapeados[cod] = {
                             cod: cod,
-                            desc: desc,
+                            desc: desc, // Salva o nome oficial aqui
                             custoLiq: custoLiq !== null ? custoLiq : 0,
                             verba: verba,
                             imposto: imposto,
@@ -1426,7 +1392,6 @@
             return margem;
         }
 
-        // LISTENER DO FIREBASE EM TEMPO REAL DAS LISTAS DE TV
         function iniciarListenerDeListas() {
             onValue(dbRef(db, 'listas_tv'), (snapshot) => {
                 listasGlobais = snapshot.exists() ? snapshot.val() : {};
@@ -1501,7 +1466,6 @@
             });
         }
 
-        // EXCLUIR LISTA
         window.excluirListaTv = function(id, event) {
             if (event) event.stopPropagation();
             const lista = listasGlobais[id];
@@ -1515,7 +1479,6 @@
             });
         };
 
-        // PROCESSAMENTO DO UPLOAD DO EXCEL DE TV
         window.processarUploadExcel = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1551,15 +1514,17 @@
                             let custoLiq = '';
                             let verba = '';
                             let imposto = '';
+                            let prodOficial = newRow['PRODUTO'];
 
-                            // Cruza com a base regional do Consinco
                             if (codProd && baseRegiao[codProd]) {
                                 const info = baseRegiao[codProd];
                                 custoLiq = info.custoLiq !== undefined ? info.custoLiq : '';
                                 verba = info.verba || '';
                                 imposto = info.imposto || '';
+                                if (info.desc) prodOficial = info.desc; // Já corrige na entrada
                             }
 
+                            newRow['PRODUTO'] = prodOficial;
                             newRow['CUSTO_LIQ'] = custoLiq;
                             newRow['VERBA'] = verba;
                             newRow['IMPOSTO'] = imposto;
@@ -1616,7 +1581,6 @@
             event.target.value = '';
         };
 
-        // PREENCHIMENTO AUTOMÁTICO DOS CUSTOS E NOMES CONSINCO NA ABA ATIVA
         window.preencherCustosAutomaticos = function() {
             if (!copiaDadosEmEdicao || !abaAtivaAtual) {
                 showToast("Abra uma lista para aplicar o preenchimento.", "info");
@@ -1640,8 +1604,7 @@
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
                     
-                    // CORREÇÃO: Substitui a descrição que o comercial digitou pela descrição oficial da Base do Consinco
-                    if (info.desc) {
+                    if (info.desc && info.desc.trim() !== '') {
                         row['PRODUTO'] = info.desc;
                     }
                     
@@ -1663,7 +1626,6 @@
             }
         };
 
-        // MODAL DE EDIÇÃO E REVISÃO
         window.abrirModalEdicao = function(id) {
             idListaAtual = id;
             const lista = listasGlobais[id];
@@ -1717,7 +1679,6 @@
             historicoMudancasSessao = [];
         };
 
-        // RENDERIZAÇÃO DA TABELA POR ABA COM MARGEM CONSINCO E NOMES
         window.renderizarTabelaAba = function(sheetName, tabBtn) {
             abaAtivaAtual = sheetName;
 
@@ -1734,9 +1695,19 @@
             const dadosAba = copiaDadosEmEdicao[sheetName] || [];
 
             dadosAba.forEach((row, rowIndex) => {
-                const codStr = String(row['CÓD'] || '').toLowerCase();
-                const prodStr = String(row['PRODUTO'] || '').toLowerCase();
-                if (termoBusca && !codStr.includes(termoBusca) && !prodStr.includes(termoBusca)) {
+                const codProd = String(row['CÓD'] || '').trim();
+                let prodNome = String(row['PRODUTO'] || '');
+
+                // AUTO-CORREÇÃO DE NOME DIRETO NA RENDERIZAÇÃO SE TIVER NA BASE
+                if (codProd && baseRegiao[codProd]) {
+                    const info = baseRegiao[codProd];
+                    if (info.desc && info.desc.trim() !== '') {
+                        prodNome = info.desc;
+                        row['PRODUTO'] = prodNome; // Salva em memória para o excel final ir certo
+                    }
+                }
+
+                if (termoBusca && !codProd.toLowerCase().includes(termoBusca) && !prodNome.toLowerCase().includes(termoBusca)) {
                     return;
                 }
 
@@ -1744,10 +1715,16 @@
                 tr.id = `row-${sheetName}-${rowIndex}`;
 
                 const pvenda = parseNumeroPtBr(row['PVENDA']);
-
                 let custoLiqVal = row['CUSTO_LIQ'] !== undefined ? row['CUSTO_LIQ'] : (row['CUSTO_SIMULADO'] || '');
                 let verbaVal = row['VERBA'] !== undefined ? row['VERBA'] : '';
                 let impostoVal = row['IMPOSTO'] !== undefined ? row['IMPOSTO'] : '';
+
+                if (codProd && baseRegiao[codProd]) {
+                    const info = baseRegiao[codProd];
+                    if (!custoLiqVal && info.custoLiq !== undefined) custoLiqVal = info.custoLiq;
+                    if (!verbaVal && info.verba !== undefined) verbaVal = info.verba;
+                    if (!impostoVal && info.imposto !== undefined) impostoVal = info.imposto;
+                }
 
                 const custoLiqNum = parseNumeroPtBr(custoLiqVal);
                 const verbaNum = parseNumeroPtBr(verbaVal) || 0;
@@ -1773,7 +1750,7 @@
 
                 tr.innerHTML = `
                     <td><strong>${row['CÓD'] || ''}</strong></td>
-                    <td>${row['PRODUTO'] || ''}</td>
+                    <td>${prodNome}</td>
                     <td>
                         <div class="cell-edit" contenteditable="true" spellcheck="false"
                              onblur="window.atualizarCelulaInline('${sheetName}', ${rowIndex}, 'PVENDA', this.innerText)">
@@ -1817,7 +1794,6 @@
             }
         };
 
-        // EDIÇÃO INLINE COM RECÁLCULO DA MARGEM CONSINCO
         window.atualizarCelulaInline = function(sheetName, rowIndex, campo, novoValor) {
             if (!copiaDadosEmEdicao || !copiaDadosEmEdicao[sheetName] || !copiaDadosEmEdicao[sheetName][rowIndex]) return;
 
@@ -1862,7 +1838,6 @@
             }
         };
 
-        // SALVAR ALTERAÇÕES NO FIREBASE COM REGISTRO NO HISTÓRICO
         window.salvarAlteracoesLista = function() {
             if (!idListaAtual) return;
 
@@ -1898,7 +1873,6 @@
             });
         };
 
-        // ALTERAR STATUS (APROVAR / REPROVAR) COM REGISTRO DE AUDITORIA
         window.alterarStatusLista = function(novoStatus) {
             if (!idListaAtual) return;
 
@@ -1933,7 +1907,6 @@
             });
         };
 
-        // HISTÓRICO / AUDITORIA DRAWER
         window.abrirDrawerHistorico = function() {
             if (!idListaAtual) return;
             const lista = listasGlobais[idListaAtual] || {};
@@ -1970,7 +1943,6 @@
             if (drawer) drawer.style.display = 'none';
         };
 
-        // EXPORTAÇÃO DA PLANILHA EXCEL FINAL (DESBLOQUEADA APENAS QUANDO APROVADA)
         window.baixarExcelFinal = function() {
             if (!idListaAtual) return;
             const listaOriginal = listasGlobais[idListaAtual];
