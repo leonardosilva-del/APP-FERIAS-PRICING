@@ -898,12 +898,10 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <!-- Botão para Abrir Modal das 5 Bases de Precificação -->
                     <button class="btn-base-precificacao" onclick="abrirModalBasesRegioes()" title="Gerenciar bases de precificação do DF, Entorno, LEM, Gurupi e Goiânia">
                         📊 Bases de Precificação (5 Regiões)
                     </button>
 
-                    <!-- Botão de Upload -->
                     <label class="btn-upload">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
@@ -1103,7 +1101,7 @@
 
     <script type="module">
         import { db, auth } from "./firebase-config.js";
-        import { ref, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+        import { ref as dbRef, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
         let perfilUsuario = "Comercial";
@@ -1167,13 +1165,13 @@
         }
 
         function carregarBaseProdutos() {
-            onValue(ref(db, 'base_produtos'), (snapshot) => {
+            onValue(dbRef(db, 'base_produtos'), (snapshot) => {
                 baseProdutos = snapshot.exists() ? snapshot.val() : {};
             });
         }
 
         function carregarBasesRegioes() {
-            onValue(ref(db, 'base_precificacao_regioes'), (snapshot) => {
+            onValue(dbRef(db, 'base_precificacao_regioes'), (snapshot) => {
                 basesRegioes = snapshot.exists() ? snapshot.val() : {};
                 atualizarCardsModalRegioes();
             });
@@ -1191,7 +1189,7 @@
             nomeUsuario = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
             if (nameEl) nameEl.textContent = nomeUsuario;
 
-            get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {
+            get(dbRef(db, 'usuarios/' + user.uid)).then((snapshot) => {
                 if (snapshot.exists()) {
                     const dados = snapshot.val();
                     perfilUsuario = dados.perfil || "Comercial";
@@ -1264,7 +1262,7 @@
             });
         }
 
-        // UPLOAD DA BASE REGIONAL DO CONSINCO (BUSCA DE COLUNA COM FILTRO MAIS ABRANGENTE)
+        // UPLOAD DA BASE REGIONAL DO CONSINCO (BLINDADO CONTRA COLUNA 'SEQPRODUTO')
         window.processarUploadBaseRegiao = function(regiaoKey, event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1294,23 +1292,34 @@
 
                     const chaves = Object.keys(jsonRaw[0]);
                     
-                    // Identificadores de Colunas Super Flexíveis
+                    // Lógica blindada para achar o Código (SEQPRODUTO, etc)
                     const keyCod = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u === 'PRD_C5' || u === 'COD PROD' || u === 'CODIGO' || u === 'SEQPRODUTO' || u === 'CÓD' || u === 'COD' || u.includes('COD') || u.includes('CÓD');
-                    });
+                        return u === 'PRD_C5' || u === 'COD PROD' || u === 'CODIGO' || u === 'SEQPRODUTO' || u === 'CÓD' || u === 'COD';
+                    }) || chaves.find(k => k.toUpperCase().includes('COD') || k.toUpperCase().includes('CÓD') || k.toUpperCase().includes('SEQ'));
+
+                    // Lógica blindada para achar a Descrição (NÃO pode ser SEQPRODUTO)
                     const keyDesc = chaves.find(k => {
                         const u = k.toUpperCase().trim();
-                        return u.includes('DESC') || u.includes('PRODUTO') || u.includes('NOME');
+                        return u === 'DESCCOMPLETA' || u === 'DESCRICAO' || u === 'DESCRIÇÃO';
+                    }) || chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return u.includes('DESC') && !u.includes('DESCONTO');
+                    }) || chaves.find(k => {
+                        const u = k.toUpperCase().trim();
+                        return (u.includes('PRODUTO') || u.includes('NOME')) && !u.includes('SEQ') && !u.includes('COD');
                     });
+
                     const keyCustoLiq = chaves.find(k => {
                         const u = k.toUpperCase().trim();
                         return u.includes('CUSTO_LIQ') || u.includes('CUSTO LIQ') || u.includes('GERENCIAL') || u.includes('CUSTO');
                     });
+                    
                     const keyVerba = chaves.find(k => {
                         const u = k.toUpperCase().trim();
                         return u.includes('VERBA') || u.includes('SELL OUT') || u.includes('SELLOUT');
                     });
+                    
                     const keyImposto = chaves.find(k => {
                         const u = k.toUpperCase().trim();
                         return u.includes('IMPOSTO') || u.includes('ALIQ');
@@ -1330,7 +1339,7 @@
 
                         itensMapeados[cod] = {
                             cod: cod,
-                            desc: desc, // Garante que a descrição foi capturada
+                            desc: desc, // Agora a descrição vem certa
                             custoLiq: custoLiq !== null ? custoLiq : 0,
                             verba: verba,
                             imposto: imposto
@@ -1352,7 +1361,7 @@
                         itens: itensMapeados
                     };
 
-                    update(ref(db, `base_precificacao_regioes/${regiaoKey}`), payload).then(() => {
+                    update(dbRef(db, `base_precificacao_regioes/${regiaoKey}`), payload).then(() => {
                         showToast(`Base ${regiaoKey} salva com sucesso! (${contador} produtos mapeados)`, "success");
                     }).catch(err => {
                         showToast("Erro ao salvar no banco: " + err.message, "error");
@@ -1367,7 +1376,7 @@
             event.target.value = '';
         };
 
-        // FÓRMULA OFICIAL DE MARGEM CONSINCO
+        // FÓRMULA OFICIAL DE MARGEM CONSINCO CORRIGIDA
         function calcularMargemConsinco(pvenda, custoLiq, verba = 0, impostoPerc = 0) {
             if (pvenda === null || custoLiq === null || pvenda <= 0) return null;
 
@@ -1381,7 +1390,7 @@
         }
 
         function iniciarListenerDeListas() {
-            onValue(ref(db, 'listas_tv'), (snapshot) => {
+            onValue(dbRef(db, 'listas_tv'), (snapshot) => {
                 listasGlobais = snapshot.exists() ? snapshot.val() : {};
                 renderizarCardsListas();
             });
@@ -1460,7 +1469,7 @@
             const nome = lista ? lista.nome : "esta lista";
             if (!confirm(`Tem certeza que deseja excluir "${nome}"? Esta ação não pode ser desfeita.`)) return;
 
-            remove(ref(db, `listas_tv/${id}`)).then(() => {
+            remove(dbRef(db, `listas_tv/${id}`)).then(() => {
                 showToast("Lista excluída com sucesso!", "success");
             }).catch(err => {
                 showToast("Erro ao excluir: " + err.message, "error");
@@ -1509,7 +1518,11 @@
                                 custoLiq = info.custoLiq !== undefined ? info.custoLiq : '';
                                 verba = info.verba || '';
                                 imposto = info.imposto || '';
-                                if (info.desc && info.desc.trim() !== '') prodOficial = info.desc;
+                                
+                                // Trava de segurança: só substitui se a descrição for válida e não for o próprio código
+                                if (info.desc && String(info.desc).trim() !== '' && String(info.desc).trim() !== codProd) {
+                                    prodOficial = info.desc;
+                                }
                             }
 
                             newRow['PRODUTO'] = prodOficial;
@@ -1554,7 +1567,7 @@
                         historico: historicoInicial
                     };
 
-                    push(ref(db, 'listas_tv'), payload).then(() => {
+                    push(dbRef(db, 'listas_tv'), payload).then(() => {
                         showToast("Lista de TV enviada para validação!", "success");
                     }).catch(err => {
                         showToast("Erro ao salvar lista: " + err.message, "error");
@@ -1592,8 +1605,7 @@
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
                     
-                    // FORÇA A SUBSTITUIÇÃO DO NOME DO PRODUTO SE TIVER NA BASE
-                    if (info.desc && info.desc.trim() !== '') {
+                    if (info.desc && String(info.desc).trim() !== '' && String(info.desc).trim() !== codProd) {
                         row['PRODUTO'] = info.desc;
                     }
                     
@@ -1687,10 +1699,9 @@
                 const codProd = String(row['CÓD'] || '').trim();
                 let prodNome = String(row['PRODUTO'] || '');
 
-                // SUBSTITUI O NOME PELA BASE OFICIAL CASO EXISTIR NA BASE
                 if (codProd && baseRegiao[codProd]) {
                     const info = baseRegiao[codProd];
-                    if (info.desc && info.desc.trim() !== '') {
+                    if (info.desc && String(info.desc).trim() !== '' && String(info.desc).trim() !== codProd) {
                         prodNome = info.desc;
                         row['PRODUTO'] = prodNome;
                     }
@@ -1850,7 +1861,7 @@
                 detalhes: detalhesAcao
             });
 
-            update(ref(db, `listas_tv/${idListaAtual}`), {
+            update(dbRef(db, `listas_tv/${idListaAtual}`), {
                 dados: copiaDadosEmEdicao,
                 comentarios: obs,
                 historico: historicoExistente
@@ -1883,7 +1894,7 @@
                 detalhes: obs ? `Motivo/Obs: ${obs}` : 'Aprovada sem ressalvas'
             });
 
-            update(ref(db, `listas_tv/${idListaAtual}`), {
+            update(dbRef(db, `listas_tv/${idListaAtual}`), {
                 status: novoStatus,
                 comentarios: obs,
                 dados: copiaDadosEmEdicao,
