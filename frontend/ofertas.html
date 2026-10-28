@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
     <title>Calendário Promocional - PRICING</title>
     
@@ -582,7 +583,7 @@
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = "/"; return; }
 
-            document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
+            document.getElementById('user-photo').src = (user.photoURL || 'https://via.placeholder.com/40').replace(/^http:\/\//i, 'https://');
             document.getElementById('user-name').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
             get(ref(db, 'usuarios/' + user.uid)).then((snapshot) => {

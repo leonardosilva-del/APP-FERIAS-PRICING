@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>Painel de TV - Pricing ;DD</title>
 
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -1345,7 +1346,7 @@
             }
 
             const photoEl = document.getElementById('user-photo');
-            if (photoEl) photoEl.src = user.photoURL || 'https://via.placeholder.com/32';
+            if (photoEl) photoEl.src = (user.photoURL || 'https://via.placeholder.com/32').replace(/^http:\/\//i, 'https://');
             const nameEl = document.getElementById('user-name-widget');
             nomeUsuario = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
             if (nameEl) nameEl.textContent = nomeUsuario;

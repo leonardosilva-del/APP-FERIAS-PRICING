@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>Agenda Pricing</title>
     
     <!-- FAVICON LOCAL (PADRÃO DEFINITIVO) -->
@@ -1269,7 +1270,7 @@
             }
 
             usuarioAtual = user;
-            document.getElementById('user-photo').src = user.photoURL || 'https://via.placeholder.com/40';
+            document.getElementById('user-photo').src = (user.photoURL || 'https://via.placeholder.com/40').replace(/^http:\/\//i, 'https://');
             document.getElementById('user-name-widget').textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuário';
 
             const userRef = ref(db, 'usuarios/' + user.uid);
@@ -1789,7 +1790,7 @@
             gridContainer.innerHTML += headerHTML;
 
             usuariosExibicao.forEach((colab) => {
-                let fotoUrl = colab.foto || 'https://via.placeholder.com/40';
+                let fotoUrl = (colab.foto || 'https://via.placeholder.com/40').replace(/^http:\/\//i, 'https://');
                 let emailLimpo = (colab.email || "sem-email").replace(/[^a-zA-Z0-9]/g, '');
 
                 let rowHTML = `

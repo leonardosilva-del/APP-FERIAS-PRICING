@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>Intranet Pricing ;DD</title>
 
     <!-- FAVICON LOCAL -->
@@ -578,7 +579,8 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const avatarPadrao = 'https://ui-avatars.com/api/?background=2563eb&color=fff&name=' + (user.displayName || user.email.charAt(0));
-                document.getElementById('user-photo').src = user.photoURL || avatarPadrao;
+                const fotoSegura = (user.photoURL || avatarPadrao).replace(/^http:\/\//i, 'https://');
+                document.getElementById('user-photo').src = fotoSegura;
                 
                 const nomeExibicao = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
                 document.getElementById('user-name').textContent = nomeExibicao;
@@ -649,9 +651,10 @@
             
             let updates = {};
             
+            const fotoSegura = (auth.currentUser.photoURL || "").replace(/^http:\/\//i, 'https://');
             updates['usuarios/' + auth.currentUser.uid + '/nome'] = nome;
             updates['usuarios/' + auth.currentUser.uid + '/email'] = auth.currentUser.email;
-            updates['usuarios/' + auth.currentUser.uid + '/foto'] = auth.currentUser.photoURL || "";
+            updates['usuarios/' + auth.currentUser.uid + '/foto'] = fotoSegura;
             updates['usuarios/' + auth.currentUser.uid + '/setor'] = setor;
             updates['usuarios/' + auth.currentUser.uid + '/perfil'] = perfil;
             updates['usuarios/' + auth.currentUser.uid + '/cpf'] = cpf;
@@ -664,7 +667,7 @@
                     nome: nome,
                     cargo: "Equipe Pricing",
                     data: nasc,
-                    foto: auth.currentUser.photoURL || ""
+                    foto: fotoSegura
                 };
             }
 
