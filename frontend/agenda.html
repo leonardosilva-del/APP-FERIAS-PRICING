@@ -875,12 +875,27 @@
                 <!-- Injetado via JS com usuários do Firebase -->
             </select>
 
-            <label>Prioridade/Tipo</label>
-            <select id="demanda-tipo">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -10px;">
+                <label style="margin-bottom: 0;">Prioridade/Tipo</label>
+                <button type="button" onclick="window.abrirModalGerenciarTipos()" style="background: none; border: none; color: var(--brand-primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">⚙️ Personalizar Tipos</button>
+            </div>
+            <select id="demanda-tipo" onchange="window.aoMudarTipoDemanda(this.value)">
                 <option value="Rotina">Rotina (Azul)</option>
                 <option value="Extra">Demanda Extra (Amarelo)</option>
                 <option value="Urgente">Urgente (Vermelho)</option>
+                <option value="Lembrete">⏰ Lembrete (Roxo)</option>
             </select>
+
+            <!-- CAMPO DE HORÁRIO DE LEMBRETE (DINÂMICO) -->
+            <div id="container-lembrete-hora" style="display: none; margin-top: 5px; padding: 10px 12px; background: rgba(99, 102, 241, 0.08); border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.25);">
+                <label style="font-size: 0.82rem; font-weight: 600; color: var(--brand-primary); display: block; margin-bottom: 6px;">
+                    ⏰ Horário do Lembrete (Avisar às):
+                </label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="time" id="demanda-hora-lembrete" style="padding: 8px 12px; font-size: 0.95rem; width: 140px; background: var(--bg-surface); border: 1px solid var(--border-hover); border-radius: 6px;">
+                    <span style="font-size: 0.78rem; color: var(--text-600); line-height: 1.2;">Alerta discreto e notificação no horário.</span>
+                </div>
+            </div>
 
             <!-- OPÇÃO DE TAREFA FIXA -->
             <div style="margin-top: 10px; margin-bottom: 5px; padding: 12px; background: rgba(99, 102, 241, 0.05); border: 1px dashed var(--brand-primary); border-radius: 8px;">
@@ -930,7 +945,22 @@
                 <p style="margin-bottom: 5px;"><strong>Título:</strong> <span id="detalhe-titulo"></span></p>
                 <p style="margin-bottom: 5px;"><strong>Responsável:</strong> <span id="detalhe-responsavel"></span></p>
                 <p style="margin-bottom: 5px;"><strong>Criado por:</strong> <span id="detalhe-criador"></span></p>
-                <p style="margin-bottom: 0;"><strong>Status Atual:</strong> <span id="detalhe-status" style="font-weight: bold; color: var(--brand-primary);"></span></p>
+                <p style="margin-bottom: 5px;"><strong>Status Atual:</strong> <span id="detalhe-status" style="font-weight: bold; color: var(--brand-primary);"></span></p>
+                
+                <!-- ALTERAÇÃO RÁPIDA DE TIPO / PRIORIDADE / HORÁRIO NO DETALHE -->
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-light); display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                    <div style="flex: 1; min-width: 140px;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-600); display: block; margin-bottom: 4px;">Tipo / Prioridade:</span>
+                        <select id="detalhe-select-tipo" onchange="window.aoMudarTipoDetalhe(this.value)" style="padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; width: 100%;">
+                            <!-- Opções populadas dinamicamente -->
+                        </select>
+                    </div>
+                    <div id="detalhe-container-hora" style="display: none; flex: 1; min-width: 140px;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--brand-primary); display: block; margin-bottom: 4px;">⏰ Horário Alerta:</span>
+                        <input type="time" id="detalhe-hora-lembrete" style="padding: 5px 8px; font-size: 0.85rem; border-radius: 6px; width: 100%;">
+                    </div>
+                    <button class="btn-secondary" onclick="window.salvarTipoDetalheFirebase()" style="padding: 6px 12px; font-size: 0.85rem; min-height: 34px; margin-top: auto;">💾 Atualizar Tipo</button>
+                </div>
             </div>
 
             <!-- NOVA ÁREA DE DESCRIÇÃO -->
@@ -956,6 +986,53 @@
             <div class="modal-buttons" style="margin-top: 10px;">
                 <button class="btn-cancel" onclick="window.fecharModalDetalhe()">Fechar Aba</button>
                 <button id="btnExcluirTarefa" class="btn-cancel" style="color: var(--status-danger); border-color: var(--status-danger);" onclick="window.excluirTarefaAtual()">🗑️ Excluir Tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gerenciar e Criar Tipos de Demanda -->
+    <div id="modalGerenciarTipos" class="modal-overlay" style="display: none; z-index: 1050;">
+        <div class="modal-content" style="max-width: 480px; max-height: 85vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-900);">🏷️ Personalizar Tipos de Demanda</h3>
+                <button class="modal-header-close" onclick="window.fecharModalGerenciarTipos()" style="position: static; font-size: 1.5rem; background: none; border: none; cursor: pointer; color: var(--text-400);">&times;</button>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-600); margin: 0 0 15px 0;">
+                Crie novas categorias para organizar as demandas da equipe com cores e nomes personalizados.
+            </p>
+
+            <!-- FORMULÁRIO DE NOVO TIPO -->
+            <div style="background: var(--bg-swimlane); padding: 14px; border-radius: 8px; border: 1px solid var(--border-light); margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-900); margin-bottom: 6px;">Nome do Novo Tipo:</label>
+                <input type="text" id="novo-tipo-nome" placeholder="Ex: Reunião, Auditoria, Negociação..." style="margin-bottom: 10px; font-size: 0.9rem; padding: 8px 10px;">
+
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-600); margin-bottom: 4px;">Cor da Tag:</label>
+                        <select id="novo-tipo-cor" style="padding: 8px 10px; font-size: 0.85rem;">
+                            <option value="azul">Azul (Padrão)</option>
+                            <option value="amarelo">Amarelo (Atenção)</option>
+                            <option value="vermelho">Vermelho (Urgente)</option>
+                            <option value="verde">Verde (Sucesso/Positivo)</option>
+                            <option value="roxo">Roxo / Índigo</option>
+                            <option value="rosa">Rosa / Magenta</option>
+                            <option value="laranja">Laranja</option>
+                            <option value="cinza">Cinza Neutro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-save" onclick="window.salvarNovoTipoDemanda()" style="width: 100%; min-height: 38px; padding: 8px 12px; font-size: 0.88rem;">+ Adicionar Tipo</button>
+            </div>
+
+            <!-- LISTAGEM DE TIPOS ATIVOS -->
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-600); margin-bottom: 8px; text-transform: uppercase;">Tipos Cadastrados:</label>
+            <div id="lista-tipos-cadastrados" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                <!-- Populado via JavaScript -->
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button class="btn-cancel" onclick="window.fecharModalGerenciarTipos()" style="width: 100%;">Fechar</button>
             </div>
         </div>
     </div>
@@ -1061,6 +1138,20 @@
         let loadedTarefas = false;
         let isProcessing = false; // Guarda contra re-entrada
         let filtroColaboradorAtual = localStorage.getItem('agenda-filtro-colaborador') || "todos"; // Restaura do localStorage
+        let tiposCustomizadosGlobal = {}; // Tipos personalizados salvos no Firebase
+        let lembretesNotificados = new Set(); // Evita alertar duas vezes o mesmo lembrete
+        let intervalVerificaLembretes = null;
+
+        const PALETA_CORES_TAGS = {
+            "azul": { bg: "rgba(59, 130, 246, 0.12)", color: "#1d4ed8" },
+            "amarelo": { bg: "#fef3c7", color: "#b45309" },
+            "vermelho": { bg: "#fee2e2", color: "#991b1b" },
+            "verde": { bg: "#d1fae5", color: "#065f46" },
+            "roxo": { bg: "#f3e8ff", color: "#6b21a8" },
+            "rosa": { bg: "#fce7f3", color: "#9d174d" },
+            "laranja": { bg: "#ffedd5", color: "#c2410c" },
+            "cinza": { bg: "#f1f5f9", color: "#475569" }
+        };
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -1085,6 +1176,15 @@
             
             document.getElementById('chk-demanda-fixa').checked = false;
             window.toggleDiasFixos();
+
+            // Reseta tipo para Rotina e esconde horário de lembrete
+            const selectTipo = document.getElementById('demanda-tipo');
+            if (selectTipo) {
+                selectTipo.value = 'Rotina';
+                window.aoMudarTipoDemanda('Rotina');
+            }
+            const inputHora = document.getElementById('demanda-hora-lembrete');
+            if (inputHora) inputHora.value = '';
             
             const selectColab = document.getElementById('demanda-colaborador');
             if (perfilUsuario !== "Gestor" && usuarioAtual) {
@@ -1093,6 +1193,147 @@
             } else {
                 selectColab.disabled = false;
             }
+        }
+
+        window.aoMudarTipoDemanda = function(tipoSelecionado) {
+            const containerHora = document.getElementById('container-lembrete-hora');
+            if (containerHora) {
+                containerHora.style.display = (tipoSelecionado === 'Lembrete') ? 'block' : 'none';
+            }
+        }
+
+        window.aoMudarTipoDetalhe = function(tipoSelecionado) {
+            const containerHora = document.getElementById('detalhe-container-hora');
+            if (containerHora) {
+                containerHora.style.display = (tipoSelecionado === 'Lembrete') ? 'block' : 'none';
+            }
+        }
+
+        window.abrirModalGerenciarTipos = function() {
+            renderizarListaTiposCadastrados();
+            document.getElementById('modalGerenciarTipos').style.display = 'flex';
+        }
+
+        window.fecharModalGerenciarTipos = function() {
+            document.getElementById('modalGerenciarTipos').style.display = 'none';
+            document.getElementById('novo-tipo-nome').value = '';
+        }
+
+        window.salvarNovoTipoDemanda = function() {
+            const nomeInput = document.getElementById('novo-tipo-nome');
+            const corSelect = document.getElementById('novo-tipo-cor');
+            const nome = nomeInput.value.trim();
+            const cor = corSelect.value;
+
+            if (!nome) {
+                window.showToast("Informe o nome do novo tipo!", "warning");
+                return;
+            }
+
+            // Normaliza chave
+            const chave = nome.replace(/[.#$/[\]]/g, '_');
+
+            update(ref(db, `configuracoes_sistema/tipos_demandas_agenda/${chave}`), {
+                nome: nome,
+                cor: cor,
+                criadoPor: usuarioAtual ? usuarioAtual.email : 'Usuário',
+                criadoEm: new Date().toISOString()
+            }).then(() => {
+                window.showToast(`Tipo "${nome}" cadastrado com sucesso!`, "success");
+                nomeInput.value = '';
+            }).catch(err => {
+                window.showToast("Erro ao salvar tipo: " + err.message, "error");
+            });
+        }
+
+        window.excluirTipoDemanda = function(tipoKey, tipoNome) {
+            if (!confirm(`Tem certeza que deseja remover o tipo "${tipoNome}"?`)) return;
+            remove(ref(db, `configuracoes_sistema/tipos_demandas_agenda/${tipoKey}`)).then(() => {
+                window.showToast("Tipo removido!", "info");
+            }).catch(err => {
+                window.showToast("Erro ao remover: " + err.message, "error");
+            });
+        }
+
+        function carregarTiposDeDemandas() {
+            onValue(ref(db, 'configuracoes_sistema/tipos_demandas_agenda'), (snapshot) => {
+                tiposCustomizadosGlobal = snapshot.exists() ? snapshot.val() : {};
+                atualizarDropdownsTipos();
+                renderizarListaTiposCadastrados();
+                renderizarGridSafe();
+            });
+        }
+
+        function atualizarDropdownsTipos() {
+            const selectNovo = document.getElementById('demanda-tipo');
+            const selectDetalhe = document.getElementById('detalhe-select-tipo');
+
+            const valNovoAtual = selectNovo ? selectNovo.value : 'Rotina';
+            const valDetalheAtual = selectDetalhe ? selectDetalhe.value : 'Rotina';
+
+            const tiposPadrao = [
+                { valor: 'Rotina', label: 'Rotina (Azul)' },
+                { valor: 'Extra', label: 'Demanda Extra (Amarelo)' },
+                { valor: 'Urgente', label: 'Urgente (Vermelho)' },
+                { valor: 'Lembrete', label: '⏰ Lembrete (Roxo)' }
+            ];
+
+            const htmlPadrao = tiposPadrao.map(t => `<option value="${t.valor}">${t.label}</option>`).join('');
+            
+            let htmlCustom = '';
+            Object.keys(tiposCustomizadosGlobal).forEach(k => {
+                const item = tiposCustomizadosGlobal[k];
+                if (item && item.nome) {
+                    const corNome = item.cor ? item.cor.toUpperCase() : 'AZUL';
+                    htmlCustom += `<option value="${item.nome}">${item.nome} (${corNome})</option>`;
+                }
+            });
+
+            const htmlFinal = htmlPadrao + (htmlCustom ? `<optgroup label="Tipos Personalizados">${htmlCustom}</optgroup>` : '');
+
+            if (selectNovo) {
+                selectNovo.innerHTML = htmlFinal;
+                selectNovo.value = valNovoAtual || 'Rotina';
+            }
+            if (selectDetalhe) {
+                selectDetalhe.innerHTML = htmlFinal;
+                selectDetalhe.value = valDetalheAtual || 'Rotina';
+            }
+        }
+
+        function renderizarListaTiposCadastrados() {
+            const container = document.getElementById('lista-tipos-cadastrados');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const chaves = Object.keys(tiposCustomizadosGlobal);
+            if (chaves.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-400); font-size: 0.85rem; padding: 12px;">Nenhum tipo personalizado ainda. Os padrões do sistema são: Rotina, Extra, Urgente e Lembrete.</div>';
+                return;
+            }
+
+            chaves.forEach(chave => {
+                const item = tiposCustomizadosGlobal[chave];
+                if (!item) return;
+                const corConfig = PALETA_CORES_TAGS[item.cor] || PALETA_CORES_TAGS["azul"];
+
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.padding = '8px 12px';
+                div.style.background = 'var(--bg-surface)';
+                div.style.border = '1px solid var(--border-light)';
+                div.style.borderRadius = '6px';
+
+                div.innerHTML = `
+                    <span style="font-size: 0.88rem; font-weight: 600; padding: 4px 10px; border-radius: 6px; background: ${corConfig.bg}; color: ${corConfig.color};">
+                        ${item.nome}
+                    </span>
+                    <button onclick="window.excluirTipoDemanda('${chave}', '${item.nome}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.1rem; padding: 2px;" title="Remover tipo">🗑️</button>
+                `;
+                container.appendChild(div);
+            });
         }
 
         window.fecharModalDemanda = function () {
@@ -1114,11 +1355,38 @@
             document.getElementById('detalhe-criador').textContent = task.criadoPor || '';
             document.getElementById('detalhe-status').textContent = task.status || '';
             document.getElementById('detalhe-descricao').value = task.descricao || '';
+
+            // Popula tipo e horário no detalhe
+            const selectDetalheTipo = document.getElementById('detalhe-select-tipo');
+            if (selectDetalheTipo) {
+                selectDetalheTipo.value = task.tipo || 'Rotina';
+                window.aoMudarTipoDetalhe(task.tipo || 'Rotina');
+            }
+            const inputHora = document.getElementById('detalhe-hora-lembrete');
+            if (inputHora) {
+                inputHora.value = task.horaLembrete || '';
+            }
             
             document.getElementById('novo-comentario').value = '';
             document.getElementById('modalDetalhe').style.display = 'flex';
 
             renderizarComentarios(taskId);
+        }
+
+        window.salvarTipoDetalheFirebase = function() {
+            if(!idTarefaDetalhe) return;
+            const selectTipo = document.getElementById('detalhe-select-tipo');
+            const tipo = selectTipo ? selectTipo.value : 'Rotina';
+            const hora = (tipo === 'Lembrete') ? (document.getElementById('detalhe-hora-lembrete')?.value || '') : '';
+
+            update(ref(db, `agenda_tarefas/${idTarefaDetalhe}`), {
+                tipo: tipo,
+                horaLembrete: hora
+            }).then(() => {
+                window.showToast("Tipo de demanda atualizado com sucesso!", "success");
+            }).catch(err => {
+                window.showToast("Erro ao atualizar tipo: " + err.message, "error");
+            });
         }
 
         window.salvarDescricaoFirebase = function() {
@@ -1235,6 +1503,7 @@
         window.addEventListener('click', function(event) {
             const modalDemanda = document.getElementById('modalDemanda');
             const modalDetalhe = document.getElementById('modalDetalhe');
+            const modalTipos = document.getElementById('modalGerenciarTipos');
             
             // Se o clique for exatamente no fundo escuro e não dentro da caixa branca
             if (event.target === modalDemanda) {
@@ -1243,6 +1512,9 @@
             if (event.target === modalDetalhe) {
                 window.fecharModalDetalhe();
             }
+            if (event.target === modalTipos) {
+                window.fecharModalGerenciarTipos();
+            }
         });
 
         // Fechar modais ao pressionar a tecla ESC
@@ -1250,12 +1522,16 @@
             if (event.key === 'Escape' || event.key === 'Esc') {
                 const modalDemanda = document.getElementById('modalDemanda');
                 const modalDetalhe = document.getElementById('modalDetalhe');
+                const modalTipos = document.getElementById('modalGerenciarTipos');
                 
-                if (modalDemanda.style.display === 'flex') {
+                if (modalDemanda && modalDemanda.style.display === 'flex') {
                     window.fecharModalDemanda();
                 }
-                if (modalDetalhe.style.display === 'flex') {
+                if (modalDetalhe && modalDetalhe.style.display === 'flex') {
                     window.fecharModalDetalhe();
+                }
+                if (modalTipos && modalTipos.style.display === 'flex') {
+                    window.fecharModalGerenciarTipos();
                 }
             }
         });
@@ -1292,11 +1568,17 @@
 
                 carregarUsuarios();
                 carregarBasesDeDados();
+                carregarTiposDeDemandas();
+                solicitarPermissaoNotificacao();
+                iniciarMonitorLembretes();
             }).catch((err) => {
                 console.error("Erro ao carregar dados do usuário (possível falta de permissão):", err);
                 document.getElementById('user-role-widget').textContent = perfilUsuario;
                 carregarUsuarios();
                 carregarBasesDeDados();
+                carregarTiposDeDemandas();
+                solicitarPermissaoNotificacao();
+                iniciarMonitorLembretes();
             });
         });
 
@@ -1615,6 +1897,7 @@
             const colabEmail = selectColab ? selectColab.value : null;
             const tipo = document.getElementById('demanda-tipo').value;
             const isFixa = document.getElementById('chk-demanda-fixa').checked;
+            const horaLembrete = (tipo === 'Lembrete') ? (document.getElementById('demanda-hora-lembrete')?.value || '') : '';
 
             if (!titulo || !colabEmail) {
                 window.showToast("Preencha o título e responsável!", "error");
@@ -1634,6 +1917,7 @@
                     colaboradorEmail: colabEmail,
                     criadoPor: usuarioAtual.email,
                     tipo: tipo,
+                    horaLembrete: horaLembrete,
                     dias: diasSelecionados,
                     criadoEm: new Date().toISOString()
                 }).then(() => {
@@ -1657,6 +1941,7 @@
                     criadoPor: usuarioAtual.email,
                     data: data,
                     tipo: tipo,
+                    horaLembrete: horaLembrete,
                     status: "Pendente",
                     criadoEm: new Date().toISOString(),
                     ordem: Date.now()
@@ -1815,18 +2100,45 @@
                         .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
                     tarefasColuna.forEach(task => {
-                        let classPriority = task.tipo === 'Urgente' ? 'priority-high' : (task.tipo === 'Extra' ? 'priority-low' : '');
-                        let tagStyle = task.tipo === 'Urgente' ? 'style="background: #fee2e2; color: #991b1b;"' : (task.tipo === 'Extra' ? 'style="background: #fef3c7; color: #b45309;"' : '');
+                        const tipoTask = task.tipo || 'Rotina';
+                        let classPriority = tipoTask === 'Urgente' ? 'priority-high' : (tipoTask === 'Extra' ? 'priority-low' : '');
+                        
+                        // Determina cor do badge (padrões ou personalizados)
+                        let tagStyle = '';
+                        if (tipoTask === 'Urgente') {
+                            tagStyle = 'style="background: #fee2e2; color: #991b1b;"';
+                        } else if (tipoTask === 'Extra') {
+                            tagStyle = 'style="background: #fef3c7; color: #b45309;"';
+                        } else if (tipoTask === 'Lembrete') {
+                            tagStyle = 'style="background: #ede9fe; color: #5b21b6; border: 1px solid rgba(139, 92, 246, 0.4);"';
+                        } else {
+                            // Verifica se é tipo personalizado
+                            const tipoObj = Object.values(tiposCustomizadosGlobal).find(t => t && t.nome === tipoTask);
+                            if (tipoObj && tipoObj.cor && PALETA_CORES_TAGS[tipoObj.cor]) {
+                                const c = PALETA_CORES_TAGS[tipoObj.cor];
+                                tagStyle = `style="background: ${c.bg}; color: ${c.color};"`;
+                            }
+                        }
+
                         let isDoneClass = task.status === 'Concluída' ? 'is-done' : '';
                         let isChecked = task.status === 'Concluída' ? 'checked' : '';
 
                         let commentsCount = task.comentarios ? Object.keys(task.comentarios).length : 0;
                         let commentsBadge = commentsCount > 0 ? `<span style="font-size:0.75rem; font-weight:700; color:var(--brand-primary); background:rgba(99,102,241,0.1); padding:2px 6px; border-radius:10px;">💬 ${commentsCount}</span>` : '';
 
+                        // Badge de Horário se for Lembrete
+                        let badgeLembreteHora = '';
+                        if (tipoTask === 'Lembrete' && task.horaLembrete) {
+                            badgeLembreteHora = `<span style="display:inline-flex; align-items:center; gap:2px; font-size:0.7rem; font-weight:700; color:#6b21a8; background:#f3e8ff; padding:2px 6px; border-radius:6px; margin-top:3px;" title="Alerta programado">⏰ ${task.horaLembrete}</span>`;
+                        }
+
                         rowHTML += `
                         <div class="task-card ${classPriority} ${isDoneClass}" data-id="${task.id}" onclick="window.abrirDetalhesTarefa('${task.id}')">
                             <div class="task-header">
-                                <div class="tags"><span class="tag base" ${tagStyle}>${task.tipo || 'Rotina'}</span></div>
+                                <div class="tags" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                                    <span class="tag base" ${tagStyle}>${tipoTask}</span>
+                                    ${badgeLembreteHora}
+                                </div>
                                 ${commentsBadge}
                             </div>
                             <h4 class="task-title">${task.titulo || 'Sem título'}</h4>
@@ -2004,6 +2316,180 @@
             });
 
             listaDiv.scrollTop = listaDiv.scrollHeight;
+        }
+
+        // ==========================================
+        // SISTEMA DE LEMBRETES: ÁUDIO SUTIL + NOTIFICAÇÃO
+        // ==========================================
+        function solicitarPermissaoNotificacao() {
+            if ("Notification" in window && Notification.permission === "default") {
+                // Solicita de forma não intrusiva
+                Notification.requestPermission().catch(() => {});
+            }
+        }
+
+        // Sintetizador de Som Singelo e Discreto (Web Audio API)
+        function tocarAlertaLembreteSuave() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                
+                // Nota 1 (suave, 587.33 Hz - D5)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(ctx.currentTime);
+                osc1.stop(ctx.currentTime + 0.35);
+
+                // Nota 2 (acorde ascendente elegante, 880 Hz - A5)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
+                gain2.gain.setValueAtTime(0.09, ctx.currentTime + 0.12);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(ctx.currentTime + 0.12);
+                osc2.stop(ctx.currentTime + 0.55);
+
+            } catch (e) {
+                // Navegadores que bloqueiam áudio sem interação prévia ignoram silenciosamente
+            }
+        }
+
+        function exibirBannerLembrete(task) {
+            tocarAlertaLembreteSuave();
+
+            // Notificação do Sistema (Windows / Mobile)
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    const notif = new Notification(`⏰ Lembrete: ${task.titulo}`, {
+                        body: task.descricao ? task.descricao : "Você tem uma demanda agendada para agora.",
+                        icon: "/favicon.png",
+                        tag: `lembrete-${task.id}`
+                    });
+                    notif.onclick = () => {
+                        window.focus();
+                        window.abrirDetalhesTarefa(task.id);
+                    };
+                } catch (e) {}
+            }
+
+            // Banner Flutuante Elegante na Tela
+            let containerAlertas = document.getElementById('container-lembretes-flutuantes');
+            if (!containerAlertas) {
+                containerAlertas = document.createElement('div');
+                containerAlertas.id = 'container-lembretes-flutuantes';
+                containerAlertas.style.position = 'fixed';
+                containerAlertas.style.top = '20px';
+                containerAlertas.style.right = '20px';
+                containerAlertas.style.zIndex = '99999';
+                containerAlertas.style.display = 'flex';
+                containerAlertas.style.flexDirection = 'column';
+                containerAlertas.style.gap = '10px';
+                containerAlertas.style.maxWidth = '360px';
+                document.body.appendChild(containerAlertas);
+            }
+
+            const banner = document.createElement('div');
+            banner.style.background = 'var(--bg-surface)';
+            banner.style.border = '1px solid rgba(139, 92, 246, 0.4)';
+            banner.style.borderLeft = '5px solid #8b5cf6';
+            banner.style.borderRadius = '10px';
+            banner.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.15), 0 0 15px rgba(139, 92, 246, 0.2)';
+            banner.style.padding = '14px 16px';
+            banner.style.color = 'var(--text-900)';
+            banner.style.animation = 'fadeInDown 0.3s ease-out';
+            banner.style.display = 'flex';
+            banner.style.flexDirection = 'column';
+            banner.style.gap = '8px';
+
+            banner.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#8b5cf6; text-transform:uppercase; display:flex; align-items:center; gap:4px;">
+                        ⏰ Lembrete de Demanda
+                    </span>
+                    <button class="btn-fechar-banner" style="background:none; border:none; color:var(--text-400); cursor:pointer; font-size:1.1rem; padding:0 4px;">&times;</button>
+                </div>
+                <div style="font-weight:700; font-size:0.95rem; color:var(--text-900); line-height:1.3;">
+                    ${task.titulo || 'Demanda'}
+                </div>
+                ${task.descricao ? `<div style="font-size:0.8rem; color:var(--text-600); line-height:1.3;">${task.descricao}</div>` : ''}
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                    <button class="btn-ver-tarefa" style="flex:1; background:#8b5cf6; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:0.8rem; font-weight:600; cursor:pointer;">Ver Tarefa</button>
+                    <button class="btn-adiar-10" style="background:var(--bg-swimlane); color:var(--text-600); border:1px solid var(--border-light); border-radius:6px; padding:6px 10px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Lembrar novamente em 10 minutos">Adiar 10m</button>
+                </div>
+            `;
+
+            banner.querySelector('.btn-fechar-banner').onclick = () => banner.remove();
+            banner.querySelector('.btn-ver-tarefa').onclick = () => {
+                banner.remove();
+                window.abrirDetalhesTarefa(task.id);
+            };
+            banner.querySelector('.btn-adiar-10').onclick = () => {
+                banner.remove();
+                // Adia temporariamente o lembrete
+                const agora = new Date();
+                agora.setMinutes(agora.getMinutes() + 10);
+                const horaStr = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+                update(ref(db, `agenda_tarefas/${task.id}`), { horaLembrete: horaStr }).then(() => {
+                    window.showToast("Lembrete adiado para " + horaStr, "info");
+                });
+            };
+
+            containerAlertas.appendChild(banner);
+
+            // Auto-remover após 25 segundos se o usuário não interagir
+            setTimeout(() => {
+                if (banner && banner.parentNode) {
+                    banner.style.transition = 'opacity 0.4s, transform 0.4s';
+                    banner.style.opacity = '0';
+                    banner.style.transform = 'translateY(-10px)';
+                    setTimeout(() => banner.remove(), 400);
+                }
+            }, 25000);
+        }
+
+        function iniciarMonitorLembretes() {
+            if (intervalVerificaLembretes) clearInterval(intervalVerificaLembretes);
+
+            function checarAgora() {
+                if (!usuarioAtual || !listaTarefasGlobal) return;
+                const hoje = new Date();
+                const hojeStr = formataDataISO(hoje);
+                const horaAtual = String(hoje.getHours()).padStart(2, '0') + ':' + String(hoje.getMinutes()).padStart(2, '0');
+
+                Object.keys(listaTarefasGlobal).forEach(id => {
+                    const t = listaTarefasGlobal[id];
+                    if (!t) return;
+
+                    // Somente para o usuário atribuído ou criador
+                    const souResponsavel = (t.colaboradorEmail === usuarioAtual.email) || (t.criadoPor === usuarioAtual.email);
+                    if (!souResponsavel) return;
+
+                    // Deve ser pendente, da data de hoje e do tipo Lembrete
+                    if (t.status === "Pendente" && t.data === hojeStr && t.tipo === "Lembrete" && t.horaLembrete) {
+                        const chaveNotif = `${id}_${t.data}_${t.horaLembrete}`;
+                        
+                        // Dispara se a hora atual for igual à hora marcada e ainda não foi alertada
+                        if (t.horaLembrete === horaAtual && !lembretesNotificados.has(chaveNotif)) {
+                            lembretesNotificados.add(chaveNotif);
+                            exibirBannerLembrete({ id: id, ...t });
+                        }
+                    }
+                });
+            }
+
+            // Executa a cada 10 segundos
+            intervalVerificaLembretes = setInterval(checarAgora, 10000);
+            checarAgora();
         }
 
     </script>
