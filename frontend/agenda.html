@@ -1139,8 +1139,11 @@
         let isProcessing = false; // Guarda contra re-entrada
         let filtroColaboradorAtual = localStorage.getItem('agenda-filtro-colaborador') || "todos"; // Restaura do localStorage
         let tiposCustomizadosGlobal = {}; // Tipos personalizados salvos no Firebase
-        let lembretesNotificados = new Set(); // Evita alertar duas vezes o mesmo lembrete
+        let lembretesNotificados = new Set(); // Evita alertar duas vezes o mesmo lembrete no mesmo minuto
         let intervalVerificaLembretes = null;
+        let faviconOriginalHref = "/favicon.png";
+        let faviconBlinkInterval = null;
+        let tituloOriginalPagina = document.title || "Agenda Pricing";
 
         const PALETA_CORES_TAGS = {
             "azul": { bg: "rgba(59, 130, 246, 0.12)", color: "#1d4ed8" },
@@ -1383,6 +1386,12 @@
                 tipo: tipo,
                 horaLembrete: hora
             }).then(() => {
+                // Se o usuário reajustou o horário do lembrete, limpa o registro de notificado para poder despertar de novo!
+                const task = listaTarefasGlobal[idTarefaDetalhe];
+                if (task) {
+                    const chaveAntiga = `${idTarefaDetalhe}_${task.data}_${task.horaLembrete}`;
+                    lembretesNotificados.delete(chaveAntiga);
+                }
                 window.showToast("Tipo de demanda atualizado com sucesso!", "success");
             }).catch(err => {
                 window.showToast("Erro ao atualizar tipo: " + err.message, "error");
@@ -1848,6 +1857,7 @@
                                 dataReferencia: dataObj.iso,
                                 idFixaRef: idFixa,
                                 tipo: fixa.tipo || 'Rotina',
+                                horaLembrete: fixa.horaLembrete || '',
                                 status: "Pendente",
                                 criadoEm: new Date().toISOString(),
                                 ordem: Date.now() 
@@ -2319,13 +2329,88 @@
         }
 
         // ==========================================
-        // SISTEMA DE LEMBRETES: ÁUDIO SUTIL + NOTIFICAÇÃO
+        // SISTEMA DE LEMBRETES: ÁUDIO SUTIL + NOTIFICAÇÃO + FAVICON
         // ==========================================
         function solicitarPermissaoNotificacao() {
-            if ("Notification" in window && Notification.permission === "default") {
-                // Solicita de forma não intrusiva
-                Notification.requestPermission().catch(() => {});
+            if ("Notification" in window) {
+                if (Notification.permission === "default") {
+                    Notification.requestPermission().catch(() => {});
+                }
             }
+        }
+
+        // Gera favicon dinâmico com badge de alerta vermelho/roxo
+        function gerarFaviconAlerta() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+
+                // Fundo circular roxo/índigo
+                ctx.beginPath();
+                ctx.arc(16, 16, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = '#8b5cf6';
+                ctx.fill();
+
+                // Desenha sininho ou relógio simples
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 18px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⏰', 16, 16);
+
+                // Bolinha vermelha de alerta pulsante no canto
+                ctx.beginPath();
+                ctx.arc(25, 7, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ef4444';
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                return canvas.toDataURL('image/png');
+            } catch (e) {
+                return faviconOriginalHref;
+            }
+        }
+
+        function iniciarAlertaVisualFavicon(tituloDemanda) {
+            pararAlertaVisualFavicon();
+
+            const faviconEl = document.querySelector("link[rel*='icon']");
+            if (faviconEl && !faviconEl.dataset.original) {
+                faviconEl.dataset.original = faviconEl.href;
+            }
+            const iconAlertaData = gerarFaviconAlerta();
+            let alternador = false;
+
+            faviconBlinkInterval = setInterval(() => {
+                alternador = !alternador;
+                if (faviconEl) {
+                    faviconEl.href = alternador ? iconAlertaData : (faviconEl.dataset.original || faviconOriginalHref);
+                }
+                document.title = alternador ? `⏰ (1 Lembrete) ${tituloDemanda}` : tituloOriginalPagina;
+            }, 1000);
+
+            // Ao focar na janela, interrompe o piscar do favicon após 4 segundos
+            const onFocusLimpar = () => {
+                setTimeout(pararAlertaVisualFavicon, 3000);
+                window.removeEventListener('focus', onFocusLimpar);
+            };
+            window.addEventListener('focus', onFocusLimpar);
+        }
+
+        function pararAlertaVisualFavicon() {
+            if (faviconBlinkInterval) {
+                clearInterval(faviconBlinkInterval);
+                faviconBlinkInterval = null;
+            }
+            const faviconEl = document.querySelector("link[rel*='icon']");
+            if (faviconEl && faviconEl.dataset.original) {
+                faviconEl.href = faviconEl.dataset.original;
+            }
+            document.title = tituloOriginalPagina;
         }
 
         // Sintetizador de Som Singelo e Discreto (Web Audio API)
@@ -2360,26 +2445,33 @@
                 osc2.stop(ctx.currentTime + 0.55);
 
             } catch (e) {
-                // Navegadores que bloqueiam áudio sem interação prévia ignoram silenciosamente
+                // Silencioso em caso de restrição do navegador
             }
         }
 
         function exibirBannerLembrete(task) {
             tocarAlertaLembreteSuave();
+            iniciarAlertaVisualFavicon(task.titulo || 'Demanda');
 
-            // Notificação do Sistema (Windows / Mobile)
-            if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                    const notif = new Notification(`⏰ Lembrete: ${task.titulo}`, {
-                        body: task.descricao ? task.descricao : "Você tem uma demanda agendada para agora.",
-                        icon: "/favicon.png",
-                        tag: `lembrete-${task.id}`
-                    });
-                    notif.onclick = () => {
-                        window.focus();
-                        window.abrirDetalhesTarefa(task.id);
-                    };
-                } catch (e) {}
+            // Notificação do Sistema Operacional (Windows / Mobile)
+            if ("Notification" in window) {
+                if (Notification.permission === "granted") {
+                    try {
+                        const notif = new Notification(`⏰ Lembrete: ${task.titulo}`, {
+                            body: task.descricao ? task.descricao : "Você agendou este lembrete para agora.",
+                            icon: "/favicon.png",
+                            tag: `lembrete-${task.id}`,
+                            requireInteraction: true // Fica fixo na central de ações do Windows até o usuário interagir
+                        });
+                        notif.onclick = () => {
+                            window.focus();
+                            pararAlertaVisualFavicon();
+                            window.abrirDetalhesTarefa(task.id);
+                        };
+                    } catch (e) {}
+                } else if (Notification.permission === "default") {
+                    Notification.requestPermission();
+                }
             }
 
             // Banner Flutuante Elegante na Tela
@@ -2414,7 +2506,7 @@
             banner.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:0.75rem; font-weight:700; color:#8b5cf6; text-transform:uppercase; display:flex; align-items:center; gap:4px;">
-                        ⏰ Lembrete de Demanda
+                        ⏰ Seu Lembrete
                     </span>
                     <button class="btn-fechar-banner" style="background:none; border:none; color:var(--text-400); cursor:pointer; font-size:1.1rem; padding:0 4px;">&times;</button>
                 </div>
@@ -2428,17 +2520,27 @@
                 </div>
             `;
 
-            banner.querySelector('.btn-fechar-banner').onclick = () => banner.remove();
+            banner.querySelector('.btn-fechar-banner').onclick = () => {
+                banner.remove();
+                pararAlertaVisualFavicon();
+            };
             banner.querySelector('.btn-ver-tarefa').onclick = () => {
                 banner.remove();
+                pararAlertaVisualFavicon();
                 window.abrirDetalhesTarefa(task.id);
             };
             banner.querySelector('.btn-adiar-10').onclick = () => {
                 banner.remove();
+                pararAlertaVisualFavicon();
                 // Adia temporariamente o lembrete
                 const agora = new Date();
                 agora.setMinutes(agora.getMinutes() + 10);
                 const horaStr = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+                
+                // Limpa registro notificado para permitir despertar no novo horário
+                const chaveAntiga = `${task.id}_${task.data}_${task.horaLembrete}`;
+                lembretesNotificados.delete(chaveAntiga);
+
                 update(ref(db, `agenda_tarefas/${task.id}`), { horaLembrete: horaStr }).then(() => {
                     window.showToast("Lembrete adiado para " + horaStr, "info");
                 });
@@ -2446,7 +2548,7 @@
 
             containerAlertas.appendChild(banner);
 
-            // Auto-remover após 25 segundos se o usuário não interagir
+            // Auto-remover após 30 segundos
             setTimeout(() => {
                 if (banner && banner.parentNode) {
                     banner.style.transition = 'opacity 0.4s, transform 0.4s';
@@ -2454,7 +2556,7 @@
                     banner.style.transform = 'translateY(-10px)';
                     setTimeout(() => banner.remove(), 400);
                 }
-            }, 25000);
+            }, 30000);
         }
 
         function iniciarMonitorLembretes() {
@@ -2464,22 +2566,30 @@
                 if (!usuarioAtual || !listaTarefasGlobal) return;
                 const hoje = new Date();
                 const hojeStr = formataDataISO(hoje);
-                const horaAtual = String(hoje.getHours()).padStart(2, '0') + ':' + String(hoje.getMinutes()).padStart(2, '0');
+                const agoraTotalMinutos = (hoje.getHours() * 60) + hoje.getMinutes();
 
                 Object.keys(listaTarefasGlobal).forEach(id => {
                     const t = listaTarefasGlobal[id];
                     if (!t) return;
 
-                    // Somente para o usuário atribuído ou criador
-                    const souResponsavel = (t.colaboradorEmail === usuarioAtual.email) || (t.criadoPor === usuarioAtual.email);
-                    if (!souResponsavel) return;
+                    // REGRA RIGOROSA: Somente para o usuário que cadastrou o lembrete (criadoPor)
+                    const souCriador = (t.criadoPor === usuarioAtual.email);
+                    if (!souCriador) return;
 
-                    // Deve ser pendente, da data de hoje e do tipo Lembrete
+                    // Deve ser pendente, da data de hoje e do tipo Lembrete com hora preenchida
                     if (t.status === "Pendente" && t.data === hojeStr && t.tipo === "Lembrete" && t.horaLembrete) {
+                        const partes = t.horaLembrete.split(':');
+                        if (partes.length < 2) return;
+                        const horaH = parseInt(partes[0], 10);
+                        const horaM = parseInt(partes[1], 10);
+                        const tarefaTotalMinutos = (horaH * 60) + horaM;
+
+                        // Chave única para o horário configurado
                         const chaveNotif = `${id}_${t.data}_${t.horaLembrete}`;
-                        
-                        // Dispara se a hora atual for igual à hora marcada e ainda não foi alertada
-                        if (t.horaLembrete === horaAtual && !lembretesNotificados.has(chaveNotif)) {
+
+                        // Dispara se a hora atual atingiu o horário estipulado (com margem de segurança de até 3 minutos de atraso caso o usuário tenha trocado de aba)
+                        const diferencaMinutos = agoraTotalMinutos - tarefaTotalMinutos;
+                        if (diferencaMinutos >= 0 && diferencaMinutos <= 3 && !lembretesNotificados.has(chaveNotif)) {
                             lembretesNotificados.add(chaveNotif);
                             exibirBannerLembrete({ id: id, ...t });
                         }
@@ -2487,8 +2597,8 @@
                 });
             }
 
-            // Executa a cada 10 segundos
-            intervalVerificaLembretes = setInterval(checarAgora, 10000);
+            // Executa a cada 5 segundos para checagem rápida e responsiva
+            intervalVerificaLembretes = setInterval(checarAgora, 5000);
             checarAgora();
         }
 
