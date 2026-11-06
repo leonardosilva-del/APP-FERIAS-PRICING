@@ -626,10 +626,15 @@
                         window.dadosUsuarioPendente = dadosUser;
                     } else {
                         // VERIFICAÇÃO DE QUARENTENA / BLOQUEIO ANTES DE ENTRAR
-                        if (dadosUser.status === 'Ativo') {
+                        // Gestores SEMPRE passam (nunca ficam trancados pela quarentena)
+                        if (dadosUser.status === 'Ativo' || dadosUser.perfil === 'Gestor') {
+                            // Se for Gestor com status diferente de Ativo, corrige automaticamente
+                            if (dadosUser.perfil === 'Gestor' && dadosUser.status !== 'Ativo') {
+                                update(ref(db, 'usuarios/' + user.uid), { status: 'Ativo' });
+                            }
                             window.concluirLogin(dadosUser);
                         } else {
-                            // Status Pendente ou Bloqueado
+                            // Status Pendente ou Bloqueado (para não-gestores)
                             loginSection.style.display = 'none';
                             appSection.style.display = 'none';
                             modalPrimeiroAcesso.style.display = 'none';
@@ -690,7 +695,8 @@
             updates['usuarios/' + auth.currentUser.uid + '/telefone'] = tel;
             updates['usuarios/' + auth.currentUser.uid + '/dataNascimento'] = nasc;
             updates['usuarios/' + auth.currentUser.uid + '/criadoEm'] = criadoEm;
-            updates['usuarios/' + auth.currentUser.uid + '/status'] = 'Pendente'; // INJEÇÃO DA QUARENTENA
+            // Gestores já aprovados mantêm status Ativo; demais entram em quarentena
+            updates['usuarios/' + auth.currentUser.uid + '/status'] = (perfil === 'Gestor') ? 'Ativo' : 'Pendente';
 
             if (setor !== "Comercial") {
                 updates['aniversariantes/' + auth.currentUser.uid] = {
