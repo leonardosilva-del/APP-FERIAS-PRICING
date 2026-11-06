@@ -395,7 +395,8 @@
                 const cpf = (u.cpf || '').toLowerCase();
                 const telefone = (u.telefone || '').toLowerCase();
                 const perfil = (u.perfil || '').toLowerCase();
-                return nome.includes(termo) || email.includes(termo) || cpf.includes(termo) || telefone.includes(termo) || perfil.includes(termo);
+                const status = (u.status || '').toLowerCase();
+                return nome.includes(termo) || email.includes(termo) || cpf.includes(termo) || telefone.includes(termo) || perfil.includes(termo) || status.includes(termo);
             });
 
             renderizarTabela(filtrados);
@@ -428,19 +429,27 @@
                 const foto = u.foto || 'https://via.placeholder.com/40';
                 const dataAcesso = u.criadoEm ? new Date(u.criadoEm).toLocaleDateString('pt-BR') : 'Desconhecida';
                 
-                // Trata perfil vazio/legado "Colaborador" como "Pricing" para exibição
+                // Controle de exibição (Pendente x Perfil Base)
                 let perfilOriginal = u.perfil || 'Pricing';
                 if(perfilOriginal === 'Colaborador') perfilOriginal = 'Pricing';
                 
+                const statusAtual = u.status || 'Ativo';
                 const cpf = u.cpf || '—';
                 const telefone = u.telefone || '—';
                 
-                // Aplica classe de cor no select baseada no perfil
                 let selectClass = '';
-                if(perfilOriginal === 'Gestor') selectClass = 'gestor';
-                else if(perfilOriginal === 'Comercial') selectClass = 'comercial';
-                else if(perfilOriginal === 'Bloqueado') selectClass = 'bloqueado';
-                else selectClass = 'pricing';
+                let optionPendente = '';
+
+                // Se estiver pendente, força a cor vermelha no select para chamar atenção
+                if (statusAtual === 'Pendente') {
+                    selectClass = 'bloqueado';
+                    optionPendente = `<option value="Pendente" selected>⏳ Pendente (Aprovar)</option>`;
+                } else {
+                    if(perfilOriginal === 'Gestor') selectClass = 'gestor';
+                    else if(perfilOriginal === 'Comercial') selectClass = 'comercial';
+                    else if(perfilOriginal === 'Bloqueado') selectClass = 'bloqueado';
+                    else selectClass = 'pricing';
+                }
 
                 const isMe = (u.uid === usuarioAtual.uid);
                 const disabledStr = isMe ? 'disabled title="Você não pode alterar seu próprio nível aqui"' : '';
@@ -466,10 +475,11 @@
                         <td class="col-data" ${hideData} style="color: var(--text-600); font-size: 0.9rem;">${dataAcesso}</td>
                         <td class="col-permissao" ${hidePerm}>
                             <select class="role-select ${selectClass}" onchange="window.alterarPerfil('${u.uid}', this.value, this)" ${disabledStr}>
-                                <option value="Gestor" ${perfilOriginal === 'Gestor' ? 'selected' : ''}>Gestor (Admin)</option>
-                                <option value="Pricing" ${perfilOriginal === 'Pricing' ? 'selected' : ''}>Pricing (Operacional)</option>
-                                <option value="Comercial" ${perfilOriginal === 'Comercial' ? 'selected' : ''}>Comercial (Comprador)</option>
-                                <option value="Bloqueado" ${perfilOriginal === 'Bloqueado' ? 'selected' : ''}>⛔ Bloqueado</option>
+                                ${optionPendente}
+                                <option value="Gestor" ${statusAtual !== 'Pendente' && perfilOriginal === 'Gestor' ? 'selected' : ''}>Gestor (Admin)</option>
+                                <option value="Pricing" ${statusAtual !== 'Pendente' && perfilOriginal === 'Pricing' ? 'selected' : ''}>Pricing (Operacional)</option>
+                                <option value="Comercial" ${statusAtual !== 'Pendente' && perfilOriginal === 'Comercial' ? 'selected' : ''}>Comercial (Comprador)</option>
+                                <option value="Bloqueado" ${statusAtual !== 'Pendente' && perfilOriginal === 'Bloqueado' ? 'selected' : ''}>⛔ Bloqueado</option>
                             </select>
                         </td>
                         <td style="text-align: center;">
@@ -481,8 +491,18 @@
         }
 
         window.alterarPerfil = function(uid, novoPerfil, selectElement) {
-            update(ref(db, 'usuarios/' + uid), { perfil: novoPerfil }).then(() => {
-                showToast("Perfil atualizado com sucesso!", "success");
+            if (novoPerfil === 'Pendente') return; // Ignora se o gestor clicar no próprio placeholder
+
+            let novoStatus = 'Ativo';
+            if (novoPerfil === 'Bloqueado') {
+                novoStatus = 'Bloqueado'; // Tranca a porta para esse usuário
+            }
+
+            update(ref(db, 'usuarios/' + uid), { 
+                perfil: novoPerfil,
+                status: novoStatus 
+            }).then(() => {
+                showToast("Acesso e Perfil atualizados com sucesso!", "success");
             }).catch((err) => {
                 showToast("Erro ao atualizar: " + err.message, "error");
             });

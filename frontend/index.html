@@ -64,7 +64,7 @@
         }
         html.dark-theme .btn-google { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
         html.dark-theme .btn-google:hover { background-color: #1e293b; border-color: #475569; }
-        html.dark-theme .card { border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        html.dark-theme .card, html.dark-theme #tela-bloqueio { border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
         html.dark-theme .input-login { background-color: #0f172a; color: #f8fafc; border-color: #334155; }
         html.dark-theme .input-login:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
 
@@ -117,6 +117,16 @@
             border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 5px;
         }
         .btn-email:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        /* TELA DE ACESSO BLOQUEADO / PENDENTE */
+        #tela-bloqueio {
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            background: var(--card-bg); padding: 3rem; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-width: 500px; width: 100%; border: 1px solid var(--border);
+        }
+        .btn-logout-block {
+            background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 15px;
+        }
+        .btn-logout-block:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
 
         /* TELA DA INTRANET */
         #app-section { display: none; width: 100%; max-width: 1200px; flex-direction: column; align-items: center; }
@@ -206,13 +216,25 @@
             <button id="btn-login-email" class="btn-email">Entrar</button>
         </div>
     </div>
+    
+    <!-- TELA DE ACESSO BLOQUEADO / QUARENTENA -->
+    <div id="tela-bloqueio">
+        <svg width="80" height="80" fill="none" stroke="#ef4444" viewBox="0 0 24 24" style="margin-bottom: 20px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <h2 style="color: #ef4444; font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">ACESSO EM ANÁLISE</h2>
+        <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 25px; line-height: 1.5;">Seu cadastro foi recebido e autenticado, mas seu acesso aos dados corporativos ainda <strong>não foi aprovado</strong> pela gestão.<br><br>Por favor, aguarde a liberação ou contate o administrador do sistema.</p>
+        <button onclick="document.getElementById('btn-logout').click()" class="btn-logout-block">
+            Fazer Logout
+        </button>
+    </div>
 
     <!-- MODAL PRIMEIRO ACESSO (ONBOARDING) -->
     <div id="modal-primeiro-acesso" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px;">
         <div style="background: var(--card-bg); width: 100%; max-width: 450px; padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px;">
             <div style="text-align: center; margin-bottom: 10px;">
                 <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 5px;">Bem-vindo à Intranet! 🎉</h2>
-                <p style="color: var(--text-muted); font-size: 0.95rem;">Complete seu perfil para liberar o acesso.</p>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Complete seu perfil para enviar seu cadastro para aprovação.</p>
             </div>
             
             <div>
@@ -240,7 +262,7 @@
                 <input type="date" id="onboarding-nascimento" class="input-login">
             </div>
             
-            <button id="btn-salvar-onboarding" class="btn-email" style="margin-top: 10px;" onclick="window.salvarPrimeiroAcesso()">Concluir Cadastro</button>
+            <button id="btn-salvar-onboarding" class="btn-email" style="margin-top: 10px;" onclick="window.salvarPrimeiroAcesso()">Enviar Cadastro</button>
         </div>
     </div>
 
@@ -253,13 +275,14 @@
                 <span id="user-name" class="user-name">Carregando...</span>
                 <span id="user-role" class="user-role">Colaborador</span>
             </div>
-            <button id="btn-logout" class="btn-logout" title="Sair da Intranet">
+            <button id="btn-logout-interno" class="btn-logout" title="Sair da Intranet" onclick="document.getElementById('btn-logout').click()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                     </path>
                 </svg>
             </button>
+            <button id="btn-logout" style="display:none;"></button>
         </div>
 
         <div class="header">
@@ -290,27 +313,23 @@
                 <p>Consulte prazos e status das campanhas.</p>
             </a>
             
-            <!-- NOVO CARD: DASHBOARD DE CRÍTICAS -->
             <a href="painel-criticas.html" class="card card-pricing" id="card-criticas">
                 <div class="icon-container" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">📊</div>
                 <h2>Críticas Consinco</h2>
                 <p>Dashboard executivo das divergências de preço.</p>
             </a>
             
-            <!-- NOVO CARD: CRONOGRAMA DE INAUGURAÇÃO -->
             <a href="inauguracao.html" class="card card-pricing" id="card-inauguracao">
                 <div class="icon-container" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">🚀</div>
                 <h2>Inauguração de Lojas</h2>
                 <p>Controle de prazos, D-Day e rotina de preço zero.</p>
             </a>
             
-            <!-- CARD: SUPORTE COMERCIAL COM MINI-DASHBOARD (PRICING) -->
             <a href="chamados.html" class="card" id="card-chamados">
                 <div class="icon-container" style="background: rgba(234, 88, 12, 0.1); color: #ea580c;">🎧</div>
                 <h2>Suporte Comercial</h2>
                 <p>Abra chamados para ajustes de preços e FIFO.</p>
                 
-                <!-- CONTAINER DO RESUMO -->
                 <div id="resumo-chamados-pricing" style="display: none; width: 100%; margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px; flex-direction: column; gap: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
                         <span>Aprovar/Analisar:</span>
@@ -336,7 +355,6 @@
                 <div id="badge-aniversario" style="display: none; position: absolute; top: 12px; right: 12px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: pulseAlert 2s infinite; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">Festa hoje! 🎉</div>
             </a>
             
-            <!-- NOVO CARD: LISTAS DE TV -->
             <a href="listas-tv.html" class="card" id="card-listas-tv">
                 <div class="icon-container" style="background: rgba(168, 85, 247, 0.1); color: #9333ea;">📺</div>
                 <h2>Listas de TV</h2>
@@ -352,7 +370,6 @@
                 <p>Acesse rapidamente planilhas e sistemas.</p>
             </a>
             
-            <!-- CARD GESTÃO DE USUÁRIOS (Exclusivo Nível 1 - Gestor) -->
             <a href="usuarios.html" class="card" id="card-usuarios" style="display: none;">
                 <div class="icon-container" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👥</div>
                 <h2>Gestão de Usuários</h2>
@@ -376,6 +393,7 @@
         const loginSection = document.getElementById('login-section');
         const appSection = document.getElementById('app-section');
         const modalPrimeiroAcesso = document.getElementById('modal-primeiro-acesso');
+        const telaBloqueio = document.getElementById('tela-bloqueio');
         let primeiraVerificacao = true;
 
         window.concluirLogin = function(dadosUser) {
@@ -385,12 +403,6 @@
             }
             if (perfilDoBanco === "Colaborador") {
                 perfilDoBanco = "Pricing";
-            }
-
-            if (perfilDoBanco === "Bloqueado") {
-                alert("Acesso Bloqueado: Sua conta está desativada no sistema. Procure a gestão.");
-                signOut(auth);
-                return;
             }
 
             document.getElementById('user-role').textContent = perfilDoBanco;
@@ -435,6 +447,7 @@
             
             loginSection.style.display = 'none';
             modalPrimeiroAcesso.style.display = 'none';
+            telaBloqueio.style.display = 'none';
             appSection.style.display = 'flex';
             
             if (primeiraVerificacao) {
@@ -493,7 +506,7 @@
                     const agora = Date.now();
                     
                     chamadosAtivosIndex.forEach(c => {
-                        if (c.status === "Aberto" || c.status === "Em Análise") {
+                        if (c.status === "Aberto" || c.status === "Em Análise" || c.status === "Pendente") {
                             pendentesAprovacao++;
                         }
                         
@@ -597,6 +610,7 @@
                     if (!dadosUser.cpf || !dadosUser.telefone || !dadosUser.dataNascimento || !dadosUser.setor) {
                         loginSection.style.display = 'none';
                         appSection.style.display = 'none';
+                        telaBloqueio.style.display = 'none';
                         modalPrimeiroAcesso.style.display = 'flex';
                         
                         document.getElementById('onboarding-nome').value = dadosUser.nome || user.displayName || "";
@@ -611,7 +625,21 @@
 
                         window.dadosUsuarioPendente = dadosUser;
                     } else {
-                        window.concluirLogin(dadosUser);
+                        // VERIFICAÇÃO DE QUARENTENA / BLOQUEIO ANTES DE ENTRAR
+                        if (dadosUser.status === 'Ativo') {
+                            window.concluirLogin(dadosUser);
+                        } else {
+                            // Status Pendente ou Bloqueado
+                            loginSection.style.display = 'none';
+                            appSection.style.display = 'none';
+                            modalPrimeiroAcesso.style.display = 'none';
+                            telaBloqueio.style.display = 'flex';
+                            
+                            if (primeiraVerificacao) {
+                                primeiraVerificacao = false;
+                                document.body.classList.add('auth-ready');
+                            }
+                        }
                     }
                 });
 
@@ -619,6 +647,7 @@
                 loginSection.style.display = 'flex';
                 appSection.style.display = 'none';
                 modalPrimeiroAcesso.style.display = 'none';
+                telaBloqueio.style.display = 'none';
                 
                 if (primeiraVerificacao) {
                     primeiraVerificacao = false;
@@ -635,12 +664,12 @@
             const nasc = document.getElementById('onboarding-nascimento').value;
 
             if(!setor || !nome || !cpf || !tel || !nasc) {
-                alert("Por favor, preencha todos os campos, incluindo seu setor, para liberar seu acesso.");
+                alert("Por favor, preencha todos os campos, incluindo seu setor, para enviar seu cadastro.");
                 return;
             }
 
             const btn = document.getElementById('btn-salvar-onboarding');
-            btn.textContent = "Salvando...";
+            btn.textContent = "Enviando para aprovação...";
             btn.disabled = true;
 
             let perfil = window.dadosUsuarioPendente && window.dadosUsuarioPendente.perfil;
@@ -661,6 +690,7 @@
             updates['usuarios/' + auth.currentUser.uid + '/telefone'] = tel;
             updates['usuarios/' + auth.currentUser.uid + '/dataNascimento'] = nasc;
             updates['usuarios/' + auth.currentUser.uid + '/criadoEm'] = criadoEm;
+            updates['usuarios/' + auth.currentUser.uid + '/status'] = 'Pendente'; // INJEÇÃO DA QUARENTENA
 
             if (setor !== "Comercial") {
                 updates['aniversariantes/' + auth.currentUser.uid] = {
@@ -672,10 +702,16 @@
             }
 
             update(ref(db), updates).then(() => {
-                window.concluirLogin({ nome, perfil, setor, cpf, telefone: tel, dataNascimento: nasc });
+                // Em vez de concluir o login, exibe a tela de bloqueio
+                modalPrimeiroAcesso.style.display = 'none';
+                telaBloqueio.style.display = 'flex';
+                
+                // Restaura o botão para a próxima vez (caso ele faça logout/login de novo)
+                btn.textContent = "Enviar Cadastro";
+                btn.disabled = false;
             }).catch(err => {
                 alert("Erro ao salvar: " + err.message);
-                btn.textContent = "Concluir Cadastro";
+                btn.textContent = "Enviar Cadastro";
                 btn.disabled = false;
             });
         };
