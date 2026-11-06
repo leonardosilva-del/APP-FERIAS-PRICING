@@ -381,7 +381,7 @@
     <!-- SCRIPT FIREBASE -->
     <script type="module">
         import { auth, provider, db } from "./firebase-config.js";
-        import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { signInWithRedirect, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
         import { ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -717,9 +717,9 @@
         };
 
         document.getElementById('btn-login-google').addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch((error) => {
+            signInWithRedirect(auth, provider).catch((error) => {
                 console.error("Erro:", error);
-                alert("Erro ao logar com o Google.");
+                alert("Erro ao iniciar login com o Google.");
             });
         });
 
