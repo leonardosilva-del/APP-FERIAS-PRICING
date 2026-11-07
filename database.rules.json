@@ -1,72 +1,77 @@
 {
   "rules": {
     "usuarios": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('perfil').val() === 'Gestor'",
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid",
+        ".write": "auth != null && ($uid === auth.uid || root.child('usuarios').child(auth.uid).child('perfil').val() === 'Gestor')"
+      }
     },
     "agenda_tarefas": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "agenda_fixas": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "escalas_plantao": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo' && (root.child('usuarios').child(auth.uid).child('perfil').val() === 'Pricing' || root.child('usuarios').child(auth.uid).child('perfil').val() === 'Gestor')"
     },
     "campanhas_oficiais_v3": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "historico_auditoria_v3": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "links_essenciais": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "base_listas_excel": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "configuracoes_sistema": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('perfil').val() === 'Gestor'"
     },
     "aniversariantes": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      "$uid": {
+        ".write": "auth != null && ($uid === auth.uid || root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo')"
+      }
     },
     "chamados_comercial": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "base_produtos": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "ferias": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "painel_criticas": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "inauguracoes": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "listas_tv": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'"
     },
     "base_precificacao_regioes": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo'",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('status').val() === 'Ativo' && (root.child('usuarios').child(auth.uid).child('perfil').val() === 'Pricing' || root.child('usuarios').child(auth.uid).child('perfil').val() === 'Gestor')"
     }
   }
 }
