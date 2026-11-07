@@ -374,6 +374,9 @@
                 <div class="icon-container" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👥</div>
                 <h2>Gestão de Usuários</h2>
                 <p>Gerencie acessos e perfis da equipe.</p>
+                <div id="badge-usuarios-pendentes" style="display: none; position: absolute; top: 12px; right: 12px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: pulseAlert 2s infinite; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10;">
+                    <span id="badge-usuarios-pendentes-qtd">0</span> aprovação pendente
+                </div>
             </a>
         </div>
     </div>
@@ -562,6 +565,32 @@
                     window.badgeIntervalSet = true;
                     setInterval(atualizarBadgeChamados, 10000);
                 }
+            }
+
+            // LISTENER EM TEMPO REAL PARA BADGE DE USUÁRIOS PENDENTES (VISÍVEL APENAS PARA GESTOR)
+            if (perfilDoBanco === "Gestor") {
+                const usuariosRef = ref(db, 'usuarios');
+                onValue(usuariosRef, (snapshot) => {
+                    let pendentes = 0;
+                    if (snapshot.exists()) {
+                        snapshot.forEach(child => {
+                            const val = child.val();
+                            if (val && val.status === 'Pendente') {
+                                pendentes++;
+                            }
+                        });
+                    }
+                    const badgeUsuarios = document.getElementById('badge-usuarios-pendentes');
+                    const badgeUsuariosQtd = document.getElementById('badge-usuarios-pendentes-qtd');
+                    if (badgeUsuarios && badgeUsuariosQtd) {
+                        if (pendentes > 0) {
+                            badgeUsuariosQtd.textContent = pendentes;
+                            badgeUsuarios.style.display = 'block';
+                        } else {
+                            badgeUsuarios.style.display = 'none';
+                        }
+                    }
+                });
             }
 
             // LISTENER EM TEMPO REAL PARA BADGE DE LISTAS DE TV PENDENTES
