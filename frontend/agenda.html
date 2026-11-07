@@ -727,10 +727,13 @@
             border-radius: var(--radius-md);
             padding: 1rem;
             box-shadow: var(--shadow-sm);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
             cursor: grab;
             position: relative;
             border-left: 3px solid var(--brand-primary);
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
         .task-card:active {
@@ -739,7 +742,6 @@
 
         .task-card:hover {
             box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
             border-color: var(--border-hover);
         }
 
@@ -2209,8 +2211,12 @@
                 if(isMyLane) {
                     const sortableInstance = new Sortable(lane, {
                         group: 'shared', 
-                        animation: 150,
+                        animation: 200,
                         ghostClass: 'sortable-ghost',
+                        fallbackOnBody: true,
+                        swapThreshold: 0.65,
+                        forceFallback: false,
+                        delay: 0,
                         onEnd: function (evt) {
                             const taskId = evt.item.getAttribute('data-id');
                             const novaLane = evt.to;
