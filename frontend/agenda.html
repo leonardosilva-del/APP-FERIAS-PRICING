@@ -716,9 +716,16 @@
         }
 
         .sortable-ghost {
-            opacity: 0.4;
-            background-color: #f8fafc;
+            opacity: 0.3;
+            background-color: rgba(99, 102, 241, 0.08) !important;
             border: 2px dashed var(--brand-primary) !important;
+        }
+
+        .sortable-drag {
+            opacity: 0.95 !important;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
+            transform: scale(1.02);
+            cursor: grabbing !important;
         }
 
         .task-card {
@@ -740,6 +747,28 @@
 
         .task-card:hover {
             border-color: var(--brand-primary);
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: var(--text-400);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s, background-color 0.15s;
+        }
+
+        .drag-handle:hover {
+            color: var(--brand-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
         .task-card.priority-high { border-left-color: var(--status-danger); }
@@ -2145,6 +2174,7 @@
                         <div class="task-card ${classPriority} ${isDoneClass}" data-id="${task.id}" onclick="window.abrirDetalhesTarefa('${task.id}')">
                             <div class="task-header">
                                 <div class="tags" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                                    <span class="drag-handle" title="Segure e arraste para mover" onclick="event.stopPropagation()">⠿</span>
                                     <span class="tag base" ${tagStyle}>${tipoTask}</span>
                                     ${badgeLembreteHora}
                                 </div>
@@ -2210,6 +2240,8 @@
                         group: 'shared', 
                         animation: 150,
                         ghostClass: 'sortable-ghost',
+                        dragClass: 'sortable-drag',
+                        handle: '.drag-handle',
                         filter: '.custom-checkbox, .task-updater',
                         preventOnFilter: false,
                         onEnd: function (evt) {
