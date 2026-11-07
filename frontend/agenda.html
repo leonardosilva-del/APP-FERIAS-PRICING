@@ -752,19 +752,18 @@
         .drag-handle {
             cursor: grab;
             color: var(--text-400);
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-size: 0.95rem;
+            padding: 0 4px;
+            font-size: 1.1rem;
             line-height: 1;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.15s, background-color 0.15s;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .drag-handle:hover {
             color: var(--brand-primary);
-            background: rgba(99, 102, 241, 0.1);
         }
 
         .drag-handle:active {
@@ -2239,8 +2238,9 @@
                     const sortableInstance = new Sortable(lane, {
                         group: 'shared', 
                         animation: 150,
+                        forceFallback: true,
+                        fallbackClass: 'sortable-drag',
                         ghostClass: 'sortable-ghost',
-                        dragClass: 'sortable-drag',
                         handle: '.drag-handle',
                         filter: '.custom-checkbox, .task-updater',
                         preventOnFilter: false,
